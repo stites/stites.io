@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Open Source (Almost) Everything
+title: Eat Sleep Code Repeat
 ---
 
 {{ page.title }}
