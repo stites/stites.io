@@ -66,10 +66,7 @@ A BDD / TDD assertion library.
 ###### [Sinon](http://sinonjs.org/)
 Standalone test spies, stubs and mocks.
 
-Getting Started
-=================================
-First fired up Yeoman, swapped out Mocha for Jasmine, removed Socket.IO and we're gold!
-
+Project is currently pending as I am now at HackReactor coding up a storm!
 
 
 
