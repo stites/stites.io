@@ -82,7 +82,9 @@ This is not to be confused with an `&&` used for boolean evaluation. This happen
       00001000
 
 These kinds of logic gates are _VERY_ userful for complex, or time-sensitive operations. Keep them in mind in the future!
+
 -------
+
 There you have it! that's all there is to a basic bloom filter. The repo has a few more goodies, though, including the calculation of a falsepositive rates which is dependent on that fifth variable we included in our filter, `n`. The false positive rate turns out to be `(1-e`<sup>`-kn/m`</sup>`)`<sup>`k`</sup>. Here's the implimentation:
 
     BloomFilter.prototype.fp = function() {
