@@ -1,0 +1,33 @@
+Christina!!!!
+
+Okay first off - I'm super stoked that you want to start getting into web development. I'm guessing that you aren't the most familiar with this side of the compsci world so treat this as a masterlist of resources that I would recommend you to get run up to speed with a modern industry professional.
+
+To start, I really have to tell you that my biases are geared towards Javascript, Python, and C - not C++ - being a solid grounding basis and more for some rough concept of being an awesome dev-head. Languages on the rise in my language portfolio include Julia, Go, and Clojure. Those won't help you now in fact - C won't really help you out starting off in the beginning anyways.
+
+Back to the remainder - Python and Javascript. There's a bit of a stigma with javascript that it's the 'Number One Number Two' language out there. Every webdev will have to encounter it at some point because, currently and for the time being, it is the language of the internet. Learn this first. You're also already on track with your CS degree that you have compsci fundamentals, C++ and Java (and maybe more, I'm not so sure) down. So don't worry about any of these stigmas. We also won't be getting into Node in this email, but node blows all of that out of the water. It makes servers run as fast as C++/Go. it's beautiful.
+
+Other skills you'll need to pick up to make your code awesome include CSS, and client-oriented optimizations. Overall, our lesson plan is going to look something like this:
+
+- Javascript (2-3 weeks)
+  - Javascriptissexy.com will teach you an insane amount about Javascript. I would consider this a bible to run through, however we want to run you up to speed asap so I'd say check out: http://javascriptissexy.com/how-to-learn-javascript-properly/ just do the first half in two weeks and move on. At this point you should apply to Hack Reactor : D
+  - Stuff on Closure: http://javascriptissexy.com/understand-javascript-closures-with-ease/
+  - Stuff on 'this': http://javascriptissexy.com/understand-javascripts-this-with-clarity-and-master-it/
+  - Stuff on Tips and Tricks: http://javascriptissexy.com/12-simple-yet-powerful-javascript-tips/
+  - Stuff on Scoping (probably review): http://javascriptissexy.com/javascript-variable-scope-and-hoisting-explained/
+  - Secrets of a Javascript Ninja Quiz: http://ejohn.org/apps/learn/
+- Angular (1 week)
+  - Ari tutorial: http://www.ng-newsletter.com/posts/beginner2expert-how_to_start.html
+  - Ari book: https://www.ng-book.com/
+- Python (unknown)
+  - Learn Python the Hard Way: http://learnpythonthehardway.org/
+  - I don't know what to tell you about django, but there's some stuff I can try to send you later.
+  - SCIKIT-LEARN as bonus: do machine learning and predict the future... as I said, it's bonus stuff.
+
+If you can get through the first two sections you can start helping out on some projects I'm working on and as you submit pull requests on github I can send you code reviews. Also, when you hit the angular stage, you should ping me so that I can tell you what you should be looking into since I'll have a better sense of that world by then.
+
+Hope this isn't too much/overloads you. Take them one at a time and give me status updates!
+
+Also - if you want to apply to Hack Reactor you should do it as soon as possible!
+
+Keep me posted!
+-Sam
