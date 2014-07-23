@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Moving from Backbone to Angular
+title: Moving from Backbone to Angular Part I
 ---
 
 {{ page.title }}
