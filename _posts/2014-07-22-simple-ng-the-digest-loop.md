@@ -1,6 +1,6 @@
 ---
 layout: post
-title: simple-ng: rebuilding angular
+title: Simple-ng Rebuilding Angular
 ---
 
 {{ page.title }}
@@ -50,6 +50,8 @@ Instead of finishing the queue and letting the browser move on to _it's_ next ev
 
 There's a ton of stuff which happens to ensure that this logic doesn't hit any infinite loops, handles code which isn't naturally part of this digest cycle, and ensures that everything is optimized. I would encourage you to look into [Tero Parviainen's book][ng] if you're interested in more. In the mean time, I'll keep going with these high-level summaries each time I complete another chapter if you are interested and don't have the bandwidth to add another book to read in your daily routine.
 
+Feel free to check out the code I am working on as I move along at my repo on github: [stites/simple-ng][repo].
+
 Thanks for reading!
 -s
 
@@ -57,3 +59,4 @@ Thanks for reading!
 
 
 [ng]: http://teropa.info/build-your-own-angular
+[repo]: https://github.com/stites/simple-ng
