@@ -52,9 +52,6 @@ There's a ton of stuff which happens to ensure that this logic doesn't hit any i
 
 Feel free to check out the code I am working on as I move along at my repo on github: [stites/simple-ng][repo].
 
-Thanks for reading!
--s
-
 
 
 
