@@ -1,6 +1,6 @@
 ---
 layout: post
-title: `git reset --hard` on one file
+title: Hard reset a single file in git
 ---
 
 {{ page.title }}

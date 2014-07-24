@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Building a Backbone Twitter Clone Part 1: Introduction
+title: Building a Backbone Twitter Clone Part 1 Introduction
 ---
 
 {{ page.title }}
@@ -8,7 +8,7 @@ title: Building a Backbone Twitter Clone Part 1: Introduction
 
 I've just finished working through JavascriptIsSexy's [Learn Backbone.js Completely][jsbb] which, in my opinion, is one of the best places to learn javascript on the interwebs. I've also been reading John Resig's [Secrets of the Javascript Ninja][ninja], and have completed half of [Learn Javascript Properly][jsjs]. So I may not be a javascript pro, still I'm gunning to build my first Backbone App. This is going to be a twitter clone, because it seems fairly comprehensive. Feel free to follow me on twitter ([@samstites][twitter]), by the way. you can also find the source of these files over at my github page: [stites/BBTwitterAMD][ghtwitter].
 
-To start with, while I understand that this might seem like a bit of a shortcut, I've decided to use [Yeoman][yio] as my workflow tool. I just rewrote the beginnings of a backbone application four times in the past three days, so I think I'm good on that front. Also Yeoman will be a good introduction to some new tools which will force some good habits (hopefully). 
+To start with, while I understand that this might seem like a bit of a shortcut, I've decided to use [Yeoman][yio] as my workflow tool. I just rewrote the beginnings of a backbone application four times in the past three days, so I think I'm good on that front. Also Yeoman will be a good introduction to some new tools which will force some good habits (hopefully).
 
 I want to go with as many best practices as possible, so I've decided to make this Twitter Clone with Asyncronous Module Dependency (AMD) which you learn about in the tail end of JavascriptIsSexy's guide. Looking for the appropriate generator, mrichard's [marionette generator][gen] seems perfect. There are also a lot of new technologies, which I'm going to research and breifly introduce in this blogpost.
 

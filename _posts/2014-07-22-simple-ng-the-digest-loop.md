@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Simple-ng Rebuilding Angular
+title: Rebuilding Angular in simpleNg
 ---
 
 {{ page.title }}
