@@ -13,3 +13,7 @@ to not shadow. you can do the following:
     expect(parent.user.name).toBe('Jill');
 
 this way we aren't writing anything on the child scope, we are _reading_ the parent scope's `user` then accessing it's `name`. This is part of the _Dot Rule_ see [this video](https://www.youtube.com/watch?feature=player_detailpage&v=ZhfUv0spHCY#t=1758s).
+
+also `$$watchers` is inherited. all access to this is on the root scope.
+
+Thus we also execute all the watches based on _scope heirarchy_. what we want is to call `$digest` on a node, then to `$digest` tne node and it's children. Not siblings or parents.
