@@ -16,4 +16,4 @@ this way we aren't writing anything on the child scope, we are _reading_ the par
 
 also `$$watchers` is inherited. all access to this is on the root scope.
 
-Thus we also execute all the watches based on _scope heirarchy_. what we want is to call `$digest` on a node, then to `$digest` tne node and it's children. Not siblings or parents.
+Thus we also execute all the watches based on _scope heirarchy_. what we want is to call `$digest` on a node, then to `$digest` the node and it's children. Not siblings or parents. This requires shadowing the `$$watchers` array, so that they do not interfere with eachother, and recursively checking children's watches
