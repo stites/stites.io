@@ -17,3 +17,10 @@ this way we aren't writing anything on the child scope, we are _reading_ the par
 also `$$watchers` is inherited. all access to this is on the root scope.
 
 Thus we also execute all the watches based on _scope heirarchy_. what we want is to call `$digest` on a node, then to `$digest` the node and it's children. Not siblings or parents. This requires shadowing the `$$watchers` array, so that they do not interfere with eachother, and recursively checking children's watches
+
+$apply triggers a $digest from the rootscope.
+
+  "The fact that $apply digests all the way from the root is one of the reasons it is the preferred method for integrating external code to Angular in favor of plain $digest: If you don’t know exactly what scopes are relevant to the change you’re making, it’s a safe bet to just involve all of them.
+  It is notable that since most Angular applications have just one root scope, $apply does cause every watch on every scope in the whole application to be executed. Armed with the knowledge about this difference between $digest and $apply, you may sometimes call $digest instead of $apply when you need that extra bit of performance"
+
+$evalAsync schedules a digest on the root scope, too
