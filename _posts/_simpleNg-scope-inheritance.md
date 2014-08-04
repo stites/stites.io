@@ -24,3 +24,16 @@ $apply triggers a $digest from the rootscope.
   It is notable that since most Angular applications have just one root scope, $apply does cause every watch on every scope in the whole application to be executed. Armed with the knowledge about this difference between $digest and $apply, you may sometimes call $digest instead of $apply when you need that extra bit of performance"
 
 $evalAsync schedules a digest on the root scope, too
+
+ISOLATED SCOPES
+
+  At times it would be convenient to have a scope be a part of the scope hierarchy, but not give it access to everything its parents contain. This is what isolated scopes are for.
+
+isolation is simple: make a scope part of the scope hierarchy, but do not make it inherit from its parent.
+
+  created by passing a boolean value to the $new function. When true, isolated. When false/omitted-undefined/null prototypal inheritance will be used.
+
+  When a scope is isolated, it doesn’t have access to the attributes of its parent
+
+  If you’ve used isolated scopes with Angular directives, you’ll know that an isolated scope is usually not completely cut off from its parent. However this mechanism is not built into scopes. It is part of the implementation of directives. We will return to this discussion when we implement isolation in directives.
+
