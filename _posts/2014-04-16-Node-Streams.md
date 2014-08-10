@@ -49,7 +49,9 @@ Duplex streams are also, simply, streams that both have read and write functiona
 Transform streams allow you to both read and write in a stream, however also allow you to operate on the stream before serving the data. An example which will clear up any ambigulity would be node's zlib, where a stream takes some data and zips it to a packaged format - thus serving the user an altered stream.
 
 ### Also, `.pipe()` and events!
-`.pipe()` is the primary utility for streaming. In a terminal, a pipe looks like `|`. `pipe` is a data flow control function which pulls data out of a stream and allows it to be used by some process on the other end of the pipe. The nifty thing about this is that `pipe` will ensure that the destination is not overwhelemed by a fast stream! You can also chain pipes together to generate compound, complex streams - something taken advantage of in gulp.js!
+`.pipe()` is the primary utility for streaming. In a terminal, a pipe looks like `|`. `pipe` is a data flow control function which pulls data out of a stream and allows it to be used by some process on the other end of the pipe. The nifty thing about this is that `pipe` will ensure that the destination is not overwhelemed by an overly-fast stream. The architecture for this is wonderfully simple: when backpressure starts to build up in the stream, a flag is simply thrown up to indicate that all pending chunks of data need to be queued for processing. Once the queue has been flushed, the flag is dropped and the stream resumes as normal.
+
+Finally, you can also chain pipes together to generate compound, complex streams - something taken advantage of in gulp.js!
 
 On top of this, each stream class comes with a handful of events which makes it possible to control the flow of a stream while streaming. What does this mean? Well, in essence what I'm saying is that it wouldn't be too hard to roll out your own implimentation of sockets.io! Since all four stream classes, at their core, are just implimentaitons of readable and writable streams, some of the events you'll come across include Readable events:
 
