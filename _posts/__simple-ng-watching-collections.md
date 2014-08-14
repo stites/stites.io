@@ -56,3 +56,5 @@ we use simple conditionals to make decision trees to find out what to
 do and we really just detect new or removed items by saving the length on the oldValue.
 
 ### Detecting Replaced or Reordered Items in Arrays
+
+aside from changes in obj size, we need to see if things are swapped out. so now we actually need to iterate.
