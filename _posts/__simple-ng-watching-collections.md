@@ -58,3 +58,29 @@ do and we really just detect new or removed items by saving the length on the ol
 ### Detecting Replaced or Reordered Items in Arrays
 
 aside from changes in obj size, we need to see if things are swapped out. so now we actually need to iterate.
+
+### Array-like objects
+`arguments` array! also `NodeList` which is how you get `quesySelectorAll` and `getElementsByTagName`
+
+### Detecting new objects
+objects other than arrays: mainly dicts
+
+### Detecting New Or Replaced Attributes in Objects.
+We want new attrs added to an obj to trigger a change
+We want changed attrs added to an obj to trigger a change
+
+While we iterate, we also sync the old object with the attributes of the new object, so that we have them for the next digest.
+
+> The hasOwnProperty clause in the for loop is a common JavaScript idiom for checking that a property is attached to the object itself instead of being inherited through the prototype chain. $watchCollection does not watch inherited properties in objects.
+
+### Detecting Removed Attributes in Objects
+it('notices when an attribute is removed from an object',
+
+arrays are easy, we can check length - another loop
+
+### Preventing Unneseccary Object Iteration
+we really don't want to add another loop. probjematic at larpe objs
+optimization:
+  for the oldObj, keep a car that increments whenever an attr added, decerment whenever attr removed
+  for the new obj, calculate size during first loop in internal watch
+
