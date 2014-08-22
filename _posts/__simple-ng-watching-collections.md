@@ -84,3 +84,25 @@ optimization:
   for the oldObj, keep a car that increments whenever an attr added, decerment whenever attr removed
   for the new obj, calculate size during first loop in internal watch
 
+### Dealing with Objects that Have A length
+
+    `_.isNumber(length) && length > 0 && (length - 1) in obj`
+### Handing The Old Collection Value To Listeners
+> The contract of the watch listener function is that it gets three arguments: The new value of the watch function, the previous value of the watch function, and the scope. In this chapter we have respected that contract by providing those values, but the way we have done it is problematic, especially when it comes to the previous value.
+The problem is that since we are maintaining the old value in internalWatchFn, it will already have been updated to the new value by the time we call the listener function. The values given to the listener function are always identical. This is the case for non-collections:
+>The implementation for the value comparison and copying works well and effciently for the change detection itself, so we don’t really want to change it. Instead, we’ll introduce another variable that we’ll keep around between digest iterations. We’ll call it veryOldValue, and it will hold a copy of the old collection value that we will not change in internalWatchFn.
+Maintaining veryOldValue requires copying arrays or objects, which is expensive. We’ve gone through great lengths in order to not copy full collections each time in collection watches. So we really only want to maintain veryOldValue if we actually have to. We can check that by seeing if the listener function given by the user actually takes at least two arguments:
+
+
+>The length property of Function contains the number of declared arguments in the function. If there’s more than one, i.e. (newValue, oldValue), or (newValue, oldValue, scope), only then do we enable the tracking of the very old value.
+>this means you won’t incur the cost of copying the very old value in $watchCollection unless you declare oldvalue in your listener function arguments.
+
+
+### Summary
+In this chapter we’ve added the third and final dirty-checking mechanism to our implemen- tation of Scope: Shallow collection-watching.
+The $watchCollection function is not simple, but that’s mostly because it provides an important, non-trivial facility: We can watch for changes in large arrays and objects much more efficiently than we could with just deep-watching.
+You have learned about:
+• How $watchCollection can be used with arrays, objects, and other values. • What $watchCollection does with arrays.
+• What $watchCollection does with objects.
+• Array-like objects and their role in $watchCollection.
+The next chapter concludes our implementation of scopes. We will add the other main functional area that scopes provide in addition to dirty-checking: Events.
