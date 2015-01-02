@@ -21,3 +21,6 @@ The solution is:
 This performs a file-specific `git checkout`. Exactly what I've been looking for. Taking a closer look, you can also perform `git checkout <branch_name> -- <paths>` to get copies of files from different branches.
 
 As always, check out the man files (`man git-checkout`) for more!
+######## TEST
+check out git reset --patch too!
+http://git-scm.com/blog/2011/07/11/reset.html

@@ -8,3 +8,6 @@ The following directories and their contents are Copyright Sam Stites. You may n
 
 * _posts/
 * images/
+
+
+Copyright (c) 2014, Sam Stites <sam@stites.io>
