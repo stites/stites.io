@@ -96,9 +96,46 @@ a common approach to handle performance-oriented SLAs is to describle them in te
 
 Amazon engineering and optimization efforst are not focused on averages - more, they are targeted at this percentile. Load balancing selection of writing coordinators ( and more) are purely at controlling performance at this mark.
 
-** Storage systems play an important role in establising a service's SLA because state management is one of the primary components of it. Thus - one of the main considerations for Dynamo is to _give services control over ther system properties such as consistency and durability_ and to _let services make their own tradeoffs between functionality, performance and cost effectiveness.
+\*\* Storage systems play an important role in establising a service's SLA because state management is one of the primary components of it. Thus - one of the main considerations for Dynamo is to _give services control over ther system properties such as consistency and durability_ and to _let services make their own tradeoffs between functionality, performance and cost effectiveness_.
 
 #### Design considerations
+Usually - in traditional systems, you would use synchronous transations which 
+would keep things strongly consistent. Much earlier studies show that this 
+level of consistency, matched with resistence to network failure, and high 
+availability - cannot all be acheived by a data store. So systems and 
+applications need to be aware of which properties can occur and under what 
+circumstances they operate, so that they can choose which kind of datastore 
+works best for them.
 
+For highly faulty systems - due to factors of network error, disk quality, etc 
+- high availability is increased with optimistic replication techniques. For 
+example, having the changes propigate to replicas in the background and having 
+more tolerance with concurrency and disconnections. This can be problematic, 
+however, then you have conflicting changes which need to be resolved.
+
+Conflict Resolution has two points of control - when they happen, and who handles them.
+
+For the question of "when" you neet to ask if you are okay with these 
+happening at r/w. This keeps things simple - however writes might be rejected 
+if a change can't reach all or most of the application in a more strongly 
+consistent system. Dynamo takes the reverse approach and ensures that it is 
+_always_ writable for the sake of user experience. One instance of this is 
+being able to save items to a shopping cart, even given network 
+failure.
+
+For the question of "who", the answer lies in two places: the application and 
+the data store. This location is up to the designer of the service. When 
+resolving in the data store, you must remember that there is very limited 
+options due to lack of data. Usually these policies are simple and, most simply
+, are a matter of "the last write wins." In the application, however, data 
+schemas are known and you can do things like "merge" datasets in resolution - 
+think of a shopping cart example. Optionally, you can still choose to push 
+down this decision to the data store.
+
+#### Other key principles:
+_Incremental scalability_: Dynamo shoudl be able to scale out storage host one at a time with minimal impact on the operators and system itself.
+_Symmetry_: Every node in dynamo should have the same set of responsiblilties as its peers.
+_Decentralization_: An extension of symetry - dynamo's design should favor decentralized, peer-to-peer techniques over centralized control.
+_Heterogeneity_: The work distribution must be proportional to the capabilities of the individual servers (ie - underlying infrastucture). important in adding new nodes with higher capacity without having to upgrade all hosts at once.
 
 [papers]: http://blog.fogus.me/2011/09/08/10-technical-papers-every-programmer-should-read-at-least-twice/
