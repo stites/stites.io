@@ -1,4 +1,4 @@
-Trait Fields are not Inherited
+Trait Fields
 ==============================
 
 I mentioned in an earlier post that methods declared, but not defined, are implicitly defined as abstract:
