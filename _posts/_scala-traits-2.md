@@ -4,9 +4,7 @@ Trait Inheritance
 You can add multiple traits that invoke eachother, starting with the last one.
 
     trait WarnLogger extends Logger {
-      override def log(msg: String) {
-        super.log(s"[WARN] $msg")
-      }
+      override def log(msg: String) { super.log(s"[WARN] $msg") }
     }
 
     trait ShortLogger extends Logger {
@@ -27,6 +25,7 @@ Instead, `super.log` calls the next trait in the trait hierarchy, which is depen
     val foo1 = new Foo with ConsoleLogger with WarnLogger with ShortLogger
     foo1.log('Testing logger')
     // [WARN] Testing lo...
+
     val foo2 = new Foo with ConsoleLogger with ShortLogger with WarnLogger
     foo2.log('Testing logger')
     // [WARN] Tes...
@@ -39,5 +38,5 @@ So beware the fact that you can't tell from a trait's definition which method wi
       }
     }
 
-This only works with traits/classes that are __immediate__ supertypes. Anything further away in the inheritance tree won't work.
+This only works with traits/classes that are _immediate_ supertypes. Anything further away in the inheritance tree won't work.
 
