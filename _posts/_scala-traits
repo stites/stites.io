@@ -1,73 +1,36 @@
-Scala Traits
-
-...
-==
-don't have to have abstract references.
---> think of traits as being mixins
-"mix in" comes from the worl of ice cream speak. A 'mix in' is an additive that is knead into the scoop of ice cream. Much like Cold Stones.
-
-disadvantage — when a trait has concrete behaviour, when the trait changes all classes which use that trait must be recompiled.
-
-==================
+Overriding Traits During Instantiation
+======================================
 
 You can create a base trait with concrete methods which will be used in a class only to override that class with a different trait on impliementation.
 
 For example:
 
-trait Logged {
-  def log(msg: String) { }
-}
+    trait Logger {
+      def log(message: String) { }  // a concrete implimentation
+    }
 
 Used in a class definition:
 
-class SavingsAccount extends Account with Logged {
-  def withdraw(amount: Double) {
-    if (amount > balance) log("Insufficient funds")
-    else ...
-  }
-  ...
-}
+    class CustomerAnalytics extends Analytics with Logger {
+      def foo(input: Double) {
+        if (input > max) log("Insufficient funds")
+        ...
+      }
+      ...
+    }
 
 Now inherit from that trait:
 
-trait ConsoleLogger extends Logged {
-  override def log(msg: String) { println(msg) }
-}
+    trait ConsoleLog extends Logger {
+      override def log(msg: String) { println(msg) }
+    }
 
 And on instantiation, use the new trait:
 
-val acct = new SavingsAccount with ConsoleLogger
+    val analysis0 = new CustomerAnalytics with ConsoleLog
 
-of course you can add a different logger at a later point:
+of course you can use a different Logger for different scenarios:
 
-val acct2 = new SavingsAccount with FileLogger
-
-==================
-
-Overriding abstract traits
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    val analysis1 = new CustomerAnalytics with LogglyLog
 
 
