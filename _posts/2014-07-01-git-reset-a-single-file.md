@@ -6,7 +6,7 @@ title: Hard reset a single file in git
 {{ page.title }}
 ================
 
-<p class="meta">12 June 2014 - Redwood City, CA</p>
+<p class="meta">01 July 2014 - Redwood City, CA</p>
 
 I feel like, at a certain point in time, I used to be able to run the command `git reset --hard path/to/file`. However this might have been me only working with single files, because now I frequently get the error:
 
@@ -20,7 +20,4 @@ The solution is:
 
 This performs a file-specific `git checkout`. Exactly what I've been looking for. Taking a closer look, you can also perform `git checkout <branch_name> -- <paths>` to get copies of files from different branches.
 
-As always, check out the man files (`man git-checkout`) for more!
-######## TEST
-check out git reset --patch too!
-http://git-scm.com/blog/2011/07/11/reset.html
+As always, check out the man files (`man git-checkout`) for more! Also check out git reset --patch too! [link](http://git-scm.com/blog/2011/07/11/reset.html)
