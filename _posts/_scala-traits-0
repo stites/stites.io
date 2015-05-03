@@ -41,14 +41,17 @@ modifier:
 
 Note that the compiler reads this as `class X` extending `TraitA with TraitB with
 TraitC`. Traits will inherit from eachother in FILO (first in, last out) fashion.
-So if - in the above example - `TraitA`, `TraitB`, and `TraitC` all contain the
-method definition `def bar(x:String) {}`, then class X will inherit bar from
-TraitC.
+So if - in the above example - `TraitA`, `TraitB`, and `TraitC` all override the
+method definition `def bar(x:String) {}` in TraitA, then class X will inherit bar
+from TraitC.
 
-don't have to have abstract references.
---> think of traits as being mixins
-"mix in" comes from the worl of ice cream speak. A 'mix in' is an additive that is knead into the scoop of ice cream. Much like Cold Stones.
+Some other notes on scala's traits:
 
-disadvantage — when a trait has concrete behaviour, when the trait changes all classes which use that trait must be recompiled.
+  + you don't need to declare an `override` on a class when implimenting an
+  abstract definition.
+  + traits don't have to be abstract.
+  + think of traits as mix-ins.
+
+Finally keep in mind that, when refactoring traits with concrete behaviour, all classes inheriting from that trait must be recompiled.
 
 diamond: https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Diamond_inheritance.svg/440px-Diamond_inheritance.svg.png
