@@ -27,7 +27,7 @@ As I mentioned, traits are a lot like java interfaces. In fact you can use them 
 the exact same way. However you can declare definitions, properties, or methods in
 both the concrete and the abstract. Even alongside each other!
 
-Traits declared, but not defined are implicitly defined as abstract:
+Methods declared, but not defined are implicitly defined as abstract:
 
     trait Foo {
       def bar(x: String)     // abstract definition
