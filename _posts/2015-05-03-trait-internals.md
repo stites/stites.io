@@ -1,4 +1,11 @@
-Trait Internals
+---
+layout: post
+title: Trait Internals
+---
+
+<p class="meta">03 May 2015 - San Francisco</p>
+
+{{ page.title }}
 ========
 In the end, Scala needs to translate traits into classes and interfaces for the JVM to be able to handle them.
 

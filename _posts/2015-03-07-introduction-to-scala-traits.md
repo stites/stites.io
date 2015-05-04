@@ -1,5 +1,17 @@
-Scala Traits
-============
+---
+layout: post
+title: Introduction to Scala Traits
+---
+
+<p class="meta">07 March 2015 - Mountain View</p>
+
+I've been digging into scala more and more. Inspired by Horstmann's _Scala for_
+_the Impatient_, I'm writing a series of posts on parts of Scala I find
+interesting. Some of the examples I show will come directly from Horstmann,
+but only because they're pretty great examples. I highly recommend the book.
+
+{{ page.title }}
+============================
 
 Scala traits are pretty cool. They're basically the same as interfaces in Java.
 Except for the fact that they're a lot more flexible than interfaces and they've
@@ -15,7 +27,7 @@ Properties overlap and, soon, you have seven different definitions of an
 
 This is classically defined in The Diamond Problem (or the 'deadly diamond of
 death' - wikipedia):
-![Diamond Inheritance][diamond]
+![Diamond Inheritance](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Diamond_inheritance.svg/440px-Diamond_inheritance.svg.png)
 _from wikipedia_
 
 In Java, they ignore this problem completely. You can only inherit from one
@@ -54,4 +66,3 @@ Some other notes on scala's traits:
 
 Finally keep in mind that, when refactoring traits with concrete behaviour, all classes inheriting from that trait must be recompiled.
 
-diamond: https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Diamond_inheritance.svg/440px-Diamond_inheritance.svg.png

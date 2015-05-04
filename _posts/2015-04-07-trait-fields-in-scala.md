@@ -1,4 +1,11 @@
-Trait Fields
+---
+layout: post
+title: Trait Fields in Scala
+---
+
+<p class="meta">07 April 2015 - Reykjavik, Iceland</p>
+
+{{ page.title }}
 ==============================
 
 I mentioned in an earlier post that methods declared, but not defined, are implicitly defined as abstract:

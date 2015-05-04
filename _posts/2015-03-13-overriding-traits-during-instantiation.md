@@ -1,4 +1,11 @@
-Overriding Traits During Instantiation
+---
+layout: post
+title: Overriding Traits During Instantiation
+---
+
+<p class="meta">13 March 2015 - Redwood City</p>
+
+{{ page.title }}
 ======================================
 
 You can create a base trait with concrete methods which will be used in a class only to override that class with a different trait on impliementation.

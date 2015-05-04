@@ -1,4 +1,11 @@
-Trait Inheritance
+---
+layout: post
+title: Trait Inheritance
+---
+
+<p class="meta">28 March 2015 - Reykjavik, Iceland</p>
+
+{{ page.title }}
 ======================
 
 You can add multiple traits that invoke eachother, starting with the last one.

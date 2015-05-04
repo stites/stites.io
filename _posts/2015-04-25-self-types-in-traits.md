@@ -1,4 +1,12 @@
-Self Types
+---
+layout: post
+title: Self Types in Traits
+---
+
+<p class="meta">25 April 2015 - Mountain View</p>
+
+
+{{ page.title }}
 ===========
 
 Last time we learned that a scala trait might extend a class. Well — that might offer up a little confusion when the superclass for any of those mixins references when looking at self references. For this reason, scala has _self types_.

@@ -1,4 +1,11 @@
-Abstract Methods in Scala Traits
+---
+layout: post
+title: Abstract Methods in Scala Traits
+---
+
+<p class="meta">02 April 2015 - Reykjavik, Iceland</p>
+
+{{ page.title }}
 ===========================================
 
 When you want to override an abstract method in a traits, you must declare both `abstract` on top of our `override` in order for this to work:
