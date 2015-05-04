@@ -1,3 +1,13 @@
+---
+layout: post
+title: Sparknotes from Rob Eisenbergs Article
+---
+
+{{ page.title }}
+============================
+
+<p class="meta">06 January 2015 - Redwood City</p>
+
 This is a [pretty long article](http://eisenbergeffect.bluespire.com/all-about-angular-2-0/) written by a former member of the Angular2.0 team. The counter at the bottom estimates an hour-long read, so I figure'd I'd write some (as objective as possible) sparknotes:
 
 ##### Motivations for Angular 2.0
