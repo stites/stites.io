@@ -1,0 +1,73 @@
+Scala Traits
+
+...
+==
+don't have to have abstract references.
+--> think of traits as being mixins
+"mix in" comes from the worl of ice cream speak. A 'mix in' is an additive that is knead into the scoop of ice cream. Much like Cold Stones.
+
+disadvantage — when a trait has concrete behaviour, when the trait changes all classes which use that trait must be recompiled.
+
+==================
+
+You can create a base trait with concrete methods which will be used in a class only to override that class with a different trait on impliementation.
+
+For example:
+
+trait Logged {
+  def log(msg: String) { }
+}
+
+Used in a class definition:
+
+class SavingsAccount extends Account with Logged {
+  def withdraw(amount: Double) {
+    if (amount > balance) log("Insufficient funds")
+    else ...
+  }
+  ...
+}
+
+Now inherit from that trait:
+
+trait ConsoleLogger extends Logged {
+  override def log(msg: String) { println(msg) }
+}
+
+And on instantiation, use the new trait:
+
+val acct = new SavingsAccount with ConsoleLogger
+
+of course you can add a different logger at a later point:
+
+val acct2 = new SavingsAccount with FileLogger
+
+==================
+
+Overriding abstract traits
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
