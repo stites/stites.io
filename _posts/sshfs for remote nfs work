@@ -1,0 +1,2 @@
+
+sshfs hq:/net/kodiak /usr/local/mnt/kodiak -oauto_cache,reconnect,volname=kodiak
