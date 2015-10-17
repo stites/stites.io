@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Java 8 fun: interface defender methods
+title: Defender methods and multiple inheritance
 ---
 
 {{ page.title }}
@@ -10,9 +10,10 @@ title: Java 8 fun: interface defender methods
 
 We've started the shift to Java 8, over at Bina, and I have been spearheading the a
 lot of the fresh code. As someone who thinks and reads up on Haskell almost daily at
-this point, yet also as professional that has to do what's best for the job. I'd like
-to balance talking about some of these newer features java, and their implications,
-with a comparison to how they relate to various aspects of Haskell language features.
+this point. I'd like to wrap up some of my older, backlogged blog posts regarding the
+jvm and start shifting focus to things I'm more interested in.
+
+---
 
 As far as I've gone with java 8, a number of features have proven invaluable in
 keeping our code clean and flexible include some of the new interface functionality:
@@ -52,9 +53,9 @@ interfaces for a feature's test class. I would venture to state that, since this
 feature is on the newer side of java and could have wide-ranging implications -- it
 may be wise to leave it there for the time-being.
 
-#### Haskell Typeclasses and how they compare
+---
 
-
+So long jvm!
 
 [hack1]:http://stackoverflow.com/questions/587458/implement-mixin-in-java
 [hack2]:http://stackoverflow.com/questions/263121/java-traits-or-mixins-pattern
