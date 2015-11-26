@@ -74,12 +74,25 @@ doesn't belong in the state that we think it does, we'll try to move it into a
 different state's bucket, and if we can't find a state to put it in - still -
 we'll move it to an entirely new state!
 
-In order to test our hypotheses regarding when a sequence belongs in a state or
-not we're going to do the most robust thing we can to ensure that our model is
-correct. Alongside any observed sequence for a given day, we'll also try to add
-new information to the history leading up to that day, as well as some one-day
-peeking into the future to make sure that we are certain that the state has a
-robust collection of sequences.
+In order to test our hypotheses whether or not a sequence belongs in a state, we will
+assume first that it exists in a state that is the most simple one.
+
+If we say that states are "sets of history" this means that, at its most basic, the
+most simple state is the "set with an empty history" because every history has the
+commonality of building on top of an empty history.
+
+> To throw in a little code, this might look a lot like `cons`ing on an empty list:
+>
+>     'a' : 'b' : []
+
+We’ll sit in this room and collect information about umbrellas, sunglasses, etc.,
+until we have enough information that we can model some of these observed histories
+and 'guess' at what will happen next.
+
+For instance, given a 3-day sequence, we can look at all 2-day sequences and 'peek'
+at the third day to come up with some kind of probability that the third day will be
+something from our 'alphabet.' We can make future predictions based on this kind of
+modelling.
 
 By going through all sequences in varying lengths, we can attempt to reconstruct
 tables with information like "if X people bring umbrellas, then sunglasses, then
