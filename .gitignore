@@ -3,6 +3,10 @@ _site/
 .DS_Store
 *.swp
 _pending
-
 secrets
 .shake/
+.stack-work
+site
+*.hi
+*.o
+_cache/

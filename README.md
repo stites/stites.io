@@ -1,8 +1,8 @@
-h1. This is the data for my blog
+## blog
+Just another programming blog -- I just ported it over to Hakyll so we'll see
+how this goes.
 
-It is based off the the "Jekyll":http://github.com/mojombo/jekyll platform and generates a static site whenever I push this repository to this repo.
-
-h1. License
+### license
 
 The following directories and their contents are Copyright Sam Stites. You may not reuse anything therein without my permission:
 
