@@ -1,64 +1,74 @@
 {-# LANGUAGE OverloadedStrings #-}
-import qualified Clay as C
+import Clay
+import Data.Text
+import Prelude hiding (div)
 
-test :: Css
-test = C.body {
-    C.color = "black"
-    C.fontSize = "16px"
-    C.margin = "0px auto 0px auto"
-    C.width = "600px"
-  }
-
-
-div#header {
-    border-bottom: 2px solid black;
-    margin-bottom: 30px;
-    padding: 12px 0px 12px 0px;
-}
-
-div#logo a {
-    color: black;
-    float: left;
-    font-size: 18px;
-    font-weight: bold;
-    text-decoration: none;
-}
-
-div#header #navigation {
-    text-align: right;
-}
-
-div#header #navigation a {
-    color: black;
-    font-size: 18px;
-    font-weight: bold;
-    margin-left: 12px;
-    text-decoration: none;
-    text-transform: uppercase;
-}
-
-div#footer {
-    border-top: solid 2px black;
-    color: #555;
-    font-size: 12px;
-    margin-top: 30px;
-    padding: 12px 0px 12px 0px;
-    text-align: right;
-}
-
-h1 {
-    font-size: 24px;
-}
-
-h2 {
-    font-size: 20px;
-}
-
-div.info {
-    color: #555;
-    font-size: 14px;
-    font-style: italic;
-}
 main :: IO ()
-main = putCss test
+main = putCss $ do
+  bodyStyle
+  headerStyle
+  logoAnchorStyle
+  headerNavigationStyle
+  headerNavigationAnchorStyle
+  footerStyle
+  h1Style
+  h2Style
+  infoStyle
+
+bodyStyle :: Css
+bodyStyle = body ? do
+  color    (black)
+  fontSize (em 1.8)
+  margin   (em 0) auto (em 0) auto
+  width    (px 600)
+
+headerStyle :: Css
+headerStyle = div # header ? do
+  borderBottom (px 2) solid black
+  marginBottom (px 30)
+  padding      (px 12) (px 0) (px 12) (px 0)
+
+logoAnchorStyle :: Css
+logoAnchorStyle = div # "logo" # a ? do
+  color = black
+  float = left
+  fontSize = (px 18)
+  fontWeight = bold
+  textDecoration = none
+
+headerNavigationStyle :: Css
+headerNavigationStyle = div # header # "navigation" ? do
+  textAlign = right
+
+headerNavigationAnchorStyle :: Css
+headerNavigationAnchorStyle = div # header # "navigation" # a ? do
+  color = black
+  fontSize = (px 18)
+  fontWeight = bold
+  marginLeft = (px 12)
+  textDecoration = none
+  textTransform = uppercase
+
+footerStyle :: Css
+footerStyle = div # footer ? do
+  borderTop = solid (px 2) black
+  color = #555
+  fontSize = (px 12)
+  marginTop = (px 30)
+  padding = (px 12) (px 0) (px 12) (px 0)
+  textAlign = right
+
+h1Style :: Css
+h1Style = h1 ? do
+  fontSize = (px 24)
+
+h2Style :: Css
+h2Style = h2 ? do
+  fontSize = (px 20)
+
+infoStyle :: Css
+infoStyle = div # "info" ? do
+  color = #555
+  fontSize = (px 14)
+  fontStyle = italic
 
