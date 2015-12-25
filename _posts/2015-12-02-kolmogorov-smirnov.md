@@ -34,6 +34,8 @@ within the distribution, as well as the shape -- the more sparse the dataset in
 regions that are more pertinent (not the extremes), the worse off your
 statistic.
 
+![a KS-statistic (black) with a cdf (red) and edf (blue)][ks-statistic]
+
 Since a two-sample KS test only checks if the samples come from the same
 distribution, we don't necessarily know what that distribution is. For this
 purpose, there are tables of critical values which you can use to find out if
@@ -62,7 +64,7 @@ have it tested.
 [ks]: https://upload.wikimedia.org/wikipedia/commons/c/cf/KS_Example.png
 [table]: http://www.mathematik.uni-kl.de/~schwaar/Exercises/Tabellen/table_kolmogorov.pdf
 [c]: www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf
-
+[ks-statistic]: https://upload.wikimedia.org/wikipedia/commons/c/cf/KS_Example.png
 
 <!--  LocalWords:  abailly's hs vec hsw scalaz Viterbi Kolmogorov Smirnov cdf
  -->
