@@ -10,3 +10,4 @@ site
 *.hi
 *.o
 _cache/
+master/*
