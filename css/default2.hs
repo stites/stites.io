@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 import Clay
 import Data.Text
-import Prelude hiding (div, (!))
+import Prelude hiding (div)
 
 main :: IO ()
 main = putCss $ do
@@ -18,7 +18,7 @@ main = putCss $ do
 bodyStyle :: Css
 bodyStyle = body ? do
   color    (black)
-  fontSize (em 1.8)
+  fontSize (em 1.0)
   margin   (em 0) auto (em 0) auto
   width    (px 600)
   fontFamily  ["Helvetica Neue"] [sansSerif]
@@ -33,7 +33,7 @@ headerStyle = siteHeader ? do
   padding      (px 12) (px 0) (px 12) (px 0)
 
 logoAnchor :: Selector
-logoAnchor = div # "#logo" # "a"
+logoAnchor = div # "#logo" # " a"
 
 logoAnchorStyle :: Css
 logoAnchorStyle = logoAnchor ? do
@@ -44,14 +44,14 @@ logoAnchorStyle = logoAnchor ? do
   textDecoration   none
 
 headerNavigation :: Selector
-headerNavigation = siteHeader # "navigation"
+headerNavigation = div # "#navigation"
 
 headerNavigationStyle :: Css
 headerNavigationStyle = headerNavigation ? do
-  textAlign        (alignString 'r')
+  textAlign        (alignSide sideRight)
 
 headerNavigationAnchor :: Selector
-headerNavigationAnchor = headerNavigation # "a"
+headerNavigationAnchor = headerNavigation # ">a"
 
 headerNavigationAnchorStyle :: Css
 headerNavigationAnchorStyle = headerNavigationAnchor ? do
@@ -69,7 +69,7 @@ footerStyle = div # "#footer" ? do
   fontSize   (px 12)
   marginTop  (px 30)
   padding    (px 12) (px 0) (px 12) (px 0)
-  textAlign  (alignString 'l')
+  textAlign  (alignSide sideLeft)
 
 h1Style :: Css
 h1Style = h1 ? do
