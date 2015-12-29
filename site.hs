@@ -6,10 +6,13 @@ import           Hakyll
 --------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
+    -- static content
     match "images/*"        $ imagesRoutes
     match "css/*.hs"        $ cssRoutes
     match "posts/*"         $ postsRoutes
     match "index.html"      $ indexPage
+
+    -- generated
     match (fromList ["about.md", "contact.md"]) $ metaRoutes
     create ["archive.html"] $ archivePage
     match "templates/*"     $ compile templateCompiler
@@ -18,7 +21,7 @@ main = hakyll $ do
 --------------------------------------------------------------------------------
 cssRoutes = do
   route $ setExtension "css"
-  compile $ getResourceString >>= withItemBody (unixFilter "runghc" [])
+  compile $ getResourceString >>= withItemBody (unixFilter "stack" ["runghc"])
 
 imagesRoutes = do
   route   idRoute
