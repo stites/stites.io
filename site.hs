@@ -1,9 +1,8 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
-import Data.Monoid (mappend)
+import Data.Monoid     (mappend, (<>))
 import Hakyll
-import System.FilePath ( (</>)
-                       , (<.>)
+import System.FilePath ( (</>) , (<.>)
                        , splitExtension
                        , splitFileName
                        , takeDirectory )
@@ -24,21 +23,24 @@ main = hakyll $ do
     create ["atom.xml"]     $ rssFeed
 
 --------------------------------------------------------------------------------
+cssRoutes :: Rules ()
 cssRoutes = do
   route $ setExtension "css"
   compile $ getResourceString >>= withItemBody (unixFilter "stack" ["runghc"])
 
+imagesRoutes :: Rules ()
 imagesRoutes = do
   route   idRoute
   compile copyFileCompiler
 
+metaRoutes :: Rules ()
 metaRoutes = do
   route $ setExtension "html" `composeRoutes` appendIndex
   compile $ pandocCompiler
     >>= loadAndApplyTemplate "templates/default.html" defaultContext
     >>= relativizeUrls
 
-appendIndex
+postsRoutes :: Rules ()
 postsRoutes = do
   route $ setExtension "html" `composeRoutes` appendIndex
   compile $ pandocCompiler
@@ -47,29 +49,33 @@ postsRoutes = do
     >>= loadAndApplyTemplate "templates/default.html" postCtx
     >>= relativizeUrls
 
+archivePage :: Rules ()
 archivePage = do
-  route idRoute
+  route $ setExtension "html" `composeRoutes` appendIndex
   compile $ do
     posts <- recentFirst =<< loadAll "posts/*"
-    let archiveCtx = listField "posts" postCtx (return posts) `mappend`
-                     constField "title" "Archives"            `mappend`
+    let siteCtx = dropIndexHtml "url" <> defaultContext
+    let archiveCtx = listField "posts" postCtx (return posts) <>
+                     constField "title" "Archives"            <>
                      defaultContext
-    makeItem "" >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
-                >>= loadAndApplyTemplate "templates/default.html" archiveCtx
+    makeItem "" >>= loadAndApplyTemplate "templates/archive.html" siteCtx
+                >>= loadAndApplyTemplate "templates/default.html" siteCtx
                 >>= relativizeUrls
 
+indexPage :: Rules ()
 indexPage = do
   route idRoute
   compile $ do
     posts <- return.take 10 =<< recentFirst =<< loadAll "posts/*"
-    let indexCtx = listField "posts" postCtx (return posts) `mappend`
-                   constField "title" "Home"                `mappend`
+    let indexCtx = listField "posts" postCtx (return posts) <>
+                   constField "title" "Home"                <>
                    defaultContext
     getResourceBody
       >>= applyAsTemplate indexCtx
       >>= loadAndApplyTemplate "templates/default.html" indexCtx
       >>= relativizeUrls
 
+rssFeed :: Rules ()
 rssFeed = do
   route idRoute
   compile $ do
@@ -85,8 +91,10 @@ rssFeed = do
         }
 
 --------------------------------------------------------------------------------
+extensionless :: Routes
 extensionless = customRoute $ takeWhile ((/=) '.') . toFilePath
 
+appendIndex :: Routes
 appendIndex = customRoute $ (\(p, e)-> p </> "index" <.> e).splitExtension.toFilePath
 
 dropIndexHtml :: String -> Context a
@@ -97,8 +105,8 @@ dropIndexHtml key = mapContext transform (urlField key)
 --------------------------------------------------------------------------------
 postCtx :: Context String
 postCtx =
-    dateField "date" "%B %e, %Y" `mappend`
-    dropIndexHtml "url" `mappend`
+    dateField "date" "%B %e, %Y" <>
+    dropIndexHtml "url"          <>
     defaultContext
 
 
