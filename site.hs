@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 import           Data.Monoid (mappend)
 import           Hakyll
+import           System.FilePath ((</>), (<.>), splitExtension)
 
 --------------------------------------------------------------------------------
 main :: IO ()
@@ -28,13 +29,14 @@ imagesRoutes = do
   compile copyFileCompiler
 
 metaRoutes = do
-  route $ setExtension "html"
+  route $ setExtension "html" `composeRoutes` appendIndex
   compile $ pandocCompiler
     >>= loadAndApplyTemplate "templates/default.html" defaultContext
     >>= relativizeUrls
 
+appendIndex
 postsRoutes = do
-  route $ setExtension "html"
+  route $ setExtension "html" `composeRoutes` appendIndex
   compile $ pandocCompiler
     >>= loadAndApplyTemplate "templates/post.html"    postCtx
     >>= saveSnapshot "content"
@@ -80,6 +82,8 @@ rssFeed = do
 
 --------------------------------------------------------------------------------
 extensionless = customRoute $ takeWhile ((/=) '.') . toFilePath
+
+appendIndex = customRoute $ (\(p, e)-> p </> "index" <.> e).splitExtension.toFilePath
 
 --------------------------------------------------------------------------------
 postCtx :: Context String

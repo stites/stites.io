@@ -6,6 +6,7 @@ cabal-version:      >= 1.10
 executable site
   main-is:          site.hs
   build-depends:    base == 4.*
+                  , filepath
                   , hakyll == 4.7.*
                   , blaze-html == 0.8.*
                   , blaze-markup == 0.7.*
