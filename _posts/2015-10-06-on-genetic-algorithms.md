@@ -8,6 +8,9 @@ title: On Genetic Algorithms vs Others
 
 <p class="meta">06 Oct 2015 - San Francisco</p>
 
-Inspired by Talking Machines, I wanted to elaborate on how Genetic algorithms may
+From [Talking Machines][talking-machines], summarized: "I wanted to elaborate on how Genetic algorithms may
 seem great, but in a fight between pure randomness and intelligent design - going
-the path of intelligent design is always best.
+the path of intelligent design is always best."
+
+[talking-machines]:http://www.thetalkingmachines.com/
+
