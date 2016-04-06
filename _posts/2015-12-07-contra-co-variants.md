@@ -1,5 +1,11 @@
-contra and covariants
------------------------
+---
+layout: post
+title: Contra- and Co- variance
+---
+
+{{ page.title }}
+================
+
 A small little note to remember about contra- and co- variants for the future, as
 well as a mnemonic to remember which is which.
 
@@ -29,8 +35,18 @@ are "contradictory to what you would expect" -- all of the inherited types.
 
 ---
 
-On top of all of this, it looks like the concept of contra-/co- variance extends into
-vectors and functors! I will have to investgate this more.
+On top of all of this, it looks like the concept of contra-/co- variance _does_
+have some relevance in haskell as these concepts can be seen in [vectors][vec] (via
+multilinear algebra and tensor analysis) and [functors][fun]! I'll have to investgate
+this more later -- but to keep your interest for a brief moment more: covariant
+functors (or cofunctors) are ordinary functors, while functors which invert the
+morphism are the contravariants. If you want to play around with a fun library, it
+looks like [Profunctors][pro] are fun to use and return a bifunctor of the
+contravariant and the covariant!
+
+[fun]:https://en.wikipedia.org/wiki/Functor
+[vec]:https://en.wikipedia.org/wiki/Covariance_and_contravariance_of_vectors
+[pro]:https://hackage.haskell.org/package/profunctors-5.2/docs/Data-Profunctor.html
 
 
 
