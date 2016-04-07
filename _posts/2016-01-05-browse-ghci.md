@@ -18,3 +18,7 @@ Use `:browse <module>` to view modules which you haven't yet imported. For examp
     otherwise :: Bool
     (||) :: Bool -> Bool -> Bool
 
+A perfect complement to my current workflow which includes the [hoogle-GHCi integration][hoogle].
+
+[hoogle]:https://wiki.haskell.org/Hoogle#GHCi_Integration
+
