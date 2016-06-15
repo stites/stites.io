@@ -5,7 +5,7 @@ title: Regex TIL- Repeating capture groups
 
 {{ page.title }}
 ================
-I consider myself pretty decent with regexes from back in my data science days,
+I consider myself decent with regexes; this comes from my data science days,
 when I was doing a lot of data munging at TurboSquid. I've always considered
 repeatition in capture groups "hard-mode" and usually skipped over them, as they
 didn't have too much utility in my day-to-day. Today someone asked me to write
@@ -40,6 +40,12 @@ you have exhausted the full string."
 Edit: it looks like the `/g` flag will discard the input from results. I can
 imagine that this makes it a little easier to work during development and is why
 I see it in a lot of code where it seems unnessecary.
+
+---
+
+And like that - I the hardest thing I know of with regexes is now known! Very
+exciting!
+
 
 [info]: http://www.regular-expressions.info/captureall.html
 
