@@ -3,5 +3,6 @@ it there.
 
  * array multiplication
  * word23 + 1s
+ * wrap your semantics in `newtype`s
 
 \* — or can be solved at the type level
