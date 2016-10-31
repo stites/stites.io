@@ -1,3 +1,10 @@
+---
+layout: post
+title: Coerce for constant time newtype lists
+---
+
+{{ page.title }}
+================
 
 haskell has a coerce function. It's pretty cool!
 
