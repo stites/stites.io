@@ -1,8 +1,8 @@
-- [~] Prooven experience with Haskell
+- [~] Prove experience with Haskell
 - [~] Experience building distributed data processing systems using tools like Hadoop & Spark
 - [x] Experience with predictive modeling or machine learning
 - [o] Experience with an analytical database, such as Redshift or Vertica
-- [ ] Familiarity with distributed datastores like HBase, Cassandra or Elasticsearch
-- [ ] Familiarity with cluster management/orchestration software like Mesos, Zookeeper or Kafka
+- [~] Familiarity with distributed datastores like HBase, Cassandra or Elasticsearch
+- [o] Familiarity with cluster management/orchestration software like Mesos, Zookeeper or Kafka
 - [o] Demonstrated interest in using data and technology to advance social good in areas like health, education or civic engagement
 

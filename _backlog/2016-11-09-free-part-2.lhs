@@ -7,6 +7,7 @@ multiparameter typeclass
 > {-# LANGUAGE FlexibleContexts #-}
 > {-# LANGUAGE RankNTypes #-}
 > {-# LANGUAGE LambdaCase #-}
+> {-# LANGUAGE ScopedTypeVariables #-}
 
 
 
@@ -194,18 +195,153 @@ foldFree phi f =
     Branch g -> phi g >>= foldFree phi
 
 
+=================================
+
+New Program:
+
+> data Die x
+>   = Die String
+>   deriving Functor
+
+is a functor
+
+fmap :: (a -> b) -> Die a -> Die b
+
+but leavse the string alone
+
+> die :: Die :< f => String -> Free f a
+> die = liftF . inj . Die
+
+in order to add this to our Die + Console + Dice, we need to create some
+interpreter.
+
+dieIO :: Die ~> IO
+
+but we can't write this
+
+(~>) f g :: forall x . f x -> g x
+
+dieIO :: Die ~> IO
+dieIO (Die s) = do
+  putStrLn s
+  pure undefined -- cause we don't know what the type of Die is
+  -- or we could exit program. not desired
+
+semantically we want a Free f a -> IO (Either String a), but this doesn't
+maintain the natural transformation ~>
 
 
+the idea is to have a non-pure-ish? transformation
+
+> runDie :: Functor f => Free (Die :+ f) a -> Free f (Either String a)
+
+take a program with a die effect and translate it into a "die-less" free monad
+
+we can't run the Console + Die, but that's okay because we don't pick the
+ordering, the intrepreter does
+
+The mapping to Either does not constrain the Console or Dice
 
 
+> runDie = \case
+>   Leaf a -> Leaf (Right a)
+>   Branch (InL (Die s)) -> Leaf (Left s)
+>   Branch (InR g) -> Branch (fmap runDie g)
+
+here we are punting the computation of runDie into g, since we have no
+understanding of what happens next
 
 
+let's write some eliminate to abstract away the boilerplate of our runDie
+effect. This will be, in essence, our effect handler
+
+> eliminate :: (Functor f, Functor g)
+>           => (a -> b)
+>           -> (forall x . f x -> (x -> Free g b) -> Free g b)
+>           -> Free (f :+ g) a -> Free g b
+> eliminate pur imp = \case
+>   Leaf a -> Leaf (pur a) -- :: Free g b
+>   Branch (InL f) -> imp f (eliminate pur imp)
+>   Branch (InR g) -> Branch (fmap (eliminate pur imp) g)
 
 
+> runDie' :: forall g a . (Functor g) => Free (Die :+ g) a -> Free g (Either String a)
+> runDie' = eliminate pur imp
+>   where
+>     pur :: a -> Either String a
+>     pur = Right
+>
+>     imp :: forall x . Die x -> (x -> Free g (Either String a)) -> Free g (Either String a)
+>     imp (Die s) k = Leaf (Left s)
+>
+
+> sample2 :: (Console :< f, Dice :< f, Die :< f) => Free f ()
+> sample2 = do
+>   output' "Guess"
+>   n <- input'
+>   m <- roll'
+>   if (read n :: Int) == m
+>     then die "Bang"
+>     else do
+>       output' "click"
+>       sample2
+
+foldFree (interpIO +: rollIO) (runDie' sample)
+
+----------------------------------------------------------
+
+> data State s x
+>   = Get (s -> x)
+>   | Put s x
+
+> get :: (State s :< f) => Free f s
+
+get = Branch  (foo :: f Free f s), we don't know what f is, so we can inject
+inj :: State s x -> f x
+
+would want to pick (Free f s)
+
+> get = Branch ( inj ( Get (\s -> Leaf s)))
+
+with liftF:
+
+      = liftF (inj (Get id))
 
 
+> put :: (State s :< f) => s -> Free f ()
+> put s = liftF (inj (Put s ()))
+
+State s ~> IO 
+
+stateIO s = \case
+  Get k -> pure (k s)
+  Put s' k -> pure k -- s' is ignored!!!
 
 
+> runState :: Functor f => s -> Free (State s :+ f) a -> Free f (s, a)
+> runState s = \case
+>   Leaf a -> Leaf (s, a)
+>   Branch (InL (Get k)) -> runState s (k s)
+>   Branch (InL (Put s' k)) -> runState s' k
+>   Branch (InR g) -> Branch (fmap (runState s) g)
+
+if you do a runState and then a runDie
+Free (Die :+ State Int :+ f) a -> Free (State Int :+ f) (Either String a)
+                               -> Free f (Either String a, s)
+
+if you do a runDie and then a runState
+Free (Die :+ State Int :+ f) a -> Free (State Int :+ f) (Either String a)
+                               -> Free f Either String (a, s)
+
+packages for this: extensible effects, freer
+
+
+data Console x
+ = Output String x
+ | Input (String -> x)
+ | SetEcho Bool x
+
+setEcho False 
 
 
 
