@@ -1,8 +1,8 @@
 push:
 	source secrets && s3_website push --config-dir=_config/
 
-build:
-	jekyll build --config=_config/_config.yml
+jekyll:
+	jekyll build --config=_config/jekyll.yml
 
 publish: build push
 
