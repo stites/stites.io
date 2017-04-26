@@ -4,5 +4,5 @@ push:
 jekyll:
 	jekyll build --config=_config/jekyll.yml
 
-publish: build push
+publish: jekyll push
 

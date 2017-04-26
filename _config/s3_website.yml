@@ -59,6 +59,9 @@ cloudfront_wildcard_invalidation: true
 
 concurrency_level: 5
 
+content_type:
+  "*.html": text/html
+
 # redirects:
 #   index.php: /
 #   about.php: about.html
