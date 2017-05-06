@@ -22,7 +22,7 @@ methods instead of on-policy methods, and if we naively extend a TD-walk
 through time, we wind up only samping our target policy.
 
 
-    Fig 1: ASCII art of three n-step TD backup diagrams
+    Fig 1: ASCII art of four n-step TD backup diagrams
 
         *-->O-->*-->O-->*                       2-step
 
@@ -41,7 +41,7 @@ sample _twice_: one under our target policy, and one under our
 behavioral policy. Then we can weight each sample by
 `for all k . product $ pi(A|S) / mu(A|S)`. That said, we aren't really
 following a behavioral policy, just using it for more informed
-updates. We can do better. This is where Q(σ) comes in
+updates. We can do better. This is where Q(σ) comes in.
 
 > Note: If you are worried about the computational efficiency of
 > the off-policy evaluation, you should note that it is probably
@@ -51,4 +51,39 @@ updates. We can do better. This is where Q(σ) comes in
 > the Autostep method (Mahmood et al, 2012), invariant updates of
 > Karampatziakis and Langford (2010), the usage technique (Mahmood and
 > Sutton, 2015).
+
+There's an intermediate step between n-step TD and Q(σ) which I've
+failed to mention, called n-step tree backups - we'll roll the
+explaination of them into Q(σ) here.
+
+
+    Fig 2: ASCII art of an n-step tree backup diagram
+
+             ,->*    ,->*    ,->*            ,->*
+        *-->O-->*-->O-->*-->O-->*  ...  *-->O-->*
+             `->*    `->*    `->*            `->*
+
+Under a tree-backup diagram, we use a fully off-policy exploration
+technique to walk down through a time series, however as we step, we
+also weight any future potential rewards by the conditional probability
+of the reward being drawn from the genesis state. While this does work
+and allows us to remain fully off-policy, some possible issues may
+include the fact that updates will weight larger steps of n with less
+importance which makes sense, but we can do better : ).
+
+Q(σ) provides a middle ground between samping (with importance) and
+probabalistic tree diagrams. To see how it works, I'll just say that it
+is simply an algorithm which alternates between the two techniques above
+and I'll leave you with the following backup diagram:
+
+
+    Fig 3: ASCII art of an 4-step Q(σ=1) backup diagram
+
+             ρ (importance ratio)  ρ
+              `.                   |
+               '        ,-->*      '        ,-->*
+        *--->O--->*--->O--->*--->O--->*--->O--->*
+             .         .`-->*    .         .`-->*
+             |         |         |         |
+            σ=1       σ=0       σ=1       σ=0
 
