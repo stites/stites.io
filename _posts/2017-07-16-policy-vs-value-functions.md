@@ -1,43 +1,83 @@
-policy + value is best, but policy is preferred over value function (most of the time). Of course this it dependent on your use case.
+---
+layout: post
+title: Policy vs Value functions
+---
 
-there are advantages like "policies can be more compact" - ie: "see X, move Left", whereas a value function says "this state is value X, let's calculate what is reasonable according to our policy (usually maxing)"
+{{ page.title }}
+================
 
-but the maxing is the interesting part: in a value function, you have to find out value of states (or maybe state-actions) but you, ultimately, wind up argmax-ing your solution. this is your policy. well, we can get that directly simply by solving the policy gradient instaed.
+Usually, policy _and_ value functions work best, but most of the time
+finding a policy is preferred over finding a value function. Of course
+this it dependent on your use case -- it might not be possible to find
+a policy as easily as a value function, or finding a policy might
+over-simplify the situation. Part of what makes policies nice is the
+fact that they can be represented in a more compact manner. With a
+policy you get something as concrete as: "Knights can move in L-shape,
+here is a distribution to make your choice" -- paired with more
+features, you get complex strategies which allow agents to win at a
+human level of skill.
 
-also, you wind up with better convergence properties. in value fucntions you solve for estimated value and advantage, but sometimes you get chatter (oscillation) of hyperparameters for non-linear approxmiators. this makes your function approximator (ie neural net) fall apart. This is also the reason for dueling networks.
+Conversely, a value function says, "your position is (A,4) with value X, let's
+compute the maximum possible value we can squeeze out of all
+options." Furthermore, the policy used with a value function is
+classically a maximum -- something which can be very costly in high
+dimensions of state- or state-action- spaces. The maximizing actually
+turns out to be very interesting (as points of friction always tend to
+be): computing the distribution to argmax over is your policy, but if we
+move to a policy-based learner we just comput that directly.
 
-can learn stochastic policies (deterministic is "predictable", but think about what that means for roc-paper-sisscors)
+As an added benefit you also you wind up with better convergence
+properties. Value functions solve for estimated value and advantage,
+but it's possible that the hyperparameters might chatter, or oscillate,
+for non-linear approxmiators since value can sometimes be at odds with
+advantage.  So just throwing a neural network at your problem which
+doesn't live on the gym might fall apart for no reason at all, and also
+motivates dueling networks (ie: maintaining a network for value and a
+network for advantage).
 
-BUT
+---
 
-the garuntee is only on a local maximum, and ps it also can be ineefficient to caluclate (also, it might have high variance). there is no silver bullet.
+Policy gradients are pretty good at finding stochastic policies and it's
+what they are most famous for up until DDPGs. Deterministic policies
+have become pretty popular of late as well because of Deepmind's
+research into learning that compatible value functions can speed up
+learning (ie: if the value function and the policy gradient use the same
+hyperparameters, then a critic can directly influence an
+actor). Keep in mind, however, that deterministic policies aren't
+always advisable. Imagine writing a deterministic policy for
+rock-paper-sissors: "since she threw rock last time, I'll throw paper
+this time." As soon as your opponent figures that out, you're done!
 
-BUT
+In the wild, policy gradients are sometimes very noisy and taking
+expectations of noisy gradients can be very hard to estimate. If
+your model has a high accuracy, but noise naturally exists in your
+problem, then your variance will also be high. So instead it's better
+to start off with a deterministic policy, and then adjust it to be more
+stochastic. The _natural policy gradient_ finds the deterministic policy
+(but only works for continuous actions). How it works is that it, when
+we get the gradient of the Q-function the critic can give the entire
+gradient to the policy and just say, "if you adjusted to this better
+gradient, you'd win." This is allowed since the critic doesn't just
+have the critique, but also the "true answer" since the Q-function
+is compatible. In sort, we are just updating actor parameters in the
+direction of critic parameters. See Natural Actor Critics for more.
 
-if we combine the two, and use things like double-learning, fixed Q-targets, etc (those are value-function things only, i think), we get better stability
+---
 
-  simplex method for random forest optimisation?
+A few other, possibly incoherent, notes:
 
-actor-critic works because we are using policy gradients, which are slow, but then we are speeding up the process not by looking at current value, but by looking at _future_ values, estimated by the critic.
+- You're only garunteed a local maximum with policy gradients
+- On top of local maximums, policies can be more costly to calculate than value functions "in the small" -- they have higher variance for non-linear approximators (ie: "hard real-world" models). Basically there's no such thing as a silver bullet.
+- For non-linear approximators there's a lot of research to get better stability: dueling networks (see above), double-learning, fixed Q-targets (see DQNs).
+- Actor-Critic methods work because we using policy gradients, which are slow, but then we speeding up the process not by looking at current value, but by looking at _future_ values, estimated by the critic.
+- Using "compatible function approximation (which have no bias)" for value approximation makes garuntees around our value function converging on the true value function and solves the problem of a bad critic
+- ...but compatible function approximators turn out to always be true only if the features are _exactly_ the score function. So there's a bit of a chicken-and-egg problem.
+- Eligibility traces: after we build up a history, we want to train on scores that are the largest, most frequent, and most recent. is an eligibility over our scores (not our states). For a policy gradient it is analgous to the value function (search-replace "gradient" with "score").
+- there are other ways of backpropagating for things like random forests (maybe?) check out simplex method for random forest optimization.
+- build out different types of ACs:
+  + Q Actor-Critic
+  + Advantage Actor-Critic (A2C)
+  + TD Actor-Critic
+  + TD(lmda) Actor-Critic
+  + Natural Actor-Critic (NAC)
 
-BUT
-
-we need to use "compatible function approximation (which have no bias)" for value approzimation (ideally for both). for the garuntees around our value function converging on the true value function. This turns out to always be true if the _features_ to the value function are the _score function_
-
-Eligibility Traces: build up history, then we want to train on scores that are largest, most frequent, and most recent. is an eligibility over our scores (not our states). for a policy gradient it is analgous to the value function (search-replace "gradient" with "score").
-
-
-
-PG: sometimes mean, sometimes noise - very noisy. Taking expectations of gradients over noise is hard to estimate. accuracy is high >>= variance is high.
-Instead, start off with deterministic policies, then adjust to make this more stochastic.
-This is the _natural policy gradient_ finds the deterministic policy. (only works for continuous actions).
-Just start with the grad of our own Q-function, critic gives grad to policy and says "if you just adjusted to the better gradient, you win" - because the critic has the "answer" (really critique). See Natural Actor Critic.
-IE: update actor parameters in direction of critic parameters. (how does this work, b/c then it seems we are just training PG on expectation(????))
-
-
-build out different types of ACs:
-        Q Actor-Critic
-Advantage Actor-Critic (A2C)
-       TD Actor-Critic
- TD(lmda) Actor-Critic
-  Natural Actor-Critic (NAC)
