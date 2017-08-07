@@ -1,12 +1,15 @@
 ---
+
 layout: post
 title: Reading List over the Past Year that I still actively remember
+date: Oct 09, 2013
+location: Washington, DC
+
 ---
 
-{{ page.title }}
+$title$
 ================
 
-<p class="meta">09 Oct 2013 - Washington, DC</p>
 
 Manage Your Day-to-Day
 Your Brain at Work: Strategies for Overcoming Distraction, Regaining Focus, and Working Smarter All Day Long
