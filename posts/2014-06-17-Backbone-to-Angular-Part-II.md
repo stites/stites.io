@@ -3,9 +3,6 @@ layout: post
 title: Backbone to Angular Part II
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">17 June 2014 - Redwood City, CA</p>
 
 Lets talk about tests. Yes, tests. Some of you might love the phrase, and some of

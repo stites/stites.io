@@ -3,9 +3,6 @@ layout: post
 title: Eclipse hangs on git status computation
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">Sept 27, 2015 - Redwood City, CA</p>
 
 If eclipse starts hanging with the process "Computing git status for repository..."

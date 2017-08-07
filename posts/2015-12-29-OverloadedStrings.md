@@ -3,9 +3,6 @@ layout: post
 title: OverloadedStrings
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">29 Dec 2015 - In the air, above Nevada</p>
 
 When the OverloadedStrings pragma is enabled, it changes the definition of `String` from:

@@ -1,12 +1,9 @@
 ---
 layout: post
 title: A Succinct look at Pseudo-Classical Selectors
+location: San Francisco
 ---
 
-{{ page.title }}
-================
-
-<p class="meta">08 Dec 2013 - San Fransisco, CA</p>
 
 Tomorrow I'll be presenting to my peers about pseudo-classical selectors in CSS. I find this pretty amusing since I tend to avoid making my websites look pretty - however since starting to attend Daniel Chao's CSS classes in the after-hours of our sprints at HackReactor - I've started to find something pleasant about pretty websites. The takeaway so far has been: CSS is hard, voodoo, and mangled together in many instances - but if you put in just a few hours of attention into your CSS the benefits of a beautiful website can be amazing!
 

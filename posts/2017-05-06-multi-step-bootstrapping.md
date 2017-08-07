@@ -3,9 +3,6 @@ layout: post
 title: Multi-step bootstrapping thoughts
 ---
 
-{{ page.title }}
-================
-
 While eligability traces are usually associated with multi-step
 bootstrapping, there is a lot to be said for multi-step bootstrapping
 techniques on their own. These techniques unify temporal-difference

@@ -3,9 +3,6 @@ layout: post
 title: Least Interesting Data (LID) caches
 ---
 
-{{ page.title }}
-================
-
 Techniques like experience replay, sampled traces, and what
 I am expecting to read about in [the sample-efficent Reactor
 architecture][reactor], all seem to be targeting the idea that we want

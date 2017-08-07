@@ -1,12 +1,9 @@
 ---
 layout: post
 title: Trait Internals
+location: San Francisco
 ---
 
-<p class="meta">03 May 2015 - San Francisco</p>
-
-{{ page.title }}
-========
 In the end, Scala needs to translate traits into classes and interfaces for the JVM to be able to handle them.
 
 A trait with only abstract methods is converted into a Java Interface. If a trait has concrete fields, a companion class is created alongside the interface whose static fields hold the trait's values.

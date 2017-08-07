@@ -1,13 +1,9 @@
 ---
 layout: post
 title: Trait Similarity to Classes
+location: San Francisco
 ---
 
-<p class="meta">19 April 2015 - San Francisco</p>
-
-
-{{ page.title }}
-=========================
 Traits can have constructors! Wow, I wasn't expecting that one. Just like a class, the constructor is embedded in the body of the trait itself. Every trait has one parameterless constructor. The fact that a trait has a parameterless constructor is the only technical difference between traits and classes. So anything you can do with a class, you can do with a trait!
 
     trait Foo {

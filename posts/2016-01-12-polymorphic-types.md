@@ -3,9 +3,6 @@ layout: post
 title: Polymorphic types
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">12 Jan 2016 - Belmont, CA</p>
 
 In looking up some information on Hindley-Milner, I came across this insightful

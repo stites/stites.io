@@ -10,9 +10,6 @@ _the Impatient_, I'm writing a series of posts on parts of Scala I find
 interesting. Some of the examples I show will come directly from Horstmann,
 but only because they're pretty great examples. I highly recommend the book.
 
-{{ page.title }}
-============================
-
 Scala traits are pretty cool. They're basically the same as interfaces in Java.
 Except for the fact that they're a lot more flexible than interfaces and they've
 been made to address the multiple inheritence problem which is missing in Java.

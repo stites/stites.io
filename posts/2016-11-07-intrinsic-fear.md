@@ -3,9 +3,6 @@ layout: post
 title: Intrinsic Fear [paper]
 ---
 
-{{ page.title }}
-================
-
 Cleverly posted before the US election. This paper talks about the
 introduction of "Intrinsic Fear" for DRL algorithms.
 

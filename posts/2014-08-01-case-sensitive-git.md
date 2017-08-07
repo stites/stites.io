@@ -3,9 +3,6 @@ layout: post
 title: Case-sensitive git
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">01 August 2014 - San Francisco, CA</p>
 
 By default - at least on macs - git is case insensitive, but case preserving.

@@ -3,9 +3,6 @@ layout: post
 title: Browse GHCi
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">05 Jan 2016 - Redwood City, CA</p>
 
 Use `:browse <module>` to view modules which you haven't yet imported. For example:

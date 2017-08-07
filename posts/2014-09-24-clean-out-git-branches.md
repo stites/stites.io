@@ -3,9 +3,6 @@ layout: post
 title: Manage your git branches
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">24 September 2014 - Redwood City, CA</p>
 
 Thought I'd share this little tidbit — I now routinely clean out my git branches

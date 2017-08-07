@@ -3,9 +3,6 @@ layout: post
 title: lift your constructors for healthy data
 ---
 
-{{ page.title }}
-================
-
 When constructing a new data type, it makes sense that we'd want to have some
 validation to ensure that our inputs are correct. Say we have some
 

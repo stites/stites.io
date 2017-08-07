@@ -3,9 +3,6 @@ layout: post
 title: Eq your errors
 ---
 
-{{ page.title }}
-================
-
 When building out error types in Haskell, we _must_ derive `Eq` or the compiler can't pattern-match on them.
 
 One instance of this is for using `case` expressions where the constructor is the

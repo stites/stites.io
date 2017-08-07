@@ -3,9 +3,6 @@ layout: post
 title: Adding forgotten files to your commits
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">12 June 2014 - Redwood City, CA</p>
 
 #### To alter the last commit

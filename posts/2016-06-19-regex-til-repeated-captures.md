@@ -3,8 +3,6 @@ layout: post
 title: Regex TIL- Repeating capture groups
 ---
 
-{{ page.title }}
-================
 I consider myself decent with regexes; this comes from my data science days,
 when I was doing a lot of data munging at TurboSquid. I've always considered
 repeatition in capture groups "hard-mode" and usually skipped over them, as they

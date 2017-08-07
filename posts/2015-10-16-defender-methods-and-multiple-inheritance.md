@@ -3,9 +3,6 @@ layout: post
 title: Defender methods and multiple inheritance
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">09 Oct 2013 - San Francisco, CA</p>
 
 We've started the shift to Java 8, over at Bina, and I have been spearheading the a

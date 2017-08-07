@@ -4,9 +4,6 @@ title: Kolmogorov–Smirnov
 
 ---
 
-{{ page.title }}
-============================
-
 <p class="meta">02 December 2015 - San Francisco</p>
 
 A cumulative distribution function (CDF) is the theoretical function which will

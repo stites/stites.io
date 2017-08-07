@@ -3,9 +3,6 @@ layout: post
 title: Autocomplete your git and thoughts on bash plugin managers
 ---
 
-{{ page.title }}
-================
-
 Just found a nifty little way to set up autocompletion in git. [Check out this Code
 Worrier post][auto].
 

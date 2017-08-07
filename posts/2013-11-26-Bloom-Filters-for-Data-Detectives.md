@@ -3,11 +3,6 @@ layout: post
 title: Bloom Filters for Data Detectives
 ---
 
-{{ page.title }}
-================
-
-November 30th, 2013
-
 Track I'm coding to: `Soul Satisfaction` by `Bit Funk` on [hypem](www.hypem.com)
 
 I just finished writing a Bloom filter over Thanksgiving break. What an incredible experience! Aside from learning how to whip up a bloom filter, this was also my first experience in using bitwise operators. I mean I've used bitwise operators before, but not for anything **useful** just little things like using `~~(n)` instead of `Math.floor(n)` for positive numbers, and `x << y` as a replacement for `x * Math.pow( 2, y )`. Using bitwise operators as a means of generating logic gates has been very enlightening - I look forward to using these in the future.

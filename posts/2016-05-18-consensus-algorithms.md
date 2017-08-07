@@ -3,9 +3,6 @@ layout: post
 title: Consensus Algorithms
 ---
 
-{{ page.title }}
-================
-
 You can most easily think of a consensus algorithms arising from the need to
 replicate state machines. From this perspective, a state machine would live on a
 server, and identical copies of the same state machine would be copied to all other

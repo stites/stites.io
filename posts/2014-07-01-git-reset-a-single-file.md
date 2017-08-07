@@ -3,9 +3,6 @@ layout: post
 title: Hard reset a single file in git
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">01 July 2014 - Redwood City, CA</p>
 
 I feel like, at a certain point in time, I used to be able to run the command `git reset --hard path/to/file`. However this might have been me only working with single files, because now I frequently get the error:

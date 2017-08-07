@@ -3,9 +3,6 @@ layout: post
 title: Free your Frees
 ---
 
-{{ page.title }}
-================
-
 I was working on a project of Alex Crough's at the SF Haskell Hack Night which takes the
 Free monad to a whole new level. The primary reasoning behind Elision was that
 `Free` is actually not "free" enough when it comes to constraints and testing.

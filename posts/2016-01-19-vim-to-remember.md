@@ -3,9 +3,6 @@ layout: post
 title: Vim to remember
 ---
 
-{{ page.title }}
-================
-
 It's easy to get stuck doing only what you already know in vim, so here are some from
 [vimgolf][0] -- which I highly recommend -- that I've found pretty cool:
 

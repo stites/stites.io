@@ -3,9 +3,6 @@ layout: post
 title: A useful `==` in Javascript
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">17 May 2014 - San Francisco, CA</p>
 
 Today I was reviewing John Resig's [Secrets of a Javascript Ninja Quiz][eresig] and noticed in section 21 that, when checking values in a cache, he uses a double-equals sign to see if a value exists on the object. Check it out:

@@ -3,9 +3,6 @@ layout: post
 title: JWTs are a no-brainer
 ---
 
-{{ page.title }}
-================
-
 Why? Well they're self signed, so no storage is involved. Even if you are integrating
 systems, you don't have to worry (too much) about "merging jwt-based authentication
 systems" -- only then _data_ that is contained on the tokens; but that was always

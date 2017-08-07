@@ -3,9 +3,6 @@ layout: post
 title: Why Causal States?
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">10 Oct 2015 - San Francisco, CA</p>
 
 I've started work on cleaning up some loose ends from Cosma and Kristi's CSSR (Causal

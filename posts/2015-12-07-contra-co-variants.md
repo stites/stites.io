@@ -3,9 +3,6 @@ layout: post
 title: Contra- and Co- variance
 ---
 
-{{ page.title }}
-================
-
 A small little note to remember about contra- and co- variants for the future, as
 well as a mnemonic to remember which is which.
 

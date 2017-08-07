@@ -3,9 +3,6 @@ layout: post
 title: writing a small bootstrap 3 downgrader in sed
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">04 Sept 2014 - Redwood City, CA</p>
 
 Some notes on `sed`:

@@ -3,9 +3,6 @@ layout: post
 title: Higher kinded types
 ---
 
-{{ page.title }}
-================
-
 "higher-kinded types" exist because we have type constructors in haskell.
 
 So, putting my jvm hat back on, imagine interface constructors which take interfaces

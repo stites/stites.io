@@ -3,9 +3,6 @@ layout: post
 title: Bash Statistics
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">10 Nov 2014 - Redwood City</p>
 
 I had a case where I needed to generate some simple statistics from an indel file which one of our bioinformaticians had procured for me. These files are huge, but instead of asking for the parsed file, I thought it might be fun to do this in bash. I'll walk through an example.

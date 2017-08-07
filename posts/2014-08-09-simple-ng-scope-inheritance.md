@@ -3,9 +3,6 @@ layout: post
 title: Rebuilding Angular in simpleNg - Scope Inheritance
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">09 August 2014 - San Francisco, CA</p>
 
 This is the second post I've written from rebuilding angular under the guidance

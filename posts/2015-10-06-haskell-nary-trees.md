@@ -3,9 +3,6 @@ layout: post
 title: Haskell N-Ary Trees
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">06 Oct 2015 - San Francisco</p>
 
 In the start of my work on CSSR, I have had to construct n-ary trees. Surprisingly,

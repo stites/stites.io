@@ -3,9 +3,6 @@ layout: post
 title: Count-Min Sketch
 ---
 
-{{ page.title }}
-================
-
 A lesser known probabalistic data structure (alongside bloom filters and the
 hyperloglog) includes the Count-Min Sketch. To cite Cormode and Muthukrishnan in
 their most recent paper "Approximating Data with the Count-Min Data Structure"

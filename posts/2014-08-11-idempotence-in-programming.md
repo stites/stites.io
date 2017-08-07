@@ -3,9 +3,6 @@ layout: post
 title: Idempotence in Programming
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">08 August 2014 - Redwood City, CA</p>
 
 In mathematics, the concept of idempotence implies that an operation can be

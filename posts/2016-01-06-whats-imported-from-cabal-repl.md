@@ -3,9 +3,6 @@ layout: post
 title: What's imported from cabal repl
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">06 Jan 2016 - Belmont, CA</p>
 
 If you have only an executable declared in your cabal file, then when you `cabal

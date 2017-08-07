@@ -3,9 +3,6 @@ layout: post
 title: Left is for errors by notational implementation
 ---
 
-{{ page.title }}
-================
-
 A code snippet from earlier -- it's a little funny since I was talking to dan chao
 who does a lot of scalaz, but no haskell, and we couldn't pinpoint exactly why Left
 is used to pass errors. If we all wrote right-to-left I guess we'd be doing things

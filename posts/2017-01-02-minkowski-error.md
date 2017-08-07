@@ -3,9 +3,6 @@ layout: post
 title: Minkowski Error
 ---
 
-{{ page.title }}
-================
-
 Normally to handle outliers we use Turkey's method to detect extreme values.
 Multivariate methods also exist to detect and remove outliers.
 

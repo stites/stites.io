@@ -3,9 +3,6 @@ layout: post
 title: Moving from Backbone to Angular Part I
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">11 June 2014 - Redwood City, CA</p>
 
 At bina, we have two products: bina portal and bina annotation platform. While the annotation platform has been written from the ground-up in angular, the bina portal was written in backbone. It's also one of those applications which has grown into a monolithic zombie over the years. It's got to go, but it can't be canned. Taking on the codebase headfirst isn't really an option for us as it means that we will have a brand-new product which won't be user-tested. I'm sure many of you are looking at similar issues. The approach we're taking at bina is to have angular and backbone coexist -backbone is a library, not a framework, afterall- and then slowly have angular take over. Let's get started.

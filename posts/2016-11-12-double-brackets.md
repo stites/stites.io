@@ -3,9 +3,6 @@ layout: post
 title: Double brackets
 ---
 
-{{ page.title }}
-================
-
 ```
 writeStuff :: [Char] -> IO ()
 writeStuff filename =

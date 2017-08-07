@@ -1,12 +1,8 @@
 ---
 layout: post
 title: Everyday Uses of Javascript Design Patterns
+location: San Francisco, CA
 ---
-
-{{ page.title }}
-================
-
-<p class="meta">21 Feb 2014 - San Francisco, CA</p>
 
 I've been reading _[Essential Javascript Design Patterns][designs]_ by Addy Osmani, when I realized that most design patterns are already common in everyday use of code. Inspired by this thought, I reread through my notes and decided to write out where we would see or hear about them on a daily basis.
 

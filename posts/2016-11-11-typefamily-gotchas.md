@@ -3,9 +3,6 @@ layout: post
 title: Typefamily gotchas
 ---
 
-{{ page.title }}
-================
-
 Typeclasses are an amazing abstraction in haskell. They are one of the
 fundamental building blocks in sharing and managing code. Among other points of
 mention, some of the benefits typeclasses have over OO-styled interfaces include

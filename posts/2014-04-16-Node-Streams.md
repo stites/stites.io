@@ -3,9 +3,6 @@ layout: post
 title: Node Streams
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">16 April 2014 - San Francisco, CA</p>
 
 Node has brought to us the ability to run javascript anywhere with the pretense that asyncronisity is getting our servers comparably as fast as a C++ or Go server. One of the key, unsung features which allows for such amazing speed is concepts of streams.

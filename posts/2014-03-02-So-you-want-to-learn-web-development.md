@@ -3,9 +3,6 @@ layout: post
 title: So you want to learn web development?
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">02 March 2014 - San Francisco</p>
 
 A few of my friends have been asking me how to get started with learning how to program. Most of them come from Comp-sci backgrounds from undergrad, and want to start free lancing but have no idea how to start applying their skills in a formal real-world job setting. When you know a ton of smart people who want to split their time between their love for computer science and circus, you get a lot of interest in the digital nomad lifestyle.

@@ -3,8 +3,6 @@ layout: post
 title: Memory-mapped files
 ---
 
-{{ page.title }}
-================
 Memory-mapped files are a segment of virtual memory that we assign with direct
 correlation to some file (or "resource"). Applications can then treat the mapped
 portion of the file as if it were primary memory!

@@ -3,9 +3,6 @@ layout: post
 title: Prism is like a Lens of Either
 ---
 
-{{ page.title }}
-================
-
 My coworker quickly explained one of the more esoteric components (Prism)
 quite susinctly today:
 

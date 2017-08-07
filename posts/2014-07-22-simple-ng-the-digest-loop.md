@@ -3,9 +3,6 @@ layout: post
 title: Rebuilding Angular in simpleNg
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">22 July 2014 - San Francisco, CA</p>
 
 Of late, I've been rebuilding angular by following Tero Parviainen's

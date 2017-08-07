@@ -3,9 +3,6 @@ layout: post
 title: Policy vs Value functions
 ---
 
-{{ page.title }}
-================
-
 Usually, policy _and_ value functions work best, but most of the time
 finding a policy is preferred over finding a value function. Of course
 this it dependent on your use case -- it might not be possible to find

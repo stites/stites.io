@@ -1,12 +1,8 @@
 ---
 layout: post
 title: Backus-Naur Form Grammar
+location: San Francisco
 ---
-
-{{ page.title }}
-================
-
-<p class="meta">03 Nov 2013 - San Francisco</p>
 
 The latest thing I've done was construct a recursive-decent parser for JSON. The structure of constructing one of these uses a form called [Backus-Naur Form](https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_Form), developed by Backus and Naur, however it is practically identical to [Chomsky's Universal Theory of Grammar][1]. Both have the same format, were developed at the same time, and were developed independently! Great minds think alike!
 

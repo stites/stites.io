@@ -1,12 +1,8 @@
 ---
 layout: post
 title: 5 reasons you should use Bookshelf.js
+location: Washington, DC
 ---
-
-{{ page.title }}
-================
-
-<p class="meta">26 Dec 2013 - Washington, DC</p>
 
 Back home for the holidays! Of late, I've gotten ahold of my first contract job which I am very excited about. There isn't too much time to look into certain technologies that I'm really stoked about - distributed systems, more work with graphs, or writing a Restricted Boltzman Machine in Javascript - however I am eager to hammer out confidence in client work. One thing that did have me particularly down was that, due to the nature of the app, we'd be working with SQL.
 

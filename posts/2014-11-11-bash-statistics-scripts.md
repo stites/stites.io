@@ -3,9 +3,6 @@ layout: post
 title: Various Scripts for Bash Statistics
 ---
 
-{{ page.title }}
-================
-
 <p class="meta">11 Nov 2014 - Redwood City</p>
 
     =================

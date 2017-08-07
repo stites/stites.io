@@ -3,9 +3,6 @@ layout: post
 title: Orphan Instances
 ---
 
-{{ page.title }}
-================
-
 Typeclasses have unique pairings of the class and the instance for a particular
 type.
 
