@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 These questions are really made to be loose evaluations to understand how much
 a candidate understands about the holistics of the d3 library. They're by no
 means a hard determination of the candidate's ablilty to make beautiful

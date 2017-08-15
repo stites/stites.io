@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 https://www.ics.uci.edu/~fielding/pubs/dissertation/net_app_arch.htm
 
 2.2 Evaluating the Design of Application Architectures

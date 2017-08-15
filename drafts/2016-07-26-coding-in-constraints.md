@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 "Haskell has an incredibly powerful type system."
 
 Is a phrase you hear a lot. Perhaps it's because haskell wasn't my first foray

@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Using something like the [Java Thread Affinity][affinity] library
 ([github][github]), we can acquire a lock on a specific CPU, or reserve
 the entire core, for a particular thread. Note that, according to the

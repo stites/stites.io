@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 There's a bit of a cycle for all primes under 100:
 2, 3, 5, 7
 11, 13, 17, 19

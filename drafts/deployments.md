@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 rickism:
 deploying with features enbled? how?
 do you ship code with everything there, then toggle configs?

@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 we don't need to think about functional composition with Functor and Applicative
 because it falls naturally into place.
 

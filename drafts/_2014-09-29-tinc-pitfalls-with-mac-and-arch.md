@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 http://www.tinc-vpn.org/documentation-1.1/tinc.pdf
 http://blog.sanctum.geek.nz/sync-tmux-panes/
 

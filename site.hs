@@ -1,67 +1,116 @@
---------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
-import           Data.Monoid (mappend)
-import           Hakyll
+{-# LANGUAGE ScopedTypeVariables #-}
 
+import Data.Monoid ((<>), mappend)
+import Hakyll
+import Data.Binary
+import Data.Typeable
+import Control.Monad
 
---------------------------------------------------------------------------------
 main :: IO ()
 main = hakyll $ do
-    match "images/*" $ do
-        route   idRoute
-        compile copyFileCompiler
+  staticRules
+  metaRules
+  postRules
+  archiveRules
+  indexRules
+  draftRules
+  draftListRules
+  match "templates/*" $ compile templateBodyCompiler
 
-    match "css/*" $ do
-        route   idRoute
-        compile compressCssCompiler
+  where
+    staticRules :: Rules ()
+    staticRules = do
+      "images/*" `matchWith` copyFileCompiler
+      "css/*"    `matchWith` compressCssCompiler
 
-    match (fromList ["about.rst", "contact.markdown"]) $ do
-        route   $ setExtension "html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/default.html" defaultContext
-            >>= relativizeUrls
-
-    match "posts/*" $ do
-        route $ setExtension "html"
-        compile $ pandocCompiler
-            >>= loadAndApplyTemplate "templates/post.html"    postCtx
-            >>= loadAndApplyTemplate "templates/default.html" postCtx
-            >>= relativizeUrls
-
-    create ["archive.html"] $ do
-        route idRoute
-        compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
-            let archiveCtx =
-                    listField "posts" postCtx (return posts) `mappend`
-                    constField "title" "Archives"            `mappend`
-                    defaultContext
-
-            makeItem ""
-                >>= loadAndApplyTemplate "templates/archive.html" archiveCtx
-                >>= loadAndApplyTemplate "templates/default.html" archiveCtx
-                >>= relativizeUrls
+    metaRules :: Rules ()
+    metaRules =
+      fromList ["about.rst", "contact.markdown"] `match2htmlWith`
+        (loadAndApplyTemplate' "default" defaultContext >=> relativizeUrls)
 
 
-    match "index.html" $ do
-        route idRoute
-        compile $ do
-            posts <- recentFirst =<< loadAll "posts/*"
-            let indexCtx =
-                    listField "posts" postCtx (return posts) `mappend`
-                    constField "title" "Home"                `mappend`
-                    defaultContext
+    postRules :: Rules ()
+    postRules = "posts/*" `match2htmlWith`
+      (   loadAndApplyTemplate' "post"    postCtx
+      >=> loadAndApplyTemplate' "default" postCtx
+      >=> relativizeUrls)
 
-            getResourceBody
-                >>= applyAsTemplate indexCtx
-                >>= loadAndApplyTemplate "templates/default.html" indexCtx
-                >>= relativizeUrls
+    archiveRules :: Rules ()
+    archiveRules = create ["archive.html"] $ do
+      route idRoute
+      compile $ do
+        posts <- recentFirst =<< loadAll "posts/*"
+        makeItem ""
+          >>= loadAndApplyTemplate' "archive" (posts `listCtxCalled` "Archives")
+          >>= loadAndApplyTemplate' "default" (posts `listCtxCalled` "Archives")
+          >>= relativizeUrls
 
-    match "templates/*" $ compile templateBodyCompiler
+
+    indexRules :: Rules ()
+    indexRules = "index.html" `matchWith` do
+      posts <- recentFirst =<< loadAll "posts/*"
+      getResourceBody
+        >>= applyAsTemplate                 (posts `listCtxCalled` "Home")
+        >>= loadAndApplyTemplate' "default" (posts `listCtxCalled` "Home")
+        >>= relativizeUrls
+
+
+    draftRules :: Rules ()
+    draftRules = "drafts/*" `match2htmlWith`
+      (   loadAndApplyTemplate' "post"    (dateField "date" "" <> defaultContext)
+      >=> loadAndApplyTemplate' "default" (dateField "date" "" <> defaultContext)
+      >=> relativizeUrls)
+
+    draftListRules :: Rules ()
+    draftListRules = create ["drafts.html"] $ do
+      route idRoute
+      compile $ do
+        drafts <- recentFirst =<< loadAll "drafts/*"
+        makeItem ""
+          >>= loadAndApplyTemplate' "archive" (draftListCtx drafts)
+          >>= loadAndApplyTemplate' "default" (draftListCtx drafts)
+          >>= relativizeUrls
+      where
+        draftListCtx :: [Item String] -> Context String
+        draftListCtx posts =
+          listField "posts" (dateField "date" "" <> defaultContext) (pure posts)
+          <> constField "title" "Drafts"
+          <> defaultContext
+
+
+matchWith :: (Writable a, Typeable a, Binary a) => Pattern -> Compiler (Item a) -> Rules ()
+matchWith patt comp =
+  match patt $ do
+    route   idRoute
+    compile comp
+
+match2htmlWith :: (Writable a, Typeable a, Binary a) => Pattern -> (Item String -> Compiler (Item a)) -> Rules ()
+match2htmlWith patt comp =
+  match patt $ do
+    route $ setExtension "html"
+    compile $ pandocCompiler >>= comp
+
+
+
+loadAndApplyTemplate' :: String -> Context a -> Item a -> Compiler (Item String)
+loadAndApplyTemplate' t = loadAndApplyTemplate (fromFilePath $ "templates/"<> t <>".html")
 
 
 --------------------------------------------------------------------------------
+
+
+listCtxCalled :: [Item String] -> String -> Context String
+listCtxCalled posts title =
+  listField "posts" listItem (pure posts)
+  <> constField "title" title
+  <> defaultContext
+  where
+    listItem :: Context String
+    listItem = dateField "date" "%D" <> defaultContext
+
+
 postCtx :: Context String
 postCtx =
-    dateField "date" "%B %e, %Y" `mappend`
-    defaultContext
+  dateField "date" "%B %e, %Y"
+  <> defaultContext

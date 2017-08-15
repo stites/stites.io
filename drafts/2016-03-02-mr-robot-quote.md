@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 > Most coders think debugging software is about fixing a mistake, but that’s
 > bullshit. Debugging's actually all about finding the bug, about understanding why
 > the bug was there to begin with, about knowing that its existence was no accident.

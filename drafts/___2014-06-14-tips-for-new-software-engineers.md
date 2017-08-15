@@ -1,4 +1,9 @@
 ---
+date: 1900-01-01
+---
+
+
+---
 layout: post
 title: Tips for new software engineers
 ---

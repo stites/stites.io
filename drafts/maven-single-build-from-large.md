@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 mvn -pl portal/frontend -am package -DskipTests=true
 
 and do this from the *ROOT* of seqalto. 

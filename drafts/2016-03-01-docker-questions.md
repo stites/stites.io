@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 What is Docker
 Docker is a platform to run each application isolated and securely. Internally it
 achieves it by using kernel containerization feature.

@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Dr. Leonard Richardson put together a maturity model that interprets various levels of compliance with RESTful principles, and grades them. It describes 4 levels, starting at level 0. [Martin Fowler has a very good write-up on the maturity model][x].
 
 Level 0: the Swamp of POX - at this level, we're just using HTTP as a transport. You could call SOAP a Level 0 technology. It uses HTTP, but as a transport. It's worth mentioning that you could also use SOAP on top of something like JMS with no HTTP at all. SOAP, thus, is not RESTful. It's only just HTTP-aware.

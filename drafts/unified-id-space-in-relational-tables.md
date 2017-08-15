@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 from rick
 uuid table that generates uuids, createdAt, metadata, type
 

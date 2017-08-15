@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 JVM thread priorities range from 1 (`MIN_PRIORITY`) to 10 (`MAX_PRIORITY`)
 with main running at priority 5 (`NORM_PRIORITY`). Take advantage of this
 fact and make your application run smarter with a little prioritization.

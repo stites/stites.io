@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Free monads are pretty cool and you can basically write code without binding down
 things to implementation.
 

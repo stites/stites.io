@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Build your own Nix Developer Environment: Python ML style
 =========================================================
 

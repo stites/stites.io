@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 So I've been a Nix enthusiast for quite a bit, but it's always been just a little too
 much work to learn it all on the fly. Today I'll look at setting up a user develop
 environment, which is one of the vital day-to-day benefits from nix.

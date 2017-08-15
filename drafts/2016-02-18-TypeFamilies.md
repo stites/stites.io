@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 with GADTs on:
 
    data ThisIsAGADT a where

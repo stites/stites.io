@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Don't forget that __Threadlocal is not garbage collected__. Also,
 there is a creative way of using ThreadLocal where you allocate a specific chunk
 of memory to be used as a reusable buffer by a worker thread - depends on

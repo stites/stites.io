@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Use daemon threads. Use them when your process is non-vital. Use them
 when you do not want to worry about closing the thread properly. Use
 them to shut down your program quickly. _Use them sparingingly and

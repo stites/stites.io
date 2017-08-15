@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 ```
     ghci> :t fmap (<*>)
     fmap (<*>) :: (Functor f, Applicative f1) =>

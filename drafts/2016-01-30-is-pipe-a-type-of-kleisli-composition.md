@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Is the Unix pipe operator a type of Kleisli composition? We have structure (files),
 operations which can map files to generate more files...? No, I don't think so.
 

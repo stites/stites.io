@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 pure/return is used to promote value into a structure. For IO, this will generate
 effect-less and pure IO actions.
 

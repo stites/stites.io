@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 some things that are pretty cool
 
 speed is key: mutablelongs instead of longs or other options.

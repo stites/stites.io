@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 my skeleton looks like the following:
 
 https://docs.google.com/document/d/18RLtQm2eylUT5o2N3Wu72bLlHJwznRobUOSlvOiLxtQ/edit?usp=sharing

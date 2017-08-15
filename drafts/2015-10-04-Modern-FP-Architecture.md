@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 this is very cool:
 http://degoes.net/articles/modern-fp/
 

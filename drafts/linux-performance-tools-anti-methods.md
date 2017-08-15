@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Street light anti-method
 "A drunk searching for keys"
 "did you lose them under the street light"

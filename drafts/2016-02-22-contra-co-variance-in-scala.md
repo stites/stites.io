@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 So I think the idea is that, in scala, you can state contra- and co- (and in-)
 variance without establishing a concrete type. So you would use this only in
 parameterized types, for the parameters themselves - eg: the option type.

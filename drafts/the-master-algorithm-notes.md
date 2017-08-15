@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 MA has to be recursive to handle world-scale black swans so that it will grow
 naturally
 

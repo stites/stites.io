@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Monoid -> Semigroup
 
 Semigroups are Monoids without ids. Core operations are binary and associative

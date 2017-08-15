@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 notes from reading about Spring's "The IoC container". [Full docs here][docs].
 + invertion of controll is synonymous with Dependency injection! I guess it's
   always made sense, but i never hear anyone talk about IoC anymore.

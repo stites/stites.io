@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Really cool things about Arrows:
 
 + Every pure function is a mapping from some `a` to some `b`. Thus every pure function

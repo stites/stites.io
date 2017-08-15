@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Something very simple should get lazily evaluated, correct?
 
     Prelude> let myList = [1, 2, 3] :: [Integer]

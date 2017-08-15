@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 no passwords ever
 explicit urls pub/private
 context and threading

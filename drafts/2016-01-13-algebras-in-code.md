@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 In haskell, there is often a closeness to using mathematical phrases like "algebra"
 in the concrete term of code. Stephen Dheil has a great post on what an algebra is,
 here's a brief snippet from myself and the FPHP book:

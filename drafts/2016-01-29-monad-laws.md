@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Identity states that return should not perform computation.
 
     -- note

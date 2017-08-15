@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 consensus algorithms combined with various authentication services
 voting(+1, -1, cannot decide) then mandates the authenticity of the user.
 SAML - https://en.wikipedia.org/wiki/Security_Assertion_Markup_Language

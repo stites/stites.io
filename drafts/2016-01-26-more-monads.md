@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 (*>) :: Applicative f => f a -> f b -> f b
 (>>) :: Monad m =>       m a -> m b -> m b
 

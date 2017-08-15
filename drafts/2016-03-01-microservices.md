@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 We're seeing an increased understanding of the pros and cons of microservices. In
 this newsletter, I'll list the ones I've gathered from a dozen other newsletters
 where I've previously extracted microservice performance tips.

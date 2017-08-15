@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 This is one of those funny fundamentals that most people like to overlook: the
 anatomy of a URL. We've had a few issues with some legacy code and encoding, so
 I figured it might be interesting to learn about the thought put into one of the

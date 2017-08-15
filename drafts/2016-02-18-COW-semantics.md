@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 https://en.wikipedia.org/wiki/Copy-on-write
 
 Thinking about virtual memory notes:

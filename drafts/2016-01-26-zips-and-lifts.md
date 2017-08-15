@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 
 liftM and liftA are the same! liftM is around as a function to maintain compatability
 with older libraries that used monads before applicatives existed.

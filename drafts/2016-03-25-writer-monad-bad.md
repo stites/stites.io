@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 - writer is either too lazy or too strict for whatever you're working on.
 - it has a tendency to accumulate unevaluated thunks. Thus, memory leaks.
 - you can't retrieve any of the logged values until the computation is complete.

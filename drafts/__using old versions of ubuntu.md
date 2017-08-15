@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 https://smyl.es/how-to-fix-ubuntudebian-apt-get-404-not-found-package-repository-errors-saucy-raring-quantal-oneiric-natty/
 sprint | sed -E -e "s/'//g;s/(SEQ-[0-9 \-]+)/+\1 project:bina due:10th/g;" -l | xargs -L 1 echo task add
 task add +SEQ3028 project:bina due:10th Integrate Somatic report into Portal Frontend

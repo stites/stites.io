@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Event sourcing
 
 A very simple concept. The idea that state is actually just a state machine with a stream of events.

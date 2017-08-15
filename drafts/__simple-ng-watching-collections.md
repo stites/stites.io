@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 we can watch things by ref and value (by passing the third bool parameter in in $watch)
 now check out `$watchCollection`
  + it's for array/obj - add, remove, rerodered events

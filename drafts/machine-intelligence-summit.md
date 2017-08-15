@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 professor one:
 translations between ovjects to vetors -> this is all molecule-based. so we're
 talkign aboutnbiology?

@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Conditional Harmoic Mixing (CHM):
 
 works on a dag, a conditional probability matirx is associated with each link,

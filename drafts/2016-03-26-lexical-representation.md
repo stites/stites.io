@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 one of the trickier parts of manad transformers is that the lexical representation
 for the types will violate your intuitions with respect to the relationship it has
 with the structure of your values.

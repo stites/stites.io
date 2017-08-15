@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Sixth normal form (6nf)
 from relational database theory can be used in two different ways.
 

@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 d-lists : alternative representations of a list
 
 a monad is just a monoid in a category of endofunctors

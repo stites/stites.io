@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 We use a lot of netflix OSS at Bina. I've recently started working on some backend
 tickets and have to learn about curator. Here's what I gather:
 

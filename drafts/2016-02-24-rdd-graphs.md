@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 we write a custom RDD graph (a *r*ound-*r*obin *d*atabase graph) which uses the
 time-series data collected by `rddtool` to plot some simple graphs of system
 resources. The tool runs on a "round-robin" in the sense that only a certain amount

@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Multi-parameter Type Classes
 =============================
 

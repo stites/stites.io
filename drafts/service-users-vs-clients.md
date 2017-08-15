@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 When thinking about "clients," also think about service users. Essentially,
 users that are services. Clients really break down into the following:
  - Clients that are humans

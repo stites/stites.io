@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 # Statiscial Reinforcement Learning
 
 What is 

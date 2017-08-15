@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 You should know that everything is a type error\*, and you shouldn't have to fix
 it there.
 

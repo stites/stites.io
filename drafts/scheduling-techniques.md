@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Scheduling techniques:
 
 First-come first-serve (aka FIFO):

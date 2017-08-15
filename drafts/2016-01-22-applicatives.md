@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 
   instance (Monoid a, Monoid b) => Monoid (a,b) where
     mempty = (mempty, mempty)

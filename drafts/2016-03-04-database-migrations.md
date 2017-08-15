@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 what is a database migration, fundamentally?
 
 version control.

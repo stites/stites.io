@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 source: [Why is Haskell (GHC) so darn fast?][1]
 
 Highlights:

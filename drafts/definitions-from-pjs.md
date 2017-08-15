@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 Isomorphic JavaScript
 The same code can be run on the server and in the browser.
 

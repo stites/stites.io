@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 source - https://www.youtube.com/watch?v=1RMWS60gGUY
 log everything well
 - warn

@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 <F11>ServletContext
 When the servletcontainer (like Apache Tomcat) starts up, it will deploy and load all webapplications. When a webapplication get loaded, the servletcontainer will create the ServletContext once and keep in server's memory. The webapp's web.xml will be parsed and every <servlet>, <filter> and <listener> found in web.xml, or annotated with respectively @WebServlet, @WebFilter and @WebListener, will be created once and kept in server's memory as well. For all filters, the init() method will also be invoked immediately. When the servletcontainer shuts down, it will unload all webapplications, invoke the destroy() of all initialized servlets and filters, and finally the ServletContext and all Servlet, Filter and Listener instances will be trashed.
 

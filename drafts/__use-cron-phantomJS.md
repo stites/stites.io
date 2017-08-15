@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 friends at VFA do a lot of bizdev stuff. Heard about a lot about certian mudane, stick-in-the-mud website work.
 
 well, you should learn phantomJS. literally only two things to learn, maybe only one (jQuery), and BOOM you can now navigate a website with some "sentences." after that, just memorize a couple of patterns, how to start a phantomJS job, and you're done!

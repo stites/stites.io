@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 associate property is not as strong as commutative property. Given:
 
     a + b + c + d + e + f

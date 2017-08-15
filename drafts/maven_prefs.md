@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 eclipse setup:
 disable "Project > Build Automatically"
 disable "Settings > Validation > Suspend all Validators"

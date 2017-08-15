@@ -1,3 +1,8 @@
+---
+date: 1900-01-01
+---
+
+
 `forall a` is implicit for any function which is polymorphic:
 
     foo :: a -> Bool
