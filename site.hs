@@ -26,7 +26,7 @@ main = hakyll $ do
 
     metaRules :: Rules ()
     metaRules =
-      fromList ["about.rst", "contact.markdown"] `match2htmlWith`
+      fromList ["about.md", "contact.md"] `match2htmlWith`
         (loadAndApplyTemplate' "default" defaultContext >=> relativizeUrls)
 
 

@@ -1,8 +1,7 @@
---- layout: default title: "About Me" ---
-
-{{ title }}
-
-Greetings reader!
+---
+layout: default
+title: "About Me"
+---
 
 Thanks for taking a personal interest in me. To reiterate for clarity, in case you've
 wound up on the wrong page, my name is Sam Stites - I'm an engineer interested in
@@ -22,8 +21,9 @@ hat is on fire. I am a religous attendee of The Barefoot Monkey's, my old troupe
 <i>Monkey See Monkey Do</i> convention. It really is one of the most beautiful slices
 of life.
 
-Feel free to contact me at [sam@stites.io][email], follow me on twitter
+<!-- Feel free to contact me at [sam@stites.io][email], follow me on twitter
 [@samstites][tw], or catch me on github at [github.com/stites][gh].
+-->
 
 [gh]://www.github.com/stites
 [tw]:https://twitter.com/SamStites
