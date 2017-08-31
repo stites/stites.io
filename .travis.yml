@@ -51,6 +51,20 @@ install:
 script:
 - |
   set -ex
-  stack exec site build
+  stack build && stack exec site -- build
   set +ex
 
+deploy:
+  provider: s3
+  access_key_id: S3_ACCESS_KEY
+  bucket: S3_BUCKET
+  region: us-east-1
+  skip_cleanup: true
+  #local-dir: ".cabal-sandbox"
+  upload-dir: _site
+  #acl: !ruby/string:HighLine::String public_read
+  on:
+    repo: stites/stites.github.io
+    branch: hakyll
+  secret_access_key:
+    secure: S3_SECRET_KEY
