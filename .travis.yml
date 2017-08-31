@@ -37,7 +37,7 @@ install:
 script:
 - |
   set -ex
-  stack build && stack exec site -- build
+  make build
   set +ex
 
 deploy:

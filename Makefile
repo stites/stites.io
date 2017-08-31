@@ -1,11 +1,13 @@
-push:
-	source secrets && s3_website push --config-dir=./configs/
+stack-build:
+	stack build
 
-hakyll:
-	stack build && stack exec site build
+clean: stack-build
+	stack exec site -- clean
 
-hakyll-watch:
-	stack build && stack exec site clean && stack exec site watch
+build: stack-build clean
+	stack exec site -- build
 
-publish: hakyll push
+watch: stack-build clean
+	stack exec site -- watch
 
+.PHONY: hakyll clean build watch stack-build
