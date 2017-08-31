@@ -1,38 +1,23 @@
-# Copy these contents into the root directory of your Github project in a file
-# named .travis.yml
-
-# Use new container infrastructure to enable caching
-#sudo: true   # to let apt-get install LAPACK/BLAS for us
-
-# Choose a lightweight base image; we provide our own build tools.
 language: c
 
-# Caching so the next build will be fast too.
 cache:
   directories:
-  - $HOME/.ghc
-  - $HOME/.cabal
-  - $HOME/.stack
-
-# The different configurations we want to test. We have BUILD=cabal which uses
-# cabal-install, and BUILD=stack which uses Stack. More documentation on each
-# of those below.
-#
-# We set the compiler values here to tell Travis to use a different
-# cache file per set of arguments.
-#
-# If you need to have different apt packages for each combination in the
-# matrix, you can use a line such as:
+  - "$HOME/.ghc"
+  - "$HOME/.cabal"
+  - "$HOME/.stack"
 
 matrix:
   include:
   - env: ARGS="" GHCVER=7.10.3 CABALVER=1.22 ALEXVER=3.1.7 HAPPYVER=1.19.5
-
     compiler: ": #stack default"
-    addons: {apt: {packages: [ghc-7.10.3], sources: [hvr-ghc]}}
+    addons:
+      apt:
+        packages:
+        - ghc-7.10.3
+        sources:
+        - hvr-ghc
 
 before_install:
-# Using compiler above sets CC to an invalid value, so unset it
 - sudo apt-get -qq update
 - unset CC
 - export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/$CABALVER/bin:$HOME/.local/bin:/opt/alex/$ALEXVER/bin:/opt/happy/$HAPPYVER/bin:$HOME/.cabal/bin:$PATH
@@ -48,6 +33,7 @@ install:
   set -ex
   stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
   set +ex
+
 script:
 - |
   set -ex
@@ -56,15 +42,17 @@ script:
 
 deploy:
   provider: s3
-  access_key_id: S3_ACCESS_KEY
-  bucket: S3_BUCKET
-  region: us-east-1
+  access_key_id: AKIAJPBLE2LHYD7P4CKA
+  secret_access_key:
+    secure: IIhFZuhFzAa44q1rKaS8E1f1m4AhrvnH1BvJwhekRJPYyT8J3GPDgWmf+KXCnMFa1Ziid82BdvopBDdrwM3T+J+lkvYRBn5fUj833v2eYj2YpL09xVfiM7lb/liwvVMdji/PN1QlcKi5Uk87ln8XgWN5Y7ahiSMeAuolKtCuFYU=
   skip_cleanup: true
-  #local-dir: ".cabal-sandbox"
-  upload-dir: _site
-  #acl: !ruby/string:HighLine::String public_read
+  bucket: stites.io
+  local-dir: _site
+  acl: private
+  region: us-east-1
+  detect_encoding: true
+  default_text_charset: 'utf-8'
+#  cache_control: "max-age=31536000"
   on:
     repo: stites/stites.github.io
     branch: hakyll
-  secret_access_key:
-    secure: S3_SECRET_KEY
