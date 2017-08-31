@@ -1,13 +1,10 @@
-## blog
-Just another programming blog -- I just ported it over to Hakyll so we'll see
-how this goes.
+## blog [![Build Status](https://travis-ci.org/stites/stites.github.io.svg?branch=master)](https://travis-ci.org/stites/stites.github.io)
+Another hakyll blog detailing my adventures in haskell and reinforcement learning.
 
 ### license
 
 The following directories and their contents are Copyright Sam Stites. You may not reuse anything therein without my permission:
 
-* _posts/
-* images/
+* posts/
 
-
-Copyright (c) 2014, Sam Stites <sam@stites.io>
+Copyright (c) 2014-2017, Sam Stites <sam@stites.io>
