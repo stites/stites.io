@@ -1,0 +1,81 @@
+==================================================================
+https://keybase.io/stites
+--------------------------------------------------------------------
+
+I hereby claim:
+
+  * I am an admin of https://stites.io
+  * I am stites (https://keybase.io/stites) on keybase.
+  * I have a public key with fingerprint 2C16 B515 DB66 C385 D569  E0B8 2418 B81B A203 9C3F
+
+To do so, I am signing this object:
+
+{
+  "body": {
+    "key": {
+      "eldest_kid": "010151dc69763b8929b275bad77d72d79b63a9477acc0a8b16be2a6942c15296a6730a",
+      "fingerprint": "2c16b515db66c385d569e0b82418b81ba2039c3f",
+      "host": "keybase.io",
+      "key_id": "2418b81ba2039c3f",
+      "kid": "010151dc69763b8929b275bad77d72d79b63a9477acc0a8b16be2a6942c15296a6730a",
+      "uid": "40ce662d9c0ef026cf9b26ba690ab719",
+      "username": "stites"
+    },
+    "merkle_root": {
+      "ctime": 1509463304,
+      "hash_meta": "2c1cc8c3ca9a0fb5052b1b99cc9f685db40c53d28e93cb6ceb6d0dc14fa86428",
+      "seqno": 1650491
+    },
+    "revoke": {
+      "sig_ids": [
+        "84efc75466b56bd62f5f5f3af642457cf97b6e6312f1939398f1b42e56c2be310f"
+      ]
+    },
+    "service": {
+      "hostname": "stites.io",
+      "protocol": "https:"
+    },
+    "type": "web_service_binding",
+    "version": 1
+  },
+  "ctime": 1509463397,
+  "expire_in": 157680000,
+  "prev": "7aacc7dad304787e94ee2ede931026ddff3bce659c97709b43ab936f256d1952",
+  "seqno": 32,
+  "tag": "signature"
+}
+
+which yields the signature:
+
+-----BEGIN PGP MESSAGE-----
+Version: Keybase OpenPGP v2.0.76
+Comment: https://keybase.io/crypto
+
+yMKyAnicrVNbaB1FGD5pk2Ob1gu1hQqt0kUplaPOZWdm5yBaK2m9PVhrKbWJx7me
+bJNz9mR3c5KaJmoMBiwIhZaQYtGIrRcKpS2txmoqIQ/RPCiWCiK+qERQqjR9idqC
+s6kiio/uPCwz+/3f//3ftzN1/eJcc8N9j41tvbfx53rDzGRXd27n/EHT58lI7/GK
+fV6HWXiZTm2StNQRaq/oAQgggVpRziiWAUdcIkak0IxphjTjkmLBfcaEUkAEElJp
+kKDcRwoSxKmgDAPhFTwbVssmrsVhNXW07iuVBBItKVU4IJpQboAMkA8DGUApEMBc
+YesK26Mkq3DipEjM3WHkztymtCDvP/D/s+7uBTofKEMp0lwBYwGiyjo+Kl0BEJJB
+ngETE1dFxTh0koapSbz+glcxcUenKcVRlGbWqjTMAJAA7lOMge/GE0l7qWJScc0V
+pQKFleACWEkAQRJKzpXiljqTpJNBsEaB4VhJqoykGmgFfSsC6qPAqUhMVzVyHSgB
+PodOQWzqUYfJmidh2ZmWeMVdXuAbqxjxqQuBSk2RJW5hYR2LT5ibjklqKIbIQo7d
+CiyUPjKEKiQNhsB6bf1Zs7geqgXyLKV/TH8tqFocpZGKOt1xe5rWkmJmSrqnluF6
+jCz9yVCSYVW7H8RV1E2chFHVjeCQ//KLs4JnemthbEphhiCMBsA9WR9Td5RMuDiZ
+FtpZywJmuG8MMtrZBV1oWluLpQuScMUZA1z6WEiOqUWEasgJ+ttAjJxOUc7GCctV
+kXbHxuuf/Li1MdfQnMs3LcpuTq556U1/3afz65fkhivbe09cPTzyw5JzwZfDrx4r
+XNy1edM7kw0XX2oZHGh+4sDU68s+bV3+8nVr7cp9vz+cn98wcy5Mb7jx+ffXXHnq
+bNctu0dvbbz63f7XWt5841Tf1ysPj2x8Zt0dPWv7pzesuP+LtsbHfzLfzO7ee/OR
+fZvk3NLPHxl88lLtQb7qt9PLLz1bnNqrH3puotgya2qLCuLE7KNb1g8Pfn/Xton9
+2xbn8eXpMyM/HrrtE7t6RXlzAociduCXd4dOrzo5fnT0QlT/9vJo5asrAw+opvyL
+7R/aOw/pFwY/6hm7Zy733u0bz75Fy9vn15y/sGPH+JFfdw4cXJffsmx6KOqd+ezp
+V9p6jo8fn+MftI69PdG0+g9i/3l3
+=DInG
+-----END PGP MESSAGE-----
+
+And finally, I am proving ownership of this host by posting or
+appending to this document.
+
+View my publicly-auditable identity here: https://keybase.io/stites
+
+==================================================================
