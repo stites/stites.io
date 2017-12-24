@@ -26,7 +26,7 @@ So the thing that I don't get is... Nope. It all makes sense. I thought they wro
 
 More interesting is this: the graph shown is not differentiable! It is a step-wise function. Mathematically, this isn't sound, but _subgradients_ still exist.
 
-Other notes:
+Other notes from "Optimization: Stochastic Gradient Descent" and "Backprop, Intuitions":
 
   - the derivative on each vaiable tells you the sensitivity of the whole expression on its value[1][1].
   - in the "real-valued circuts" example[1][1], backprop can be thought of as gates communicating to eachother whether they want their outputs to increase or decrease, and how strongly, to make the final output higher.
