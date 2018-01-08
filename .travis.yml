@@ -25,13 +25,21 @@ before_install:
 - travis_retry curl -L https://www.stackage.org/stack/linux-x86_64 | tar -xzO --wildcards '*/stack' > ~/.local/bin/stack
 - chmod a+x ~/.local/bin/stack
 - stack setup
+- ls ~/.stack/programs/x86_64-linux/
+- sed -i 's/-fno-PIE/-no-pie/g' ~/.stack/programs/x86_64-linux/ghc-tinfo6-nopie-8.2.2/lib/ghc-8.2.2/settings
+- sed -i 's/-fno-PIE/-no-pie/g' ~/.stack/programs/x86_64-linux/ghc-nopie-8.2.2/lib/ghc-8.2.2/settings
 
 install:
-- echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
 - if [ -f configure.ac ]; then autoreconf -i; fi
 - |
   set -ex
+  stack exec ghc --version 2> /dev/null
+  echo "System: $(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
+  echo "Stack : $(stack --version)"
+  echo "      : $(stack exec ghc --version) [$(stack exec ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
+
   stack --no-terminal --install-ghc $ARGS test --bench --only-dependencies
+
   set +ex
 
 script:
