@@ -8,6 +8,6 @@ build: stack-build clean
 	stack exec site -- build
 
 watch: stack-build clean
-	stack exec site -- watch
+	stack exec site -- watch --host 0.0.0.0
 
 .PHONY: hakyll clean build watch stack-build
