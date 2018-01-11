@@ -1,6 +1,6 @@
 ---
 layout: post
-title: A useful `==` in Javascript
+title: A useful == in Javascript
 ---
 
 <p class="meta">17 May 2014 - San Francisco, CA</p>
@@ -10,7 +10,7 @@ Today I was reviewing John Resig's [Secrets of a Javascript Ninja Quiz][eresig] 
     function isPrime( num ) {
       if ( isPrime.cache[ num ] != null )
         return isPrime.cache[ num ];
-      
+
       var prime = num != 1; // Everything but 1 can be prime
       for ( var i = 2; i < num; i++ ) {
         if ( num % i == 0 ) {
@@ -18,9 +18,9 @@ Today I was reviewing John Resig's [Secrets of a Javascript Ninja Quiz][eresig] 
           break;
         }
       }
-     
+
       isPrime.cache[ num ] = prime
-     
+
       return prime;
     }
 

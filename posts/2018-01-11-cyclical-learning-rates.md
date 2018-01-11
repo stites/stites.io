@@ -1,9 +1,11 @@
 ---
-layout:post
-title: [paper] Cyclical Learning Rates for Training Neural Networks
+layout: post
+title: (paper) Cyclical Learning Rates for Training Neural Networks
 ---
 
 [Cyclical Learning Rates for Training Neural Networks][paper]
+
+([github][gh])
 
 Introduced via Jeremy Howard as one of the two techniques that gives him deep learning superpowers, cyclical learning rates are a departure from the manual decision making process when choosing a learning rate in deep learning. Currently either stepwise- or cosine-annealing is the usual method of learning rate decay, but these include decisions around manual hyperparameters which humans are not nessecarily good at making. Adaptive learning rates also exist, but cyclic learning rates require a
 negligible computation overhead. Where adaptive methods like AdaGrad, RMSProp, and AdaDelta treat the learning rate problem as a non-stationary one, CLR offers a schedule which, counterintuitively, resets the learning rate periodically.
@@ -25,3 +27,4 @@ right side of the tooth are your hyperparameters.
 
 [adadelta-of-bandits]: https://arxiv.org/abs/1412.6599
 [paper]: https://arxiv.org/abs/1506.01186
+[gh]: https://github.com/bckenstler/CLR
