@@ -32,5 +32,4 @@ extra-package-dbs: []
 # extra-lib-dirs: [/path/to/dir]
 
 ghc-options:
-   "pandoc": '-optl-pthread'
-   "pandoc-citeproc": '-optl-pthread'
+   "*": '-optl-pthread'
