@@ -7,4 +7,4 @@ The following directories and their contents are Copyright Sam Stites. You may n
 
 * posts/
 
-Copyright (c) 2014-2017, Sam Stites <sam@stites.io>
+Copyright (c) 2014-2018, Sam Stites <sam@stites.io>
