@@ -1,6 +1,6 @@
 ---
 layout: post
-title: (paper) Cyclical Learning Rates for Training Neural Networks
+title: Cyclical Learning Rates for Training Neural Networks (paper)
 ---
 
 [Cyclical Learning Rates for Training Neural Networks][paper] ([github][gh])

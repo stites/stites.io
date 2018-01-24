@@ -1,6 +1,6 @@
 ---
 layout: post
-title: lift your constructors for healthy data
+title: Lift your constructors for healthy data
 ---
 
 When constructing a new data type, it makes sense that we'd want to have some

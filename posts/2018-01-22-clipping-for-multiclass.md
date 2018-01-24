@@ -1,6 +1,6 @@
 ---
 layout: post
-title: clipping, that extra bump for loss criteria
+title: Clipping, that extra bump for loss criteria
 ---
 
 For the past couple of days I've been writing a transfer-learning workflow for the dog breed identification kaggle competition. This was done solely in pytorch and torchvision, heavily referencing the beginner pytorch tutorials, and you can find them at [stites/circus](https://github.com/stites/circus/blob/master/notebooks/dog-breeds.ipynb). This code, which doesn't do anything fancier than a fastai notebook, was able to produce results that placed in the 50th-percentile of the competition. This isn't enough to qualify for anything like a bronze medal on kaggle (there are ~1k participants), but as a tool to familiarize myself with a CV pipeline from scratch, I would say this is a success.

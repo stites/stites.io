@@ -1,6 +1,6 @@
 ---
 layout: post
-title: infix mappend
+title: Infix mappend
 ---
 
 Don't forget the infix mappend: `<>`. As bytemyapp opinionates: remembering this kind

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Intrinsic Fear [paper]
+title: Intrinsic Fear (paper)
 ---
 
 Cleverly posted before the US election. This paper talks about the

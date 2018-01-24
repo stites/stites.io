@@ -1,6 +1,6 @@
 ---
 layout: post
-title: tracing in haskell
+title: Tracing in haskell
 ---
 
 Today I learned about `traceM` and `traceShowM`. First off: wow! debugging is

@@ -1,5 +1,5 @@
 ---
-title: kmett's reflection
+title: Kmett's reflection
 ---
 
 To be run in ghci with `stack ghci --package reflection`

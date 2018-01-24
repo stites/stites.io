@@ -1,6 +1,6 @@
 ---
 layout: post
-title: writing a small bootstrap 3 downgrader in sed
+title: Writing a small bootstrap 3 downgrader in sed
 ---
 
 <p class="meta">04 Sept 2014 - Redwood City, CA</p>
