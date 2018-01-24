@@ -60,5 +60,5 @@ deploy:
   default_text_charset: 'utf-8'
   cache_control: "max-age=31536000"
   on:
-    repo: stites/stites.github.io
+    repo: stites/stites.io
     branch: master
