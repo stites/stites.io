@@ -9,6 +9,8 @@ While Teslas do seem to be marketed as the highest-end card, it looks like the G
 
 > **NOTE:** Be careful what platform you are working on and what the default precision is in it. For example, here in the CUDA forums (August 2016), one developer owns two Titan X's (GeForce series) and doesn't see a performance gain in any of their R or Python scripts. This is diagnosed as a result of R being defaulted to double precision, and has a worse performance on new GPU than their CPU (a Xeon processor). Tesla GPUs are cited as the best performance for double precision. In this case, converting all numbers to float32 increases performance from 12.437s with nvBLAS 0.324s with gmatrix+float32s on one TITAN X (see first benchmark).
 
+Another thing to consider is that the Quadro has a huge amount of memory, which might be beneficial for future learning models.
+
 [compare]: http://timdettmers.com/2017/04/09/which-gpu-for-deep-learning/
 [in1]: http://forums.fast.ai/t/1080ti-announced-beats-titan-x/1663
 [in2]: https://www.pugetsystems.com/labs/hpc/TitanXp-vs-GTX1080Ti-for-Machine-Learning-937/
