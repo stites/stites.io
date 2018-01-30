@@ -1,6 +1,11 @@
 TODO topics
 ==========
 
+Timeseries analysis:
+- go over all ways to do cross validation and data augmentation
+ + probably two posts. Also see this: www.fast.ai/2017/11/13/validation-sets/
+
+
 Meta:
 - a post of Feynman's "What I cannot create, I do not understand" and how it relates to Software Engineering today. ps, [check out this quora link on some people's answers](https://www.quora.com/What-did-Richard-Feynman-mean-when-he-said-What-I-cannot-create-I-do-not-understand)
 
