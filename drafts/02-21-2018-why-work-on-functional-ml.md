@@ -1,9 +1,10 @@
 ---
 layout: post
 title: Why work on functional ML?
+date: 2018-02-21
 ---
 
-Fine-tuning this comment with some of my thoughts as a RL/DRL practitioner who also migrates models to production, which is in Haskell. Primarily I'm addressing this comment because it's a little more down-to-earth than the blogpost : )
+Fine-tuning this comment with some of my thoughts as a RL/DRL practitioner who also migrates models to production, which is in Haskell. Primarily I'm addressing this comment because it's a little more down-to-earth than the blogpost \: )
 
 <!-- Parallelization at the language level can be really nice! While CV isn't really in my wheelhouse, there are certain tasks you can't always delegate to the GPU with your favorite tensor library (specifically image processing comes to mind). You're right that types don't just solve everything, but they sure can help. That said it's not _terribly_ important unless you are dealing with a production system or you haven't heard of your language's GPU-accelerated or multiprocessing-based image library. -->
 
