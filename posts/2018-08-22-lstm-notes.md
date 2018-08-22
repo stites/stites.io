@@ -51,34 +51,48 @@ Chained together, it composes:
             obs_1                obs_2                obs_3
 ```
 
+<br/>
+
 ## The Learn Gate
 
 Steps:
+
 - given: $STM_{t-1}$ as the memory buffer at time $t-1$ and $E_t$ as the event at time $t$
 - combine: $N_t' = tanh(W_n[STM_{t-1}, E_t] + b_n)$
 - forget:  $N_t  = N_t' x sigmoid(W_i[STM_{t-1}, E_t]+ b_i)$ -- notice that sigmoid turns this into a linear combination (ie: how much to keep and how much to forget of each weight).
 
+<br/>
+
 ## The Forget Gate
 
 Steps:
+
 - given: $LTM_{t-1}$ as the memory buffer at time $t-1$
 - use the learn gate from below with sigmoid to find out how much to keep: $f_t = sigmoid(W_f[STM_{t-1}, E_t] + b_f)$
 - and apply that to the $LTM_{t-1}$: $F_t  = LTM_{t-1} \dot f_t$
 
+<br/>
+
 ## The Remember Gate
 
 Steps:
+
 - given: $LTM_{t-1}f_t$, the output of the forget gate, and $N_ti_t$, the output of the learn gate
 - add them together: $LTM_t = LTM_{t-1}f_t + N_ti_t$
+
+<br/>
 
 ## The Use Gate (or output gate)
 
 Steps:
+
 - given: $LTM_{t-1}$, $STM_{t-1}$, $E_t$
 - find out how much to keep from the forget gate: $U_t = tanh(W_u LTM_{t-1} \dot f_t + b_u$
 - find out how much to keep from short term memory and the event:
     $V_t = sigmoid(W_v [STM_{t-1}, E_t] + b_v$
 - add them together $STM_t=U_t \dot V_t$
+
+<br/>
 
 ## Other architectures
 

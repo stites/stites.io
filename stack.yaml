@@ -32,4 +32,4 @@ extra-package-dbs: []
 # extra-lib-dirs: [/path/to/dir]
 
 ghc-options:
-   "*": '-optl-pthread'
+   "$everything": '-optl-pthread'
