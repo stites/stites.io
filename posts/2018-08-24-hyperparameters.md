@@ -10,6 +10,7 @@ From what I've seen optimizer hyperparameters are the parameters where there wil
 ---
 
 Other notes:
+
 - Small minibatch sizes have more noise in error calculations, so you should preference for higher minibatches. Bumping batch size in powers of 2 usually plays well with the hardware architecture you are using as well. Generally start with something in the 64-2048 range depending on your type of data.
 - Early stopping (ie - convergence) is usually determined by ensuring that validation error is always decreasing my some statistic for a window of size. Since you would be working with validation error, this will usually be more noisy than training error -- which is why a window is used.
 - Number of hidden units. This seems like a black art. You need to have enough neurons to capture the complexity of the problem, but not so much that the model quickly overfits on your training data. This can be seen when the difference between your model's training error is much lower than its validation error. If this happens, throw more dropout at the model.
