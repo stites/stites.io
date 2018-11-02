@@ -96,7 +96,12 @@ Simple discussion of the sorts of things we can and cant do. Maybe touch on Nape
 
 As you can probably tell from the caveats, while hasktorch is feature complete there is still a lot of work to be done. Currently you can build simple neural networks, and some Computer Vision combinators exist (conv1d, conv2d, max-pooling), but most are unfinished since it is a manual effort of encoding typechecks into the user interface. We are moving into a python-driven phase of development where we can build python models in pytorch, and have their comparable hasktorch model built alongside them. Working on this will make you intimately familiary with the ATen codebase, potentially with cuda internals.
 
-Caveats: memory usage _can be_ comparable to PyTorch from what I can tell. It's hard to know for sure since we don't have good dataloaders: the final  "production" model of LeNet loads all of CIFAR10 into the codebase. This, as well as datavisualization via tensorboard, needs a bit of work.
+Caveats:
+
+- memory usage _can be_ comparable to PyTorch from what I can tell. It's hard to know for sure since we don't have good dataloaders: the final  "production" model of LeNet loads all of CIFAR10 into the codebase. This, as well as datavisualization via tensorboard, needs a bit of work.
+
+- We currently lack a safe in-place abstraction. Because mutation is vital for large tensor opreations, Hasktorch devs are of the opinion that it is better to move fast and let users get access to these sorts of operations, but we need to iterate on these sooner rather than later. It should be straight forward, using ST, with some future use-cases for linear types (when type-level dimensions change, but the foreign pointer remains the same).
+
 
 ## Call for Collaboration
 
@@ -114,12 +119,7 @@ Long-term, call-for-collaboration:
 - Looking to linear types to fix some of the 
 
 
-2. `singletons` and `dimensions`
-- Use of the PyTorch Memory Allocator
-    1. Lacking in safety when it comes to in-place operations. Hasktorch provides all of the original functionality and tries to create a safe API which the Haskell ecosystem is used to, but it is possible to manipulate referential transparency and we do not have a safe abstraction for this.
 
-
-Before we continue, I am obligated to mention that there is a lot of work left to do in Hasktorch. The interface is, for the most par
 
 
 
