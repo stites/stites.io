@@ -12,3 +12,4 @@ site
 _cache/
 master/*
 target
+result
