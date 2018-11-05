@@ -198,7 +198,7 @@ corresponding outcomes, we can use the `unsafeMatrix` function which takes an
 arbitrary list-of-lists and gives us a torch tensor.
 
 ```
--- :set -XTupleSections in ghci or add this language pragma
+-- Using the TupleSections language pragma
 mkExactData :: IO (Tensor '[4, 2], Tensor '[4, 1])
 mkExactData = (,)
   <$> unsafeMatrix
@@ -481,7 +481,7 @@ fancy with data loader abstractions. This about sums up the stage of the
 Hasktorch project: functions like `optimizer` in PyTorch, abstract the
 composition of a forward function with loss, but are also written in Python.
 Building these types of convenience functions is a work in progress which might
-need some generic programming, or simply Haskell best-practices.
+need some generic programming or, simply, Haskell best-practices.
 
 Hasktorch is entering a phase of "example-driven" development where we would like to collect PyTorch modules paired with Hasktorch conversions in our `examples/` subdirectory.
 We're hoping that this will make contributing code exciting and
