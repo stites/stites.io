@@ -16,6 +16,6 @@ cipher), follow me on twitter at [@samstites][tw], or catch me on github
 at [github.com/stites][gh].
 
 [gh]: //www.github.com/stites
-[tw]: //https://twitter.com/SamStites
+[tw]: //www.twitter.com/SamStites
 [squid]: //www.turbosquid.com
 [vfa]: //www.ventureforamerica.org
