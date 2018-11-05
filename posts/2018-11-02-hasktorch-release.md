@@ -104,12 +104,7 @@ To refresh your memory XOR, or "exclusive or," can be illustrated with
 the following truth table:
 
 
-| `x1` | `x2` | `xor(x1,x2)` |
-|----|----|-----------|
-|  0 |  0 |     0     |
-|  1 |  0 |     1     |
-|  0 |  1 |     1     |
-|  1 |  1 |     0     |
+<img src="/images/hasktorch-xor-truth.png" style="display: block; margin-left: auto; margin-right: auto; width:50%;"/>
 
 In a graph, `xor(x1,x2)` we would see:
 
@@ -485,7 +480,8 @@ fairly low-level. We never delegate to an optimizing function or do anything
 fancy with data loader abstractions. This about sums up the stage of the
 Hasktorch project: functions like `optimizer` in PyTorch, abstract the
 composition of a forward function with loss, but are also written in Python.
-Building these types of convenience functions is a work in progress.
+Building these types of convenience functions is a work in progress which might
+need some generic programming, or simply Haskell best-practices.
 
 Hasktorch is entering a phase of "example-driven" development where we would like to collect PyTorch modules paired with Hasktorch conversions in our `examples/` subdirectory.
 We're hoping that this will make contributing code exciting and
