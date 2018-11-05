@@ -3,8 +3,6 @@ layout: post
 title: Hasktorch v0.0.1
 ---
 
-**DRAFT**
-
 *Long story short:* After a few prototypes and feedback, I'm happy to announce
 that `hasktorch-0.0.1.0` is now officially on Haskage! The API documentation
 [can be found here][indef]. The rest of this post introduces the library and
@@ -15,28 +13,30 @@ development entails, and hopefully get you all excited about contributing : )
 ---
 
 The Hasktorch suite of libraries includes the haskell bindings to PyTorch's
-backend, in the `hasktorch-ffi-*` packages, as well as the beginnings of
-generic backpack modules, [see `hasktorch-indef`][indef], which constitute a
-simple Haskell interface to a modern deep learning library which constructs
-dynamic computation graphs. This interface comes in two flavors: a dynamic
-interface, much like what you would expect out of something like PyTorch, as
-well as a statically-typed interface, which begins to make use of Haskell's
-dependent types to statically enforce the safe construction of these dynamic
-graphs.
+backend (in `hasktorch-ffi-*`) as well as the beginnings of
+backpack modules ([`hasktorch-indef`][indef]) which make up a
+simple Haskell interface to a modern deep learning library.
+
+This interface comes in two flavors: a dynamic
+interface, much like what you would expect out of PyTorch, as
+well as a statically-typed interface, which makes use of Haskell's
+dependent types to enforce the safe construction of dynamic computation graphs.
 
 [indef]: https://hackage.haskell.org/package/hasktorch-indef
 
 Hasktorch differs from the Tensorflow bindings from the fundamental level of
 how DAG construction is formed for computation. This means that tensors are
 untethered from a computational context and do not require a `Session`-like
-monad in order to run. Austin and I have also prioritized the static tensor
-interface as well so we have fully-typed dimensions, making use of Artem's [`dimensions`][dimensions] library.
+monad in order to run. [Austin][austin] and I have also prioritized the static tensor
+interface so we have fully-typed dimensions, making use of Artem's [`dimensions`][dimensions] library.
 
-Within the Haskell community, there is a growing collection of pure-haskell
-alternatives such as [linear][linear], [grenade][grenade], and
-[backprop-learn][backprop-learn], [easytensor][easytensor]. Hasktorch takes
-inspiration from these and, hopefully, will offer a comparable API that it
-will also be able to keep up with the fast pace of the deep learning community.
+[austin]: https://github.com/austinvhuang
+
+Within the Haskell community, there is a growing collection of pure-Haskell
+alternatives such as [linear][linear], [grenade][grenade],
+[backprop-learn][backprop-learn], and [easytensor][easytensor]. Hasktorch takes
+inspiration from these and, hopefully, will offer a comparable API so that it
+will be able to keep up with the fast pace of the deep learning community.
 
 [easytensor]: https://hackage.haskell.org/package/easytensor
 [backprop-learn]: https://github.com/mstksg/backprop-learn/
@@ -88,21 +88,19 @@ look like this:
 xor example found in Hasktorch's examples folder][xor-example]. The example
 there walks through three solutions: an exact answer to solve XOR, manual
 calls to THNN combinators (useful to experiment with new AD frameworks), and a
-solution using backprop combinators -- which we discuss for the remainder of
-this post.*
+solution using backprop combinators.*
 
 [xor-example]: https://github.com/hasktorch/hasktorch/blob/master/examples/xor/Main.hs
 
 Taking an example out of [Deep Learning][deep-learning] (Goodfellow, Bengio,
 Courville), learning XOR is a task which cannot be solved linearly, but is
-made tractable with a simple two-layer nerual network with rectified linear
-unit (ReLU) activation. Furthermore, it is an excellent example for those who
-are new to neural architectures and concepts like backpropagation because a
-neural solution includes very few hyperparameters (nine in total), so it is
-possible to follow along with pen and paper so that you understand what is
-taking place.
+made tractable with a simple two-layer neural network. Furthermore, it is
+an excellent example for those who
+are new to neural architectures and concepts like backpropagation because it
+includes very few hyperparameters (nine in total), so it is
+possible to follow along with pen and paper.
 
-To refresh your memory XOR, or "exclusive or," can be best illustrated with
+To refresh your memory XOR, or "exclusive or," can be illustrated with
 the following truth table:
 
 
@@ -113,8 +111,7 @@ the following truth table:
 |  0 |  1 |     1     |
 |  1 |  1 |     0     |
 
-If we map our output, `xor(x1,x2)`, onto a three-dimensional space, we would
-yeild the following graph.
+In a graph, `xor(x1,x2)` we would see:
 
 <img src="/images/hasktorch-xor.png" style="display: block; margin-left: auto; margin-right: auto; width:50%;"/>
 
@@ -124,7 +121,7 @@ Notice that it would be impossible for a linear model to solve this: when $x_1
 fact that a linear model can only modify the coefficients ($w_1$, $w_2$, and
 $bias$) of a linear fit: $y = w_1 \dot x_1 + w_2 \dot x_2 + bias$.
 
-That said, there is an exact solution to this model with a two-layer neural
+There is an exact solution to this model with a two-layer neural
 network with relu activation. This network would look something like:
 
 $$
@@ -142,8 +139,8 @@ problem into finding a new latent representation:
 In this transformed space, we are able to collapse $\textbf{x} = [1, 0]$ and
 $\textbf{x} = [0, 1]$ into a single point in the feature space of
 $\textbf{h} = [1, 0]$. We can now use our last layer
-$${\bf w_2}^{T} {\bf x} + b_2$$ to find a tractable solution to this problem,
-and we can set a loss function, such as mean-squared error, to zero to find a
+$${\bf w_2}^{T} {\bf x} + b_2$$ to find a tractable solution to this problem.
+We can set a loss function, such as mean-squared error, to zero to find a
 set of exact weights which would solve this problem.
 
 One set of weights would be:
@@ -179,10 +176,12 @@ truth table.
 ### Up next
 
 Using this as a guiding example we will see how to:
+
 - construct tensors in hasktorch
 - randomly initialize weights
 - how to use the [`backprop` library][backprop-hackage] to get gradients, composing functions with loss.
 - and finally, how to loop through a dataset, updating our weights with fractions of the gradient to converge on an optimal solution.
+
 
 [deep-learning]:http://www.deeplearningbook.org/
 
@@ -221,19 +220,21 @@ mkExactData = (,)
     ]
 ```
 
-While most construction functions are pure (like `new`, `constant`, and
+<!--
+While most construction functions are pure (`new`, `constant`, and
 `newWithStorage`), convenience functions such as `vector` (rank-1 tensors),
 `matrix` (rank-2), `cubiod` (rank-4), `hyper` (rank-4), and `fromList` (rank-n
-tensors) still live in IO since there is still a question of how much
-parallelism we want to introduce, as well as how best to encode the misuse of
-these convenience functions. At the core of these functions, however, is a
+tensors) live in IO because there is an outstanding question of how much
+parallelism we want to introduce and how to handle errors.
+At the core of these functions, however, is a
 desire to simply create tensors out of lists or encode a construction simply
 by type.
 
 ### Random functions and notation
+-->
 
 Another way we can construct tensors is by using the distributions in
-Hasktorch, such as `uniform`. This would be perfect to initialize our network
+Hasktorch. For instance, we can use a function like `uniform` to initialize our network
 architecture:
 
 ```
@@ -248,19 +249,19 @@ mkNetwork = do
   pure (l1, l2)                   -- (5)
 ```
 
-Already, there are a lot of new functions coming into play. One-by-one:
+Already, there are a lot of new functions coming into play:
 
 1. `newRNG` constructs a random number generator as defined by the ATen
 framework. This is purely a CPU-construct and is not present for GPU-based
 tensors.
 
 2. `ord2Tuple` constructs an ordered tuple -- the first argument being
-strictly less than the second. Several of these sorts of custom smart
-constructors are use to avoid segfaults with random number creation and can be
+strictly less than the second. Several of these smart
+constructors exist to avoid segfaults with random number creation and can be
 found in `hasktorch-types-th:Torch.Types.Numerics`.
 
 3. Here we are creating a `Linear` layer with two tensors, instantiated with
-the uniform random distribution. A `Linear` type is simply a tuple of weights
+the uniform random distribution. A `Linear` type is a tuple of weights
 and biases, which can be seen by looking at its definition in
 `hasktorch-indef:Torch.Indef.Static.NN.Linear`:
 
@@ -277,23 +278,22 @@ newtype Linear i o
 lines up with the first argument in our tuple's type, `Linear 2 2`, and `l2`
 is mapped to `Linear 2 1`.
 
-In hasktorch, there are three ways in which we notate functions. Pure
-functions are generally named as you would expect (with some exceptions),
+In Hasktorch, there are three ways in which we notate functions. Pure
+functions are generally named as you would expect,
 while inplace tensor functions use PyTorch's notation of post-fixing a
-function call with an underscore. Finally, a function may be prefixed with an
+function's name with an underscore. Finally, a function may be prefixed with an
 underscore. These functions indicate that they adhere to the underlying
 C-code's convention of mutating the first argument inplace. Because of the
-quantity of functions that hasktorch offers, there are sometimes overlaps in
+quantity of functions that Hasktorch offers, there are sometimes overlaps in
 the last two of these groups.
 
 
 ### Backprop
 
-With our network defined, which was as simple as writing a type, we now have
-to write our forward function. This is simply a function that takes an input
+We now have to write a forward function. This is simply a function that takes in arguments
 of our architecture and training data, and returns the inferred output. For
-our xor, we would want to write something that takes an input and applies our
-first linear layer, who's operation looks like:
+our xor problem, we should write something that takes an input and applies our
+first linear layer, whose operation looks like:
 
 $$y_{layer1} = x_{input} \times weights_{layer1} + bias_{layer1}$$
 
@@ -331,8 +331,8 @@ library is a series in itself. In fact it is one that has been done
 [several][intro-backprop] [times][backprop-landing] [over][pure-ml] in a clear
 and eloquent style by Justin Le, himself. For this post, however, we will cut
 to the chase and say that arguments bundled up into a "backpropable" `BVar`
-hold a reference to their gradient which can be extracted with the
-`Reifies s W` constraint (`s` strings everything together). When we compose
+hold a reference to their gradient. This reference can be extracted with the
+`Reifies s W` constraint. When we compose
 functions that use `BVar`s, we automatically get an efficient calculation of
 the gradient through reverse-mode autodifferentiation. With some lenses and a
 `backprop` lens-based accessor, our code looks roughly unchanged.
@@ -386,16 +386,12 @@ And we can do both at the same time with [`backprop2`][bp2-hackage]:
 backprop2 :: (BVar s a -> BVar s b -> BVar s c) -> a -> b -> (c, (a, b))
 ```
 
-Let's use these functions to train our model.
-
 ### Loss and updating
 
-We almost have all of the pieces to train our model, we just need a couple
-more things: a loss function (also called a criterion), and a way to update
-our model with the gradient.
+We just need a couple more things before we are done: a loss function (also called a criterion), and a way to update our model with the gradient.
 
 A loss function is used to let you know how your model is doing as it iterates
-over the data. One simplified choice of loss function is mean squared error,
+over the data. One choice of loss function is mean squared error,
 which can be found in `Torch.Double.NN.Criterion` under the name
 `mSECriterion`. The output of this function is a singleton `Tensor '[1]` which
 holds the resulting mean-squared difference from the given true values. A
@@ -410,7 +406,7 @@ mSECriterion
 ```
 
 We also need to be able to move a model towards the optimal hyperparameters
-using a small fraction of a calculated gradient -- a process commonly known as
+using a small fraction of the gradient -- a process commonly known as
 gradient descent.
 
 ```
@@ -457,17 +453,13 @@ trainer lr n net0 = go 0 net0
         go (c+1) (update net (lr, netGrad))
 ```
 
-In our subroutine `go` we are constructing data, as illustrated before,
-feeding that data into our forward function `xorForward`, and applying that
-agin to `mSECriterion` to get our gradient for the network with respect to the
-mean squared error from the expected `ys`. This can be used to construct new
-weights for our network, with `update`, and we recurse again until some max
-number of iterations.
+In the function `go` we are constructing data,
+feeding that data into our forward function `xorForward`, and applying `mSECriterion` to get the gradient of our network with respect to the mean squared error from `ys`.
+We then recurse with new weights by applying our `update` function to our model with the gradient and a learning rate.
 
-From here, we can sequence all of the above to train a simple two-layer,
-feed-forward neural network in our main function. At the end of this training,
-we can reconstruct our final results and print out what the network finally
-expected and what the final error ended up as:
+---
+
+Putting everything together, we can build our initial model with `mkNetwork`, iterate over our data with `trainer`, and run one final inference over the original four examples from `mkExactData`, reporting the final result and mean squared error.
 
 ```
 main = do
@@ -488,34 +480,24 @@ main = do
 
 ### Wrapping up
 
-In working through this example, we've actually implemented something which is
+In working through this example, we've actually implemented something
 fairly low-level. We never delegate to an optimizing function or do anything
 fancy with data loader abstractions. This about sums up the stage of the
-hasktorch project: functions like `optimizer`, in PyTorch, abstracts the
-composition of a forward function with loss, but are also written in python.
-Building these these sorts of convenience functions are still a work in progress.
+Hasktorch project: functions like `optimizer` in PyTorch, abstract the
+composition of a forward function with loss, but are also written in Python.
+Building these types of convenience functions is a work in progress.
 
-Overall, though, hasktorch has enough features in place that the remainder of
-development is a manual effort of reading the source of ATen and translating
-various conditionals into type-level constraints. For this reason, we are entering
-a phase of "example-driven" development where we would like to collect PyTorch
-modules paired with hasktorch conversions in our `examples/` subdirectory, which
-should make the development of the staticly typed neural interface exciting and
-accessible to all kinds of developers. Off the top of my head, I would say that
-if you know PyTorch but not Haskell, Austin and I can walk you through some of
-the Haskell-y bits and you will learn more about PyTorch internals. Also, if you
+Hasktorch is entering a phase of "example-driven" development where we would like to collect PyTorch modules paired with Hasktorch conversions in our `examples/` subdirectory.
+We're hoping that this will make contributing code exciting and
+accessible to all kinds of developers.
+
+If you know PyTorch but not Haskell, Austin and I can walk you through some of
+the Haskell-y bits and you will learn more about PyTorch internals. If you
 know Haskell but not PyTorch, we would love to give you an excuse to submit some
-simple examples to our codebase and stretch out some of your machine learning
+simple examples to our codebase and flex some of your machine learning
 chops!
 
-In a later post, I'll go over some of the internals of hasktorch including a deeper
-dive into Backpack, GHC's mixin features, how we use the singletons library, aka
-dependent types in Haskell, and we'll talk a bit more about automatic
-differentiation. By this time, I'm hoping that I may have piqued some interest and
-that some of you might want to spend some time working on our little project -- I'll
-also go over some opportunities to contribute.
-
-Until next time!
+In a later post, I'll go over some of the internals of Hasktorch including a deeper dive into Backpack (GHC's mixin features), how we use the singletons library (dependent types in Haskell), and I'll talk a bit more about automatic differentiation. I'll also go over some opportunities to contribute. Until next time!
 
 <!--
 
@@ -529,7 +511,7 @@ Simple discussion of the sorts of things we can and cant do. Maybe touch on Nape
 
 ## Current Status and Caveats
 
-As you can probably tell from the caveats, while hasktorch is feature complete there is still a lot of work to be done. Currently you can build simple neural networks, and some Computer Vision combinators exist (conv1d, conv2d, max-pooling), but most are unfinished since it is a manual effort of encoding typechecks into the user interface. We are moving into a python-driven phase of development where we can build python models in pytorch, and have their comparable hasktorch model built alongside them. Working on this will make you intimately familiary with the ATen codebase, potentially with cuda internals.
+As you can probably tell from the caveats, while Hasktorch is feature complete there is still a lot of work to be done. Currently you can build simple neural networks, and some Computer Vision combinators exist (conv1d, conv2d, max-pooling), but most are unfinished since it is a manual effort of encoding typechecks into the user interface. We are moving into a python-driven phase of development where we can build python models in pytorch, and have their comparable Hasktorch model built alongside them. Working on this will make you intimately familiary with the ATen codebase, potentially with cuda internals.
 
 Caveats:
 
