@@ -13,3 +13,6 @@ _cache/
 master/*
 target
 result
+gh-pages
+dist
+dist-newstyle
