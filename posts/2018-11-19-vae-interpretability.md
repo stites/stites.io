@@ -1,6 +1,6 @@
 ---
 layout: post
-title: VAE interpretability\: the killer app?
+title: "VAE interpretability: the killer app?"
 ---
 
 I'm slowly moving this blog to a research repository, but here are some speculative thoughts.

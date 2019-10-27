@@ -19,7 +19,7 @@ main = hakyll $ do
   draftRules
   draftListRules
   indexRule
-  match "templates/*" $ compile templateBodyCompiler
+  match "templates/*.html" $ compile templateBodyCompiler
  where
   staticRules :: Rules ()
   staticRules = do
