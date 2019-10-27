@@ -1,27 +1,21 @@
 ---
 layout: post
-title: "VAE interpretability: the killer app?"
+title: "VAE interpretability"
 ---
 
-I'm slowly moving this blog to a research repository, but here are some speculative thoughts.
+Here are some speculative thoughts to show my future self how naive I am at the end of 2018.
 
-VAEs seem to have this ability to navigate between high scalability and
-better informed structure than conventional NNs. I have a feeling this
-means that it will be on the rise as "The Next Big Thing." At least,
-this just means that the NN success saga is not coming to a close as far
-as stopping points. There are some effects of this:
-- I predict that more research papers will address VAEs.
-- I predict interpretability will be a more common metric in papers.
-- I predict that VAEs and transfer learning will be a thing that is comparabile to current transfer learning
-- I bet causal learning and logical programming will be on the rise (probably frog leaping the bayes train), towards the end of this VAE surge
+VAEs seem to have this ability to navigate between high scalability and better informed structure than conventional NNs.
+I have a feeling this means that it will be on the rise as "The Next Big Thing."
+At least, this just means that the NN success saga is not coming to a close as far as stopping points.
+There are some effects of this:
+- I expect that more research papers will address VAEs.
+- I expect interpretability will be a more common metric in papers (whatever that takes the form of).
+- I expect that VAEs and transfer learning will be a thing that is comparable to current transfer learning.
+- I bet causal learning and logical programming will be on the rise, towards the end of this VAE surge.
 
-There is a lot more to go off of. I think the most interesting thing
-here will be that some VAE/classical-NN architecture will be used to
-invalidate incorrect beliefs about graphical models. In other words,
-we will automate the feature engineering of bayesian statistics. I
-would have to read more about the automated statistician to find out
-how extensive it is, but I am assuming that it is not _too_ extensive
-and this "Neural-VAE non-parametric graphical architecture search"
-(so... NVAENPGAS) will be practical enough to solve current academic
-benchmarks at low cost.
+I think the most interesting thing here will be that some VAE/classical-ML architecture which will be used to make complex graphical models competitive again with NNs.
+Hopefully, this will end up automating the feature engineering of graphical models (for interpretability) and achieving scale.
+I'd have to read more about the automated statistician to find out how extensive it is, but I am assuming that it is not _too_ crazy.
+Maybe we'll all end up using some "Neural-VAE non-parametric graphical architecture search" (so... NVAENPGAS?) which will be practical enough to solve all current academic benchmarks at low cost.
 
