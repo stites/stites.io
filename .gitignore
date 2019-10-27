@@ -16,3 +16,4 @@ result
 gh-pages
 dist
 dist-newstyle
+stack.yaml.lock

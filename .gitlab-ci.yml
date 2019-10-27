@@ -1,0 +1,20 @@
+image: haskell:8.6                  # 300Mb
+# image: fpco/stack-build:lts-14.11 # 3GB
+
+pages:
+  cache:
+    paths:
+      - _cache
+      - .stack
+  before_script:
+    - export STACK_ROOT="$(pwd)/.stack"
+    - stack install --only-dependencies
+    - stack build
+  script:
+    - stack exec site build
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+
