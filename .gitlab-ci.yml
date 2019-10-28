@@ -12,9 +12,10 @@ pages:
     - stack build
   script:
     - stack exec site build
+    - mv _site public
   artifacts:
     paths:
-      - _site
+      - public
   only:
     - master
 
