@@ -12,10 +12,16 @@ pages:
     - stack build
   script:
     - stack exec site build
-    - mv _site public
+      # - mv _site public
   artifacts:
     paths:
-      - public
+      - _site/*.html
+      - _site/*.pdf
+      - _site/*.ico
+      - _site/posts
+      - _site/images
+      - _site/drafts
+      - _site/css
   only:
     - master
 
