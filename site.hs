@@ -9,17 +9,21 @@ import Control.Monad
 import Hakyll.Core.Identifier (Identifier, toFilePath, fromFilePath)
 import GHC.Exts (IsString(..))
 import System.FilePath (replaceExtension)
+import qualified GHC.IO.Encoding as E
+
 
 main :: IO ()
-main = hakyll $ do
-  staticRules
-  staticHTMLRules
-  postRules
-  archiveRules
-  draftRules
-  draftListRules
-  indexRule
-  match "templates/*.html" $ compile templateBodyCompiler
+main = do
+  E.setLocaleEncoding E.utf8
+  hakyll $ do
+    staticRules
+    staticHTMLRules
+    postRules
+    archiveRules
+    draftRules
+    draftListRules
+    indexRule
+    match "templates/*.html" $ compile templateBodyCompiler
  where
   staticRules :: Rules ()
   staticRules = do
