@@ -10,6 +10,6 @@ mkDerivation {
   executableHaskellDepends = [
     base binary blaze-html blaze-markup clay filepath hakyll
   ];
-  license = stdenv.lib.licenses.unfree;
+  license = stdenv.lib.licenses.bsd-3-clause;
   hydraPlatforms = stdenv.lib.platforms.none;
 }
