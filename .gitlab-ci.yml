@@ -9,7 +9,6 @@ pages:
 
   script:
     - nix-build ./release.nix
-    - sleep 2h
 
   after_script:
     # push all store paths that were added during the build
