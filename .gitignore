@@ -17,3 +17,6 @@ gh-pages
 dist
 dist-newstyle
 stack.yaml.lock
+tags
+tags.lock
+tags.temp
