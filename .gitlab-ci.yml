@@ -1,19 +1,23 @@
-image: haskell:8.6                  # 300Mb
-# image: fpco/stack-build:lts-14.11 # 3GB
+image: nixos/nix:latest
 
 pages:
-  cache:
-    paths:
-      - _cache
-      - .stack
   before_script:
-    - export STACK_ROOT="$(pwd)/.stack"
-    - stack install --only-dependencies
-    - stack build
+    - nix-env -iA nixpkgs.cachix nixpkgs.bash
+    - cachix authtoken $CACHIX_AUTH_TOKEN
+    - cachix use stites-io
+    - nix path-info --all > /tmp/store-path-pre-build
+
   script:
-    - sleep 1h
-    - stack exec site build
-      # - mv _site public
+    - nix-build ./release.nix
+    - sleep 2h
+
+  after_script:
+    # push all store paths that were added during the build
+    - bash -c "comm -13 <(sort /tmp/store-path-pre-build | grep -v '\.drv$') <(nix path-info --all | grep -v '\.drv$' | sort) | cachix push stites-io"
+
+  only:
+    - master
+
   artifacts:
     paths:
       - _site/*.html
@@ -23,6 +27,22 @@ pages:
       - _site/images
       - _site/drafts
       - _site/css
-  only:
-    - master
 
+  cache:
+    paths:
+      - _cache
+      - .stack
+
+# image: haskell:8.6                  # 300Mb
+# image: fpco/stack-build:lts-14.11 # 3GB
+# pages:
+#   before_script:
+#     - export STACK_ROOT="$(pwd)/.stack"
+#     - stack install --only-dependencies
+#     - stack build
+#   script:
+#     - sleep 2h
+#     - stack exec site build
+#       # - mv _site public
+#   only:
+#     - master
