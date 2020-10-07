@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2014-08-10-basic-d3-questions</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2014-08-10-basic-d3-questions
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<p>These questions are really made to be loose evaluations to understand how much a candidate understands about the holistics of the d3 library. They’re by no means a hard determination of the candidate’s ablilty to make beautiful visualizations: I would argue that also requires a good deal of CSS knowledge or the ablilty to snipe sections of stying from other d3 libraries. The main purpose of these questions is to differentiates how much a candidate copy-pastes code (there is a lot of that in the d3 world - it’s how everyone starts and you can still do a decent job with only that), and how much they can go it alone. Most of these answers are opinion based and the most important part is that they can answer them with a sound argument.</p>
+<h4 id="if-you-could-compare-d3-to-another-library-what-would-that-library-be">If you could compare d3 to another library what would that library be?</h4>
+<blockquote>
+<p>“Readers familiar with other DOM frameworks such as jQuery or Prototype should immediately recognize similarities with D3.” - <a href="http://d3js.org/#properties">d3</a></p>
+</blockquote>
+<h4 id="when-would-you-want-to-use-d3-over-other-libraries">When would you want to use d3 over other libraries?</h4>
+<blockquote>
+<p>“D3 is not a monolithic framework that seeks to provide every conceivable feature. Instead, D3 solves the crux of the problem: efficient manipulation of documents based on data.” - <a href="http://d3js.org/#introduction">d3</a></p>
+</blockquote>
+<blockquote>
+<p>“You can easily see that there is a trade-off between ease of use [not d3] and freedom [d3]. In the first case, you are stuck with a black box, in the second, with very complicated code.” - <a href="http://www.datameer.com/blog/uncategorized/whats-behind-our-business-infographics-designer-d3-js-of-course-2.html">datameer</a></p>
+</blockquote>
+<p>You are looking for the explaination of the tradeoff, primarily.</p>
+<h4 id="what-kind-of-other-libraries-have-you-used-or-have-heard-of-for-dataviz">What kind of other libraries have you used, or have heard of, for dataviz?</h4>
+<p>Looking for nvd3, or highcharts. Highcharts is jquery based but more robust, nvd3 is a lot more specific to d3 - but is a lot newer (they’ve had no updates since they are trying to restructure). There are more but, I think, these are the other competing libraries - at least one of them should be mentioned. There are a bunch <a href="https://en.wikipedia.org/wiki/D3.js">listed on wikipedia</a>.</p>
+<h4 id="what-is-the-general-workflow-of-creating-an-svg-element-in-d3">What is the general workflow of creating an svg element in d3?</h4>
+<p>You have to <code>enter</code> a DOM element (which can be existing or not-existing), then attach data to it (with the <code>data</code> method), then attach the desired DOM element to that (which is real this time). Then <code>exit</code>. <a href="http://d3js.org/#enter-exit">d3’s intro section on this</a> and <a href="http://bost.ocks.org/mike/selection/">mbostock’s blogpost in more depth</a>.</p>
+<h4 id="do-you-have-a-favorite-visualization">Do you have a favorite visualization?</h4>
+<p><a href="http://bl.ocks.org/mbostock">There are a ton here</a> all from mbostock, the creator of d3 (now working at the NYTimes). This is a fun question and begs the followup: <em>can you explain that visualization to me?</em> Since data viz is all about explaining complexities - this is important.</p>
+<h4 id="ask-about-their-front-end-experience.">Ask about their front-end experience.</h4>
+<p>d3 is, in the end, just another front end tool and you will probably make better visualizations if you understand how to style and manipulate the DOM.</p>
+<h4 id="if-they-use-angular-why-is-angular-and-d3-such-a-big-deal">if they use angular: why is angular and d3 such a big deal?</h4>
+<p>Because d3 manipulates the DOM, and angular is supposed to manage all of that. Thus d3, to properly update and interacte with angular, needs to be “injected” into the digest cycle (with a factory or service) and a directive needs to be writted to display the visualization. There are libraries that do the injecting, but the directives are all custom - since d3 is used to build custom things.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2015-03-08-rename-dynamo</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2015-03-08-rename-dynamo
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<h1 id="page.title">{{ page.title }}</h1>
+<p class="meta">
+March 08, 2015 - Mountain View, CA
+</p>
+<p>Starting to read CS papers from Fogus’ post, <a href="http://blog.fogus.me/2011/09/08/10-technical-papers-every-programmer-should-read-at-least-twice/">10 Technical Papers Every Programmer Should Read (At Least Twice)</a>. I’ll be going through these papers and writing synopsis and general thoughts.</p>
+<h2 id="dynamo-amazons-highly-available-key-value-store">Dynamo: Amazon’s Highly Available Key-value Store</h2>
+<h3 id="abstract">Abstract</h3>
+<p>Reliability at massive scale is a challenge at Amazon. as with big companies - small outages have large implications (usually financial, also trust).</p>
+<p>This paper is the design and implementation of Dynamo - a highly available key-value storage system which a lot of amazon core is built on. provides “always on” experience. sacrifices consistency “under certain failure scenarios” for strong availability. Makes use of object versioning and application-assisted conflict resolution in a manner that provides a novel interface for developers to use.</p>
+<h3 id="toc">TOC</h3>
+<ul>
+<li><ol type="1">
+<li>purpose</li>
+</ol></li>
+<li><ol start="2" type="1">
+<li>introduction</li>
+</ol></li>
+<li><ol start="3" type="1">
+<li>background</li>
+</ol></li>
+<li><ol start="4" type="1">
+<li>related work</li>
+</ol></li>
+<li><ol start="5" type="1">
+<li>system design</li>
+</ol></li>
+<li><ol start="6" type="1">
+<li>implementation</li>
+</ol></li>
+<li><ol start="7" type="1">
+<li>experiences and insights from implementing in production.</li>
+</ol></li>
+<li><ol start="8" type="1">
+<li>conclusion</li>
+</ol></li>
+</ul>
+<h3 id="purpose">1. Purpose</h3>
+<p>for the research community to see how different techniques can be combined to provide a single, highly-available system. dynamo is a eventually-consistent storage system which can be used in production with demanding applications. also dynamo shows how you can tune techniques to meet requirements of production systems with very strict performance demands.</p>
+<h3 id="introduction">2. Introduction</h3>
+<p>Amazon needs: + large usage “tens of millions” at peak load + highly distributed “tens of thousands of servers across the world” + requires high performance, reliability, efficiency and scalability</p>
+<p>Reliability is one of the most important because small outages have significant financial and customer relations problems.</p>
+<p>Lesson learned - reliability and scalability of a system is dependent on how its application state is managed. Result - amazon highly desentralized, loosely coupled, service oriented. Result - hundreds of services. Implication - need for available storage. More detail - customers should see and view data even if disks are failing, network routes are flapping or data centers are being ‘destroyed by tornados’ ie - always R/W and data on multiple data centers.</p>
+<p>dynamo is used to manage the state of services hat have very high reliability requirements and need tight control with trade offs between availability, consistency, cost-effectiveness and performance.</p>
+<p>basically it’s primary-key access to a data store. something like seller lists, shopping carts, customer preferences… etc. stuff that relational databases arent good with. EXAMPLE - at amazon dynamo is used to scale peak loads efficiently for shopping cart</p>
+<p>the general idea is that dynamo uses well-known techniques together in a tandem to acheive scalability and availability. A list of them include: + data being partitioned and replicated using consistent hashing. + consistency facilitated by using object versioning. + consistency among replicas during updates is maintained by a quorum-like technique and a decentralized replica synchronization protocol. + it uses a gossip-based distributed failure detection and membership protocol. + it’s completely decentralized and, thus, needs minimal manual administration. + storage nodes can be added or removed from dynamo without requiring any manual partitioning or redistribution.</p>
+<h3 id="background">3. Background</h3>
+<p>Amazon has standard needs of a large-scale production environment. Usually you see RDBMS however this sucks for a lot of patterns - most store and retrieve data by primary key and don’t require complex querying and management found in RDBMS - also means costs in the form of expensive hardware (?) and highly skilled personnel. there have been a lot of advances, but it’s still not easy to scale out a database or use smart partitioning schemes for load balancing.(LVM?) -&gt; dynamo is simple and solves all of this.</p>
+<h4 id="system-assumption-and-requirements">System Assumption and requirements</h4>
+<ul>
+<li><p>query model: simple read and write operations to a data item that is uniquely identified by a key. State is stored as binary objects (blobs) ided by unique keys. no operations span multiple data items and there is no need for a relational schema.</p>
+<ul>
+<li>as an aside - dynamo targets applications that need to store relatively small objects (usually &lt;1MB)</li>
+</ul></li>
+<li><p>ACID properties (Atomicy Consistency, Isolation and Durability) usually means more reliability at the cost of less availability (industry and academia proven) - dynamo targets models with weaker consistency.</p></li>
+<li><p>Efficiency: needs to run on commodity hardware infrasturcture. state access plays a crucial role in service operation so the storage system must be capable of meeting such stringent SLAs (next). services must be able to configure dynamo such that they consistently achieve their latancy and throughput requirements. tradeoffs are in performance, cost efficiency, availability, and durablility guarantees.</p></li>
+</ul>
+<p>operation environment assumbed to be ‘non-hostile’ security is not considered an issue.</p>
+<h4 id="service-level-agreementsslas">Service Level Agreements(SLAs)</h4>
+<p>this is between a client and service. something like “get me responses in 300ms 99.9% of the time for a peak load of 500requests per second”</p>
+<p>this happens at amazon and is pretty important with the level of SOA, decentralization, and the high number of dependencies.</p>
+<p>a common approach to handle performance-oriented SLAs is to describle them in terms of mean/avg/median/variance. Amazon has found that this only satisfies the majority and so they work with the 99.9-th percentile of the distribution. 99.9% was chosen after a cost-benefite analysis.</p>
+<p>Amazon engineering and optimization efforst are not focused on averages - more, they are targeted at this percentile. Load balancing selection of writing coordinators ( and more) are purely at controlling performance at this mark.</p>
+<p>** Storage systems play an important role in establising a service’s SLA because state management is one of the primary components of it. Thus - one of the main considerations for Dynamo is to <em>give services control over ther system properties such as consistency and durability</em> and to <em>let services make their own tradeoffs between functionality, performance and cost effectiveness</em>.</p>
+<h4 id="design-considerations">Design considerations</h4>
+<p>Usually - in traditional systems, you would use synchronous transations which would keep things strongly consistent. Much earlier studies show that this level of consistency, matched with resistence to network failure, and high availability - cannot all be acheived by a data store. So systems and applications need to be aware of which properties can occur and under what circumstances they operate, so that they can choose which kind of datastore works best for them.</p>
+<p>For highly faulty systems - due to factors of network error, disk quality, etc - high availability is increased with optimistic replication techniques. For example, having the changes propigate to replicas in the background and having more tolerance with concurrency and disconnections. This can be problematic, however, then you have conflicting changes which need to be resolved.</p>
+<p>Conflict Resolution has two points of control - when they happen, and who handles them.</p>
+<p>For the question of “when” you neet to ask if you are okay with these happening at r/w. This keeps things simple - however writes might be rejected if a change can’t reach all or most of the application in a more strongly consistent system. Dynamo takes the reverse approach and ensures that it is <em>always</em> writable for the sake of user experience. One instance of this is being able to save items to a shopping cart, even given network failure.</p>
+<p>For the question of “who”, the answer lies in two places: the application and the data store. This location is up to the designer of the service. When resolving in the data store, you must remember that there is very limited options due to lack of data. Usually these policies are simple and, most simply , are a matter of “the last write wins.” In the application, however, data schemas are known and you can do things like “merge” datasets in resolution - think of a shopping cart example. Optionally, you can still choose to push down this decision to the data store.</p>
+<h4 id="other-key-principles">Other key principles:</h4>
+<p><em>Incremental scalability</em>: Dynamo shoudl be able to scale out storage host one at a time with minimal impact on the operators and system itself. <em>Symmetry</em>: Every node in dynamo should have the same set of responsiblilties as its peers. <em>Decentralization</em>: An extension of symetry - dynamo’s design should favor decentralized, peer-to-peer techniques over centralized control. <em>Heterogeneity</em>: The work distribution must be proportional to the capabilities of the individual servers (ie - underlying infrastucture). important in adding new nodes with higher capacity without having to upgrade all hosts at once.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

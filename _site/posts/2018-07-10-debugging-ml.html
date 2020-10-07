@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Machine Learning Debugging, Unit Tests, and Production Torch</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Machine Learning Debugging, Unit Tests, and Production Torch
+</h1>
+
+<div class="meta">
+    July 10, 2018
+    
+</div>
+
+<div class="post">
+<p>There are various tips when debugging machine learning algorithms, which recently <a href="https://gitter.im/torch/torch7?at=5b3c4a6fbd92d8078291b5b7">came up in the Torch gitter channel</a>. Documenting some of these words of wisdom: + Write unit test with fixed seeds and prefilled tensors for a step or two + You may also get to rollout half the epoch or episode (depending on your domain, episodes only if you can adjust the environment) and then unit test some more. + In general stepping through your code with a debugger comes first, unit tests are just to codify that. + From [Matthew Rahtz’s blog][http://amid.fish/reproducing-deep-rl]: keep a daily journal of your assumptions and actions. This helps with logic bugs and will keep you sane. Also “log everything” and “chart everything” depending on how crazy things get. + If a model doesn’t learn, it will predict same thing most of the time. + Debugging a model is a tedious process since it can be a small bug or whole model architecture incorrectly chosen and applied to your problem space. Start with data preprocessing and make sure you do it right, check inputs and whether they align with your target values. Then double check your loss function, is it the right one for your task? Most of the time it is likely a preprocessing bug or wrong loss function application. + On the note of data preprocessing, there are <a href="https://cs231n.github.io/neural-networks-2/#datapre">these tips from CS231n</a>. Their recommended preprocessing step is to center the data to a mean of zero, and normalize its scale to [-1, 1] along each feature + Also, to keep in mind that preprocessing must be computed on the training data and then applied to the training, test, and validation sets. This is definitely more of an “ML in the wild” tip and is ignored for numbers games like academic benchmarks.</p>
+<p><a href="https://github.com/koen-dejonghe">Koen Dejonghe</a> pointed out these <a href="https://pcc.cs.byu.edu/2017/10/02/practical-advice-for-building-deep-neural-networks/amp/">tips from BYU’s Perception, Control and Cognition Laboratory</a> (<a href="https://perma.cc/5PNL-UZ9K">perma</a>). Looking at them specifically for debugging and testing:</p>
+<ul>
+<li><p>Whiten (normalize) your input data. For training, subtract the mean of the data set, then divide by its standard deviation. The less your weights have to be stretched and pulled in every which direction, the faster and more easily your network will learn. Keeping the input data mean-centered with constant variance will help with this. You’ll have to perform the same normalization to each test input as well, so make sure your training set resembles real data.</p></li>
+<li><p>Scale input data in a way that reasonably preserves its dynamic range. This is related to normalization but should happen before normalizing. For example, data x with an actual real-world range of [0, 140000000] can often be tamed with tanh(x) or tanh(x/C) where C is some constant that stretches the curve to fit more of the input range within the dynamic, sloping part of the tanh function. Especially in cases where your input data may be unbounded on one or both ends, the neural net will learn much better between (0,1).</p></li>
+<li><p>Overfit! The first thing to do if your network isn’t learning is to overfit a training point. Accuracy should be essentially 100% or 99.99%, or an error as close to 0. If your neural network can’t overfit a single data point, something is seriously wrong with the architecture, but it may be subtle. If you can overfit one data point but training on a larger set still does not converge, try the following suggestions.</p></li>
+<li><p>Lower your learning rate. Your network will learn slower, but it may find its way into a minimum that it couldn’t get into before because its step size was too big. (Intuitively, think of stepping over a ditch on the side of the road, when you actually want to get into the lowest part of the ditch, where your error is the lowest.)</p></li>
+<li><p>Raise your learning rate. This will speed up training which helps tighten the feedback loop, meaning you’ll have an inkling sooner whether your network is working. While the network should converge sooner, its results probably won’t be great, and the “convergence” might actually jump around a lot. (With ADAM, we found ~0.001 to be pretty good in many experiences.)</p></li>
+<li><p>Decrease (mini-)batch size. Reducing a batch size to 1 can give you more granular feedback related to the weight updates, which you should report with TensorBoard (or some other debugging/visualization tool).</p></li>
+<li><p>Remove batch normalization. Along with decreasing batch size to 1, doing this can expose diminishing or exploding gradients. For weeks we had a network that wasn’t converging, and only when we removed batch normalization did we realize that the outputs were all NaN by the second iteration. Batch norm was putting a band-aid on something that needed a tourniquet. It has its place, but only after you know your network is bug-free.</p></li>
+<li><p>Increase (mini-)batch size. A larger batch size—heck, the whole training set if you could—reduces variance in gradient updates, making each iteration more accurate. In other words, weight updates will be in the right direction. But! There’s an effective upper bound on its usefulness, as well as physical memory limits. Typically, we find this less useful than the previous two suggestions to reduce batch size to 1 and remove batch norm.</p></li>
+<li><p>Check your reshaping. Drastic reshaping (like changing an image’s X,Y dimensions) can destroy spatial locality, making it harder for a network to learn since it must also learn the reshape. (Natural features become fragmented. The fact that natural features appear spatially local is why conv nets are so effective!) Be especially careful if reshaping with multiple images/channels; use numpy.stack() for proper alignment.</p></li>
+<li><p>Scrutinize your loss function. If using a complex function, try simplifying it to something like L1 or L2. We’ve found L1 to be less sensitive to outliers, making less drastic adjustments when hitting a noisy batch or training point.</p></li>
+<li><p>Scrutinize your visualizations, if applicable. Is your viz library (matplotlib, OpenCV, etc.) adjusting the scale of the values, or clipping them? Consider using a perceptually-uniform color scheme as well.</p></li>
+</ul>
+<hr />
+<p>Closely following this discussion was a discussion of “the PyTorch-to-Tensorflow production workflow” which, thankfully, I have never needed to deal with, but I thought it would be important to touch on since it has its own idiosyncrasies. In short, a common workflow (to the channel) is that a researcher will use PyTorch for prototyping, then migrate the model into TensorFlow for production use, but tensorflow models exhibit different behaviour with the same hypeparameters so you basically need to redo your hyperparameters tuning all over again. This is reminicent of <a href="https://arxiv.org/abs/1709.06560">Deep Reinforcement Learning that Matters</a>. In this particular case, TF models refused to train unless you l2-normalized the input (unlike in Torch). Another researcher who doesn’t need to train tensorflow models on the field simply trains models in PyTorch, then copies the weights to a mirror tensorflow model. A few things need to be rewritten in TF to make them Torch friendly (Bi-directional LSTM had a number of subtle differences), but said development in PyTorch was worth the hassle. This still might have nuances (like the data preprocessing requirements) and should always be backed with benchmarks.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

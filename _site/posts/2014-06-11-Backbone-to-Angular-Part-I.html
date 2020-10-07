@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Moving from Backbone to Angular Part I</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Moving from Backbone to Angular Part I
+</h1>
+
+<div class="meta">
+    June 11, 2014
+    
+</div>
+
+<div class="post">
+<p class="meta">
+11 June 2014 - Redwood City, CA
+</p>
+<p>At bina, we have two products: bina portal and bina annotation platform. While the annotation platform has been written from the ground-up in angular, the bina portal was written in backbone. It’s also one of those applications which has grown into a monolithic zombie over the years. It’s got to go, but it can’t be canned. Taking on the codebase headfirst isn’t really an option for us as it means that we will have a brand-new product which won’t be user-tested. I’m sure many of you are looking at similar issues. The approach we’re taking at bina is to have angular and backbone coexist -backbone is a library, not a framework, afterall- and then slowly have angular take over. Let’s get started.</p>
+<h3 id="coexisting-with-require.js">Coexisting with Require.js</h3>
+<p>I’m over require.js. It had it’s glory days, but it’s been on its way out since browserify, it makes for massive code, and is just an overall pain. I’m not saying switch to browserify (yet), but we have a ton of require.js in our code and we don’t really want it anymore. How to solve this problem: just put angular in with some good old-fashioned script tags in global scope and declare all of the script tags as you would with a normal application. After you have figured out how you want to structure your application (we’ve chosen google’s recommended <a href="http://blog.angularjs.org/2014/02/an-angularjs-style-guide-and-best.html">file structure</a>), add them into your project as desired - but before we add angular to our DOM elements, we need to take a closer look at <code>bootstrap</code>.</p>
+<h3 id="rebuilding-from-the-inside-out-feature-first">Rebuilding from the inside-out, feature-first</h3>
+<p>We’re building angular from the inside-out. Our first feature on the list is a pretty complex modal/lightbox which allows a user to navigate through a shared network file storage. First things first, get rid of all that Backbone code. Well, just enough so that it only serves up our partial HTML element. Here you should actually start building your feature only <em>don’t declare any <code>ng-app</code></em> instead we’re going to bootstrap our application manually. Add in <code>&lt;script&gt;angular.bootstrap(document, ['myApp']);&lt;/script&gt;</code> at the end of this partial and watch angular kick off as we want!</p>
+<h3 id="a-closer-look-at-angular.bootstrap">A closer look at <code>angular.bootstrap</code></h3>
+<p>If you’re declaring an angular application the normal way, you probably have an <code>ng-app</code> somewhere at the top of the page. Well, when angular reads something like <code>&lt;html ng-app="myApp"&gt;</code> it will see that attribute and immediately start loading as soon as the <code>DOMContentLoaded</code> event fires (unless you’re working with legacy IE). We don’t want that though, so instead there are a few other ways we can kick off angular, manually. We can either invoke bootstrap by initiating the app on the <code>document</code> (as suggeted in the previous section) like so:</p>
+<pre><code>    angular.bootstrap(document, ['myApp']);</code></pre>
+<p>or invoke it on a more specific element using angular’s <code>element</code> selector:</p>
+<pre><code>    angular.bootstrap(angular.element('body')[0], ['myApp']);</code></pre>
+<p>Similarly, in the Angular documentation there is the following code example:</p>
+<pre><code>    angular.element(document).ready(function() {
+        angular.bootstrap(document);
+    });</code></pre>
+<p>This does something similar to a <code>$(document).ready</code> function in jquery, which is nothing new. The usage of <code>bootstrap</code> is misleading, however, since there is no app being invoked. This will <strong>only kickoff angular</strong> but <strong>not any angular modules/application you have declared</strong>. Be careful of this!</p>
+<h3 id="bootstrapping-twice-and-whats-coming-up">Bootstrapping twice and what’s coming up</h3>
+<p>It’s important to also note that if you declare both a <code>&lt;script&gt;angular.bootstrap(document, ['myApp']);&lt;/script&gt;</code> as well as something similar to <code>&lt;html ng-app="myApp"&gt;</code> angular will error, claiming that <code>myApp</code> has already been bootstrapped. This is because, as mentioned, as soon as <code>&lt;html ng-app="myApp"&gt;</code> is read, angular will kick off. So there is no need to declare your application anywhere! Next up will be moving from modal to an actual page-view and setting up <code>ui-router</code> with lightboxes!</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Policy vs Value functions</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Policy vs Value functions
+</h1>
+
+<div class="meta">
+    July 16, 2017
+    
+</div>
+
+<div class="post">
+<p>Usually, policy <em>and</em> value functions work best, but most of the time finding a policy is preferred over finding a value function. Of course this it dependent on your use case – it might not be possible to find a policy as easily as a value function, or finding a policy might over-simplify the situation. Part of what makes policies nice is the fact that they can be represented in a more compact manner. With a policy you get something as concrete as: “Knights can move in L-shape, here is a distribution to make your choice” – paired with more features, you get complex strategies which allow agents to win at a human level of skill.</p>
+<p>Conversely, a value function says, “your position is (A,4) with value X, let’s compute the maximum possible value we can squeeze out of all options.” Furthermore, the policy used with a value function is classically a maximum – something which can be very costly in high dimensions of state- or state-action- spaces. The maximizing actually turns out to be very interesting (as points of friction always tend to be): computing the distribution to argmax over is your policy, but if we move to a policy-based learner we just comput that directly.</p>
+<p>As an added benefit you also you wind up with better convergence properties. Value functions solve for estimated value and advantage, but it’s possible that the hyperparameters might chatter, or oscillate, for non-linear approxmiators since value can sometimes be at odds with advantage. So just throwing a neural network at your problem which doesn’t live on the gym might fall apart for no reason at all, and also motivates dueling networks (ie: maintaining a network for value and a network for advantage).</p>
+<hr />
+<p>Policy gradients are pretty good at finding stochastic policies and it’s what they are most famous for up until DDPGs. Deterministic policies have become pretty popular of late as well because of Deepmind’s research into learning that compatible value functions can speed up learning (ie: if the value function and the policy gradient use the same hyperparameters, then a critic can directly influence an actor). Keep in mind, however, that deterministic policies aren’t always advisable. Imagine writing a deterministic policy for rock-paper-sissors: “since she threw rock last time, I’ll throw paper this time.” As soon as your opponent figures that out, you’re done!</p>
+<p>In the wild, policy gradients are sometimes very noisy and taking expectations of noisy gradients can be very hard to estimate. If your model has a high accuracy, but noise naturally exists in your problem, then your variance will also be high. So instead it’s better to start off with a deterministic policy, and then adjust it to be more stochastic. The <em>natural policy gradient</em> finds the deterministic policy (but only works for continuous actions). How it works is that it, when we get the gradient of the Q-function the critic can give the entire gradient to the policy and just say, “if you adjusted to this better gradient, you’d win.” This is allowed since the critic doesn’t just have the critique, but also the “true answer” since the Q-function is compatible. In sort, we are just updating actor parameters in the direction of critic parameters. See Natural Actor Critics for more.</p>
+<hr />
+<p>A few other, possibly incoherent, notes:</p>
+<ul>
+<li>You’re only garunteed a local maximum with policy gradients</li>
+<li>On top of local maximums, policies can be more costly to calculate than value functions “in the small” – they have higher variance for non-linear approximators (ie: “hard real-world” models). Basically there’s no such thing as a silver bullet.</li>
+<li>For non-linear approximators there’s a lot of research to get better stability: dueling networks (see above), double-learning, fixed Q-targets (see DQNs).</li>
+<li>Actor-Critic methods work because we using policy gradients, which are slow, but then we speeding up the process not by looking at current value, but by looking at <em>future</em> values, estimated by the critic.</li>
+<li>Using “compatible function approximation (which have no bias)” for value approximation makes garuntees around our value function converging on the true value function and solves the problem of a bad critic</li>
+<li>…but compatible function approximators turn out to always be true only if the features are <em>exactly</em> the score function. So there’s a bit of a chicken-and-egg problem.</li>
+<li>Eligibility traces: after we build up a history, we want to train on scores that are the largest, most frequent, and most recent. is an eligibility over our scores (not our states). For a policy gradient it is analgous to the value function (search-replace “gradient” with “score”).</li>
+<li>there are other ways of backpropagating for things like random forests (maybe?) check out simplex method for random forest optimization.</li>
+<li>build out different types of ACs:
+<ul>
+<li>Q Actor-Critic</li>
+<li>Advantage Actor-Critic (A2C)</li>
+<li>TD Actor-Critic</li>
+<li>TD(lmda) Actor-Critic</li>
+<li>Natural Actor-Critic (NAC)</li>
+</ul></li>
+</ul>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

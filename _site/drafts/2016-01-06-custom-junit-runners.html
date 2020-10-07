@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2016-01-06-custom-junit-runners</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2016-01-06-custom-junit-runners
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<h1 id="page.title">{{ page.title }}</h1>
+<p class="meta">
+06 Jan 2016 - Belmont, CA
+</p>
+<p>JUnit is used heavily at Bina and, especially in order to automate some of the integration tests, we structure tests just as abstractly as the code, with a heavy reliance on the type system and with use of AOP where nessecary. Unfortunately, JUnit has some minor flaws here and there which make it unfriendly to this whole endeavor.</p>
+<p>One of these minutiae – I say “minutiae” because we <em>can</em> work around it, but it’s a little annoying – include the fact that JUnit has the default assumption that all tests must have a <code>void</code> return type. If we can get rid of this constraint, then we wind up with the ability to have abstract test classes with extendable test methods. This is where writing a custom JUnit runner comes in handy.</p>
+<p>Ultimately, you want to subtype off of <code>BlockJUnit4ClassRunner</code>, the default runner, This can be done by subtyping a runner you’re working with or just subtyping <code>BlockJUnit4ClassRunner</code> directly. What you’re shooting for, however, is to override <code>validatePublicVoidNoArgMethods</code> off of the inherited <code>ParentRunner</code>:</p>
+<pre><code>import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
+
+public class ReturnableTestRunner extends BlockJUnit4ClassRunner {
+  public ReturnableTestRunner(Class&lt;?&gt; klass) throws InitializationError {
+    super(klass);
+  }
+
+  @Override // although we won't change anything right now.
+  protected void validatePublicVoidNoArgMethods(
+    Class&lt;? extends Annotation&gt; annotation,
+    boolean isStatic,
+    List&lt;Throwable&gt; errors
+  ) {
+    List&lt;FrameworkMethod&gt; methods = getTestClass().getAnnotatedMethods(annotation);
+
+    for (FrameworkMethod eachTestMethod : methods) {
+      // override this logic
+      eachTestMethod.validatePublicVoidNoArg(isStatic, errors);
+    }
+  }
+}</code></pre>
+<p>However this isn’t the only use of <code>validatePublicVoidNoArgMethods</code>: JUnit docs inform us that this adds to the errors list for the class if: + any method is not public + there exist methods which take parameters + a method returns something other than void (what we want to change) + a method is static + a method is not static if <code>isStatic</code> is true.</p>
+<p>So we really need to dig a little deeper into what is happening in <code>FrameworkMethod#validatePublicVoidNoArg</code>. Here it is:</p>
+<pre><code>\\ FrameworkMethod.java#validatePublicVoidNoArg
+public void validatePublicVoidNoArg(boolean isStatic, List&lt;Throwable&gt; errors) {
+  validatePublicVoid(isStatic, errors);
+  if (method.getParameterTypes().length != 0) {
+    errors.add(new Exception(&quot;Method &quot; + method.getName() + &quot; should have no parameters&quot;));
+  }
+}</code></pre>
+<p>and once more for <code>validatePublicVoid</code>:</p>
+<pre><code>\\ FrameworkMethod.java#validatePublicVoid
+public void validatePublicVoid(boolean isStatic, List&lt;Throwable&gt; errors) {
+  if (isStatic() != isStatic) {
+    String state = isStatic ? &quot;should&quot; : &quot;should not&quot;;
+    errors.add(new Exception(&quot;Method &quot; + method.getName() + &quot;() &quot; + state + &quot; be static&quot;));
+  }
+  if (!isPublic()) {
+    errors.add(new Exception(&quot;Method &quot; + method.getName() + &quot;() should be public&quot;));
+  }
+  if (method.getReturnType() != Void.TYPE) {
+    errors.add(new Exception(&quot;Method &quot; + method.getName() + &quot;() should be void&quot;));
+  }
+}</code></pre>
+<p>So let’s build up a solution to this problem. It might look something like:</p>
+<pre><code>import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
+
+public class ReturnableTestRunner extends BlockJUnit4ClassRunner {
+  public ReturnableTestRunner(Class&lt;?&gt; klass) throws InitializationError {
+    super(klass);
+  }
+
+  @Override
+  public void validatePublicVoid(boolean isStatic, List&lt;Throwable&gt; errors) {
+    if (isStatic() != isStatic) {
+      String state = isStatic ? &quot;should&quot; : &quot;should not&quot;;
+      errors.add(new Exception(&quot;Method &quot; + method.getName() + &quot;() &quot; + state + &quot; be static&quot;));
+    }
+    if (!isPublic()) {
+      errors.add(new Exception(&quot;Method &quot; + method.getName() + &quot;() should be public&quot;));
+    }
+    // if (method.getReturnType() != Void.TYPE) {
+    //   errors.add(new Exception(&quot;Method &quot; + method.getName() + &quot;() should be void&quot;));
+    // }
+  }
+}</code></pre>
+<p>But this isn’t ideal as we’re overriding a method and forcing it to lie about what it does. As greg has aptly shown, it would be much easier to break out our own method with a couple of functional interfaces to make this look nice and clean:</p>
+<pre><code>import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+
+import java.lang.annotation.Annotation;
+import java.util.List;
+import java.util.function.Function;
+
+public class ReturnableTestRunner extends BlockJUnit4ClassRunner {
+  public ReturnableTestRunner(Class&lt;?&gt; klass) throws InitializationError {
+    super(klass);
+  }
+
+  protected validate(
+    FrameworkMethod method,
+    Function&lt;? super FrameworkMethod, ? extends Boolean&gt; accessor,
+    String name,
+    Boolean check,
+    List&lt;Throwable&gt; errors
+  ) {
+    if ((check != null) &amp;&amp; (accessor.apply(method) != check)) {
+      errors.add(
+        new Exception(&quot;Method &quot;+method.getMethod().getName()+&quot;() &quot;+(check ? &quot;should&quot; : &quot;should not&quot;)+&quot; &quot;+name)
+      );
+    }
+  }
+
+  public static void validatePublicNoArg(
+    FrameworkMethod method,
+    Boolean isStatic,
+    Boolean isPublic,
+    Boolean isVoid,
+    List&lt;Throwable&gt; errors
+  ) {
+    validate(method, m -&gt; m.isStatic(), &quot;be static&quot;, isStatic, errors);
+    validate(method, m -&gt; m.isPublic(), &quot;be public&quot;, isPublic, errors);
+    validate(method, m -&gt; m.getMethod().getReturnType() == Void.TYPE, &quot;have return type of void&quot;, isVoid, errors);
+    validate(method, m -&gt; method.getMethod().getParameterTypes().length != 0, &quot;have arguments&quot;, false, errors);
+  }
+
+  @Override
+  protected void validatePublicVoidNoArgMethods(
+    Class&lt;? extends Annotation&gt; annotation,
+    boolean isStatic,
+    List&lt;Throwable&gt; errors
+  ) {
+    List&lt;FrameworkMethod&gt; methods = getTestClass().getAnnotatedMethods(annotation);
+
+    for (FrameworkMethod eachTestMethod : methods) {
+      validatePublicNoArg(eachTestMethod, isStatic, errors);
+    }
+  }
+}</code></pre>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

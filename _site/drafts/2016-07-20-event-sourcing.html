@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2016-07-20-event-sourcing</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2016-07-20-event-sourcing
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<p>Event sourcing</p>
+<p>A very simple concept. The idea that state is actually just a state machine with a stream of events.</p>
+<p>Things that use event sourcing intrinsically include data migrations and version control systems.</p>
+<p>event sourcing is great because you get safety of slip-ups, you can rewrite the global state, and synching a cluster is a solved problem via paxos or raft (so we get strong garuntees for free). You just have to maintain the log/event stream, but that is also a solved thing.</p>
+<p>“It’s basically a functional, streamed, stateless, database - functional because your state is a fold over a stream of events.” - Dan.</p>
+<p>to actually build one: look into kafka (logging), samza (logging), leveldb (what dan uses), rockdb (from a talk)</p>
+<ul>
+<li>How does ES work at scale? Cluster/shard your journal
+<ul>
+<li>Dan: “You can cluster your journal. Say, your collection now contains 100 million events, you can split it into multiple journals, each consumed by an individual actor and each actor can run on an independent instance. Basically sharding.” Kafka also looks a lot like database replication.</li>
+</ul></li>
+<li>How do you deal with massive replay scenarios? You can also establish a baseline state that you read from.</li>
+</ul>
+<h1 id="space-issue">Space issue</h1>
+<p>Sam Stites [12:47 PM]<br />
+so, just to reiterate, if you do work with confined space requirements it’s possible to do event sourcing, check-pointing, and throwing away any events prior to the checkpoint?</p>
+<p>Dan Chao [12:48 PM]<br />
+you never want to truly throw away events</p>
+<p>Sam Stites [12:48 PM]<br />
+in theory, though?</p>
+<p>Sam Stites [12:50 PM]<br />
+just cause memory and space requirements were something I had to deal with at bina</p>
+<p>Dan Chao [12:48 PM]<br />
+if you’re confined by space</p>
+<p>[12:49]<br />
+like, let’s say you can only store 10 events and that’s it</p>
+<p>Dan Chao [12:50 PM]<br />
+you build your state through programmatically figuring out how these events change your state</p>
+<p>[12:50]<br />
+and if you ever change the way you consume these events</p>
+<p>[12:51]<br />
+you need to replay the whole thing before you can snapshot your state</p>
+<p>Sam Stites [12:52 PM]<br />
+you can’t do something like <code>SNAP_A -&gt; E37 -&gt; E38 -&gt; E39 -&gt; HEAD</code>, then later replay and start from <code>SNAP_A</code>? (edited)</p>
+<p>Dan Chao [12:53 PM]<br />
+yeah, let’s say the event is <code>POST_DELETED</code></p>
+<p>[12:53]<br />
+and suddenly we decide we don’t want people to be allowed to delete their posts</p>
+<p>[12:54]<br />
+we’d write some code that ignores <code>POST_DELETED</code> events</p>
+<p>[12:54]<br />
+however, <code>SNAP_A</code> wouldn’t contain any posts</p>
+<p>[12:54]<br />
+we have to replay from the beginning to build the correct state of the world</p>
+<p>Sam Stites [12:54 PM]<br />
+!!!</p>
+<p>[12:55]<br />
+that’s pretty cool</p>
+<p>[12:56]<br />
+but, I see ES as a really wonderful way to iterate a product: you could mess up the state/schema in prototyping phase, then fix things later</p>
+<p>Dan Chao [12:56 PM]<br />
+yeah</p>
+<p>Sam Stites [12:56 PM]<br />
+snapshot, ditch the old prototype state, and continue developing</p>
+<p>Dan Chao [12:56 PM]<br />
+it gives you a pretty great safety net if you screw up</p>
+<p>Sam Stites [12:56 PM]<br />
+nice</p>
+<p>[12:56]<br />
+is that a common situation, though? global state machine rewrites?</p>
+<p>Dan Chao [12:57 PM]<br />
+yeah, somewhat common</p>
+<p>Sam Stites [12:57 PM]<br />
+crazy!</p>
+<p>Dan Chao [12:58 PM]<br />
+usually not as dramatic as like reinstating deleted posts</p>
+<p>[12:58]<br />
+usually it’s more like, you add a new property to some model</p>
+<h1 id="side-note">Side note</h1>
+<blockquote>
+<p>“event sourcing (enterprise term) == stream processing (internet SW term)” - Martin Kleppmann, Event Sourcing and Stream Processing at Scale</p>
+</blockquote>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

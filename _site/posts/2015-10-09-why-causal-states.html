@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Why Causal States?</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Why Causal States?
+</h1>
+
+<div class="meta">
+    October  9, 2015
+    
+</div>
+
+<div class="post">
+<p class="meta">
+10 Oct 2015 - San Francisco, CA
+</p>
+<p>I’ve started work on cleaning up some loose ends from Cosma and Kristi’s CSSR (Causal State Splitting Reconstruction) paper, “Blind Construction of Optimal Nonlinear Recursive Predictors for Discrete Sequences” - <a href="http://arxiv.org/abs/cs.LG/0406011">arxiv:cs.LG/0406011</a>. In this post I want to prime you with the environment of the algorithm at a high-level, as well as go over some possible motivating examples of what makes CSSR interesting.</p>
+<hr />
+<p>Let’s say that we are examining some finite stream of data that is seemingly random, and want to find the hidden state which determines how this stream is being output. We know a couple of things about this stream - for one, we have some finite length of it which we can train on. We also know the fundamental building blocks which make up this stream, this we call the “alphabet” - we are dealing with serializable inputs after all : ), and the longest possible sequence that could be considered a state.</p>
+<p>Given these bare-boned constraints, we’re looking to build a predictive model which is next-step sufficient in its predictions. In essence we are looking for a model which can accurately predict the next step, given a sequence in this stream, without any prior assumptions possible states.</p>
+<hr />
+<p>So that’s the abstract characterization. Let’s come up with something a little easier to consume.</p>
+<p>Recently I heard one of the best explanations of Hidden Markov Models to date, which usurped my former favorite of a child wandering through a theme park. In doing a bit more digging, I was surprised to discover that this explanation was actually one a much older example, dating back to 1998.</p>
+<p>Let’s say we want to predict if tomorrow will be rainy, cloudy, or sunny and we are going to transition between our measurements every 24 hours. For a Markov Model, we would want to forecast tomorrow’s weather based on what the probability of today is. So we would want to calculate the probabilities of: tomorrow being sunny given that today is sunny, tomorrow being rainy given today is sunny, and so on for all options of what “today” might hold. How do we make this model a good predictor? Well we’d have to sit outside and wait for, say, 100 days. With this, we have our Markov Model.</p>
+<p>Now imagine if we <em>couldn’t</em> sit outside everyday and watch the weather. In fact, we couldn’t even see the outside because we have been working in an office for the past month or so. Hope knowing exactly what the weather is outside seems impossible, but we <em>can</em> observe things related to the weather to make our prediction: if our coworkers come in with umbrellas, if everyone brings in jackets, or if there are a majority of people wearing sunglasses - to name a few. By estimating the transition probabilities for these observable events, we can start to model what the underlying state of the weather is outside - our “hidden” state. Of course, this is called a Hidden Markov Model.</p>
+<p>Finally, how should we generate this model? There are many ways we’ve heard that we can predict the outside weather but, frankly, today is the first day of being told we’ve been locked in the office and we won’t be able to leave until the product has been released. The easiest thing we can say is say that today most definitely was a “day” since we know that rainy days, sunny days and cloudy days share at least that in common.</p>
+<p>As the days go on, we’ll start bucketing out the different possible umbrella/sunglasses/jacket sequences that might suggest some kind of hidden state; like that it’s sunny outside. In marking down these tallies, we’ll also employ Occam’s Razor and assume that a state can only consists of the simplest sequences to get us there. This really just means that we’ll be using some kind of hypothesis test to ensure that a sequence belongs in a state. If a sequence doesn’t belong in the state that we think it does, we’ll try to move it into a different state’s bucket, and if we can’t find a state to put it in - still - we’ll move it to an entirely new state!</p>
+<p>In order to test our hypotheses whether or not a sequence belongs in a state, we will assume first that it exists in a state that is the most simple one.</p>
+<p>If we say that states are “sets of history” this means that, at its most basic, the most simple state is the “set with an empty history” because every history has the commonality of building on top of an empty history.</p>
+<blockquote>
+<p>To throw in a little code, this might look a lot like <code>cons</code>ing on an empty list:</p>
+<pre><code>'a' : 'b' : []</code></pre>
+</blockquote>
+<p>We’ll sit in this room and collect information about umbrellas, sunglasses, etc., until we have enough information that we can model some of these observed histories and ‘guess’ at what will happen next.</p>
+<p>For instance, given a 3-day sequence, we can look at all 2-day sequences and ‘peek’ at the third day to come up with some kind of probability that the third day will be something from our ‘alphabet.’ We can make future predictions based on this kind of modelling.</p>
+<p>By going through all sequences in varying lengths, we can attempt to reconstruct tables with information like “if X people bring umbrellas, then sunglasses, then jackets today, then tomorrow could be sunny with certainty Y.” And we’ve done so by assuming the smallest amount of information we can, with no prior requirements of even knowing what a “state” looks like!</p>
+<hr />
+<p>That’s CSSR! One of the more fun parts of this research is a look into working with time series data, which I have less experience in, as well as getting insights into Markov Models, which I have never used before! Causal State Theory, itself, seems very compelling but is somewhat difficult to find resources on. It seems that Causal State Theory has more on building epsilon machines: a mathematical concept that exemplifies Occam’s Razor. However this fact only recently surfaced and I’ll have to go over what these are at a later point.</p>
+<p>Question brought up while writing this post: how do we deal with an evolving or conditional alphabet?</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

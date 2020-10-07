@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Multi-step bootstrapping thoughts</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Multi-step bootstrapping thoughts
+</h1>
+
+<div class="meta">
+    May  6, 2017
+    
+</div>
+
+<div class="post">
+<p>While eligability traces are usually associated with multi-step bootstrapping, there is a lot to be said for multi-step bootstrapping techniques on their own. These techniques unify temporal-difference learning and monte-carlo methods. Often performing better in the intermediate steps than TD or MC, the two extremes of the multi-step variants. Quoting Barto and Sutton, “another way of looking at multi-step methods is that they free you from the tyranny of the time step.”</p>
+<p>This is incredibly cool because we now have the ability to extend our horizon at any point in time and no longer have each tick of the clock hord its rewards. That said it’s usually preferred to have off-policy methods instead of on-policy methods, and if we naively extend a TD-walk through time, we wind up only samping our target policy.</p>
+<pre><code>Fig 1: ASCII art of four n-step TD backup diagrams
+
+    *--&gt;O--&gt;*--&gt;O--&gt;*                       2-step
+
+    *--&gt;O--&gt;*--&gt;O--&gt;*--&gt;O--&gt;*               3-step
+
+    *--&gt;O--&gt;*--&gt;O--&gt;*--&gt;O--&gt;*--&gt;O--&gt;[x]     terminated infinite-step / MC
+
+                                ,-&gt;*
+    *--&gt;O--&gt;*--&gt;O--&gt;  ...  *--&gt;O--&gt;*        n-step expected sarsa
+                                `-&gt;*</code></pre>
+<p>But look at the samping which happens (each <code>*--&gt;O</code>): it requires following our target policy. How can we separate this? This introduces the notion of importance samping. Where in we actually evaluate each sample <em>twice</em>: one under our target policy, and one under our behavioral policy. Then we can weight each sample by <code>for all k . product $ pi(A|S) / mu(A|S)</code>. That said, we aren’t really following a behavioral policy, just using it for more informed updates. We can do better. This is where Q(σ) comes in.</p>
+<blockquote>
+<p>Note: If you are worried about the computational efficiency of the off-policy evaluation, you should note that it is probably inevitable that it will be slower than the on-policy as the behavioral policy will model a less-relevant environment than your target policy. Possible improvements are cited in B&amp;S to include: the Autostep method (Mahmood et al, 2012), invariant updates of Karampatziakis and Langford (2010), the usage technique (Mahmood and Sutton, 2015).</p>
+</blockquote>
+<p>There’s an intermediate step between n-step TD and Q(σ) which I’ve failed to mention, called n-step tree backups - we’ll roll the explaination of them into Q(σ) here.</p>
+<pre><code>Fig 2: ASCII art of an n-step tree backup diagram
+
+         ,-&gt;*    ,-&gt;*    ,-&gt;*            ,-&gt;*
+    *--&gt;O--&gt;*--&gt;O--&gt;*--&gt;O--&gt;*  ...  *--&gt;O--&gt;*
+         `-&gt;*    `-&gt;*    `-&gt;*            `-&gt;*</code></pre>
+<p>Under a tree-backup diagram, we use a fully off-policy exploration technique to walk down through a time series, however as we step, we also weight any future potential rewards by the conditional probability of the reward being drawn from the genesis state. While this does work and allows us to remain fully off-policy, some possible issues may include the fact that updates will weight larger steps of n with less importance which makes sense, but we can do better : ).</p>
+<p>Q(σ) provides a middle ground between samping (with importance) and probabalistic tree diagrams. To see how it works, I’ll just say that it is simply an algorithm which alternates between the two techniques above and I’ll leave you with the following backup diagram:</p>
+<pre><code>Fig 3: ASCII art of an 4-step Q(σ=1) backup diagram
+
+         ρ (importance ratio)  ρ
+          `.                   |
+           '        ,--&gt;*      '        ,--&gt;*
+    *---&gt;O---&gt;*---&gt;O---&gt;*---&gt;O---&gt;*---&gt;O---&gt;*
+         .         .`--&gt;*    .         .`--&gt;*
+         |         |         |         |
+        σ=1       σ=0       σ=1       σ=0</code></pre>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

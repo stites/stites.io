@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Backbone to Angular Part II</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Backbone to Angular Part II
+</h1>
+
+<div class="meta">
+    June 17, 2014
+    
+</div>
+
+<div class="post">
+<p class="meta">
+17 June 2014 - Redwood City, CA
+</p>
+<p>Lets talk about tests. Yes, tests. Some of you might love the phrase, and some of you may hate it. When it comes to refactoring, however, if you’re not using tests you’re pretty much going to screw yourself somewhere along the road. Even if you’re not a huge fan of TDD, doing test-driven refactors are going to save you a lot of hair pulling down the road. Lets get started.</p>
+<h4 id="tools-for-tests">Tools for tests</h4>
+<p>Angular was built with the idea that testing needed to be an integral part of the framework. Nothing is merged into core without having tests to go with it. This is imperative for dynamically-typed functions, like javascript, if you want to save yourself the overhead of error checking everything under the sun in your actual codebase.</p>
+<p>We have two primary types of tests and test-runners that the angular team recommends. Karma and Protractor. Both are nessecary: Karma for unit-tests, and karma for end-to-end tests. First, lets get started with Karma and unit-testing.</p>
+<h4 id="setting-up-karma">Setting up Karma</h4>
+<p>If you don’t have karma already in your <code>package.json</code> run:</p>
+<pre><code>npm install --save-dev karma</code></pre>
+<p>then move into where you’d like to keep all of your tests. For this example, we’ll follow what they do in <a href="www.github.com/angular/angular-seed"><code>angular-seed</code></a> and place a sibling <strong>tests</strong> folder <em>on the same level</em> as the client-facing <strong>app</strong> folder.</p>
+<p>cd into <code>tests</code> and run <code>karma init karma.conf.js</code> to generate our config file. It’ll look something like the following. I’ll leave it up to you to check out <a href>karma’s documentation on the settings you can configure here</a>.</p>
+<pre><code>// Karma configuration
+module.exports = function(config) {
+  config.set({
+    // base path, that will be used to resolve files and exclude
+    basePath: '',
+
+    // testing framework to use (jasmine/mocha/qunit/...)
+    frameworks: ['jasmine'],
+
+    // list of files / patterns to load in the browser
+    files: [
+      'app/components/angular/angular.js',
+      'app/components/angular-mocks/angular-mocks.js',
+      'app/scripts/**/*.js',
+      'test/spec/**/*.js'
+    ],
+
+    // list of files / patterns to exclude
+    exclude: [],
+
+    // web server port
+    port: 8080,
+
+    // level of logging
+    // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
+    logLevel: config.LOG_INFO,
+
+    // enable / disable watching file and executing tests whenever any file changes
+    autoWatch: false,
+
+    // Start these browsers, currently available:
+    // - Chrome
+    // - ChromeCanary
+    // - Firefox
+    // - Opera
+    // - Safari (only Mac)
+    // - PhantomJS
+    // - IE (only Windows)
+    browsers: ['Chrome'],
+
+
+    // Continuous Integration mode
+    // if true, it capture browsers, run tests and exit
+    singleRun: false
+  });
+};</code></pre>
+<p>with everything in place, <code>karma start karma.conf.js</code> kicks off the test runner and we are good to go.</p>
+<h5 id="unit-testing">Unit Testing</h5>
+<p>I’m intentionally glossing over the karma stuff because I want to focus on a few use cases on the testing itself. Remember</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Defender methods and multiple inheritance</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Defender methods and multiple inheritance
+</h1>
+
+<div class="meta">
+    October 16, 2015
+    
+</div>
+
+<div class="post">
+<p class="meta">
+09 Oct 2013 - San Francisco, CA
+</p>
+<p>We’ve started the shift to Java 8, over at Bina, and I have been spearheading the a lot of the fresh code. As someone who thinks and reads up on Haskell almost daily at this point. I’d like to wrap up some of my older, backlogged blog posts regarding the jvm and start shifting focus to things I’m more interested in.</p>
+<hr />
+<p>As far as I’ve gone with java 8, a number of features have proven invaluable in keeping our code clean and flexible include some of the new interface functionality: defender methods, static methods, and functional interfaces. I’m just going to cover defender methods for today, covering this nice OO-feature that eases a lot of single-class inheritance pain, and circle back to talking about Haskell typeclasses and how they relate.</p>
+<h4 id="java-finally-gets-a-mixin-takes-a-stab-at-the-diamond-problem">Java finally gets a mixin, takes a stab at the diamond problem</h4>
+<p>I don’t believe mixins have really been all that simple to implement in a &lt;8 Java world. In my searches for the history of this, I’ve come across <a href="http://stackoverflow.com/questions/587458/implement-mixin-in-java">a couple</a> of <a href="http://stackoverflow.com/questions/263121/java-traits-or-mixins-pattern">hacks</a>, as well as a more elegant solution (aspect-oriented programming) which is not likely to be picked up by my company anytime in the immediate future.</p>
+<p>Enter defender methods - also known as <em>Virtual extension methods</em>, or just “default methods”. Interestingly enough, almost no one seems to advocate for this feature’s use in live production (at least not from what I can see). My co-workers are rightly a little skeptical, but I - personally - think that the ability to introduce multiple inheritance to our code is a “Good Thing”. So what does happen if you come across the diamond problem through interface-dependent inheritance?</p>
+<p>Java’s approach is to use explicit qualification - thank god it wasn’t lexographic ordering. If the compiler happens across an ambiguous method name <em>BOOM</em>, compiler error. Specifically <code>class Foo inherits unrelated defaults for bar() from types X and Y</code>. You’ll have to override and explicitly declare which method you want to use: usually referencing the method like <code>interfaceName.super.methodName()</code>. Of course you may also want to roll your own implementation at this point. While this might seem onerously verbose, it’s right at home with java’s grammar and, I think, a much better solution than implicit solution.</p>
+<p>To give a little more insight into how we put this into practice, I must admit that we do only use this feature in test. It’s been quite nice to modularize redundancies in our API tests by splitting up the boilerplate on a per-http method bases, have them inherit shared basic methods, and - finally - implement multiple http method interfaces for a feature’s test class. I would venture to state that, since this feature is on the newer side of java and could have wide-ranging implications – it may be wise to leave it there for the time-being.</p>
+<hr />
+<p>So long jvm!</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

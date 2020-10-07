@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Thoughts about Hyperparameters in DL</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Thoughts about Hyperparameters in DL
+</h1>
+
+<div class="meta">
+    August 24, 2018
+    
+</div>
+
+<div class="post">
+<p>There are really two classes of these: optimizer hyperparameters (learning rate, number epochs, minibatch size, optimizer), and model hyperparameters (number and size of layers).</p>
+<p>From what I’ve seen optimizer hyperparameters are the parameters where there will one day be algorithm solutions to removing them from your model. Things like learning rate finders and cyclical learning rates (<a href="https://arxiv.org/abs/1506.01186">Cyclical Learning Rates for Training Neural Networks</a>, Smith), adaptive batch sizes (<a href="https://arxiv.org/abs/1712.02029">AdaBatch</a>, Devarakonda, et al), and convergence properties (really just borrowing from reinforcement learning literature, but <a href="https://arxiv.org/abs/1708.07120">Super-Convergence</a> - Smith, Topin seems to include a proof for convergence) are lines of research with varying sucess at removing these. Optimizer hyperparameters can also be ingrated directly into the optimizer itself, as can be seen with Adam and Adagrad for learning rates. On the other hand, neural architecture search (NAS) -based techniques are coming more popular with packages like AutoKeras to eliminate model hyperparameters.</p>
+<hr />
+<p>Other notes:</p>
+<ul>
+<li>Small minibatch sizes have more noise in error calculations, so you should preference for higher minibatches. Bumping batch size in powers of 2 usually plays well with the hardware architecture you are using as well. Generally start with something in the 64-2048 range depending on your type of data.</li>
+<li>Early stopping (ie - convergence) is usually determined by ensuring that validation error is always decreasing my some statistic for a window of size. Since you would be working with validation error, this will usually be more noisy than training error – which is why a window is used.</li>
+<li>Number of hidden units. This seems like a black art. You need to have enough neurons to capture the complexity of the problem, but not so much that the model quickly overfits on your training data. This can be seen when the difference between your model’s training error is much lower than its validation error. If this happens, throw more dropout at the model.</li>
+<li>As Karpathy suggests, in general three layers is enough for fully-connected layers (3 is better than 2, usually, and greater than 3 has decaying returns). With convolutional layers, you can never seem to have enough depth.</li>
+<li>for RNN unit types: GRUs and LSTMs seem to be neck-and-neck on character modelling and, in other contexts, it’s really a decision that is left to the user (although results skew to LSTMs) – but both are better than vanilla RNNs.</li>
+<li>stacking RNN units is also highly contextual. Character modelling seems to lose power after 2 stacked units, while acoustic-to-word LSTM models are SOTA at a depth of 5 or 7 models.</li>
+<li>Word embeddings, empirically, <a href="https://arxiv.org/abs/1507.05523">tend to be most effective with a dimensionality between 50 and 200</a>. Although it is not unusual to seem embeddings with a dimenstionality of 500 or 1000.</li>
+</ul>
+<p><a href="https://arxiv.org/abs/1206.5533">Also</a>, <a href="http://www.deeplearningbook.org/contents/guidelines.html">also</a>, <a href="http://neuralnetworksanddeeplearning.com/chap3.html#how_to_choose_a_neural_network's_hyper-parameters">also</a>, <a href="http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf">also</a>, <a href="https://arxiv.org/abs/1606.02228">also</a>, <a href="https://arxiv.org/abs/1506.02078">also</a>.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

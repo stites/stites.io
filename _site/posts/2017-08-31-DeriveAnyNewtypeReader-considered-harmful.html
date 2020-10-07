@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>DeriveAnyNewtypeReader considered harmful</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+DeriveAnyNewtypeReader considered harmful
+</h1>
+
+<div class="meta">
+    August 31, 2017
+    
+</div>
+
+<div class="post">
+<p>So for the past couple of days I’ve been chasing down what I thought was a space leak introduced by monadic while loops. It’s a reasonable thing to think because reinforcement learning in haskell requires nested monadic loops: one outer loop to iterate through all episodes, another nested loop to travel through all steps in each episode. A pattern which has been <a href="https://ro-che.info/articles/2017-01-10-nested-loop-space-leak">documented</a> <a href="https://www.well-typed.com/blog/2016/09/sharing-conduit/">by</a> <a href="https://stackoverflow.com/questions/41306593/memory-leak-in-recursive-io-function-pap">others</a> as potentially leaky but which, never-the-less, is still sometimes useful*.</p>
+<p>It turns out that the culprit to this bug was <em>not</em> a space leak but, rather, a problem with the conflict between <code>DeriveAnyClass</code> and <code>GeneralizeNewtypeDeriving</code>. GHC will throw out compiler warnings about this interaction, and it would be wise to dig deeper into what each one does. Here’s some code which will exemplify what I’ve been dealing with:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="ot">{-# LANGUAGE DeriveFunctor #-}</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="ot">{-# LANGUAGE GeneralizeNewtypeDeriving #-}</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">data</span> <span class="dt">Config</span> <span class="ot">=</span> <span class="dt">Config</span> {<span class="ot"> maxOinks ::</span> <span class="dt">Int</span> }</span>
+<span id="cb1-5"><a href="#cb1-5"></a>  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>)</span>
+<span id="cb1-6"><a href="#cb1-6"></a></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="kw">newtype</span> <span class="dt">Oink</span> a <span class="ot">=</span> <span class="dt">Oink</span> {<span class="ot"> kniO ::</span> <span class="dt">Reader</span> <span class="dt">Config</span> a }</span>
+<span id="cb1-8"><a href="#cb1-8"></a>  <span class="kw">deriving</span> (<span class="dt">Functor</span>, <span class="dt">Applicative</span>, <span class="dt">Monad</span>, <span class="dt">MonadReader</span> <span class="dt">Config</span>)</span></code></pre></div>
+<p>This code is perfectly fine, but if we make a slight modification, we introduce a bug:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="ot">{-# LANGUAGE DeriveFunctor #-}</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a><span class="ot">{-# LANGUAGE Generic #-}</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a><span class="ot">{-# LANGUAGE DeriveAnyClass #-}</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a><span class="ot">{-# LANGUAGE GeneralizeNewtypeDeriving #-}</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a></span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="kw">data</span> <span class="dt">Config</span> <span class="ot">=</span> <span class="dt">Config</span> {<span class="ot"> maxOinks ::</span> <span class="dt">Int</span> }</span>
+<span id="cb2-7"><a href="#cb2-7"></a>  <span class="kw">deriving</span> (<span class="dt">Eq</span>, <span class="dt">Show</span>, <span class="dt">Generic</span> <span class="dt">ToJSON</span>, <span class="dt">FromJSON</span>)</span>
+<span id="cb2-8"><a href="#cb2-8"></a></span>
+<span id="cb2-9"><a href="#cb2-9"></a><span class="kw">newtype</span> <span class="dt">Oink</span> a <span class="ot">=</span> <span class="dt">Oink</span> {<span class="ot"> kniO ::</span> <span class="dt">Reader</span> <span class="dt">Config</span> a }</span>
+<span id="cb2-10"><a href="#cb2-10"></a>  <span class="kw">deriving</span> (<span class="dt">Functor</span>, <span class="dt">Applicative</span>, <span class="dt">Monad</span>, <span class="dt">MonadReader</span> <span class="dt">Config</span>)</span></code></pre></div>
+<p>At this point, GHC 8.0.2 shouts at us, telling us that it can do what we want it to do but it’ll use <code>DeriveAnyClass</code> before <code>GeneralizeNewtypeDeriving</code>, and while <code>GeneralizeNewtypeDeriving</code> is actually filling out code we would not write (lifting instance functions from our wrapped level to our newtype wrapper level), <code>DeriveAnyClass</code> is just adding an empty <code>instance ToJSON Config</code> line to our code. This works due to <code>default</code> functions in a typeclass. For instance, <code>ToJSON</code>’s instace looks like this:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="co">-- From aeson:</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="kw">class</span> <span class="dt">ToJSON</span> a <span class="kw">where</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="co">-- | Convert a Haskell value to a JSON-friendly intermediate type.</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="ot">    toJSON     ::</span> a <span class="ot">-&gt;</span> <span class="dt">Value</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a>    default<span class="ot"> toJSON ::</span> (<span class="dt">Generic</span> a, <span class="dt">GToJSON</span> <span class="dt">Zero</span> (<span class="dt">Rep</span> a)) <span class="ot">=&gt;</span> a <span class="ot">-&gt;</span> <span class="dt">Value</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a>    toJSON <span class="ot">=</span> genericToJSON defaultOptions</span></code></pre></div>
+<p>So by declaring <code>instance ToJSON Config</code>, we use the defaulted <code>toJSON = genericToJSON defaultOptions</code> code if our code can satisfy <code>(Generic a, GToJSON Zero (Rep a))</code>.</p>
+<p>The bug exists with MonadReader. Now that both pragmas exist in our module, <code>DeriveAnyClass</code> takes precedence and we get <code>instance MonadReader Config Oink</code>. Unfortunately, it turns out that, while there isn’t default code, there is existing code which satisfies properties we’ve set out <em>by default</em> so we wind up with a problem:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="co">-- From mtl-2.2.1</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a></span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="kw">class</span> <span class="dt">Monad</span> m <span class="ot">=&gt;</span> <span class="dt">MonadReader</span> r m <span class="op">|</span> m <span class="ot">-&gt;</span> r <span class="kw">where</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="pp">#if defined(__GLASGOW_HASKELL__) &amp;&amp; __GLASGOW_HASKELL__ &gt;= 707</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>    <span class="ot">{-# MINIMAL (ask | reader), local #-}</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="pp">#endif</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a>    <span class="co">-- | Retrieves the monad environment.</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="ot">    ask   ::</span> m r</span>
+<span id="cb4-9"><a href="#cb4-9"></a>    ask <span class="ot">=</span> reader <span class="fu">id</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a></span>
+<span id="cb4-11"><a href="#cb4-11"></a>    <span class="co">-- | Executes a computation in a modified environment.</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="ot">    local ::</span> (r <span class="ot">-&gt;</span> r) <span class="co">-- ^ The function to modify the environment.</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a>          <span class="ot">-&gt;</span> m a      <span class="co">-- ^ @Reader@ to run in the modified environment.</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a>          <span class="ot">-&gt;</span> m a</span>
+<span id="cb4-15"><a href="#cb4-15"></a></span>
+<span id="cb4-16"><a href="#cb4-16"></a>    <span class="co">-- | Retrieves a function of the current environment.</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="ot">    reader ::</span> (r <span class="ot">-&gt;</span> a) <span class="co">-- ^ The selector function to apply to the environment.</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a>           <span class="ot">-&gt;</span> m a</span>
+<span id="cb4-19"><a href="#cb4-19"></a>    reader f <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a>      r <span class="ot">&lt;-</span> ask</span>
+<span id="cb4-21"><a href="#cb4-21"></a>      <span class="fu">return</span> (f r)</span></code></pre></div>
+<p>Look at that! we’ve just slipped through a <code>MINIMAL</code> constraint! This code will recurse infinitely and crash your machine in a fiery blaze.</p>
+<p>So what is the solution? Well there are two: if you are on GHC-8.0.x, never put both of these pragmas in the same module (possibly more sternly, never use <code>DeriveAnyClass</code> in a module where there is a typeclass with a <code>MINIMAL</code>y annotated instance, but I need to doublecheck that). In GHC-8.2.x, you can now use dedriving strategies to determine how to get the instances you want. There are three types of strategies: <code>stock</code>, <code>newtype</code>, and <code>anyclass</code>. <code>newtype</code> and <code>anyclass</code> will work the ways detailed above while <code>stock</code> will generate code like <code>instance Eq</code> in the current way GHC generates code automatically to get your instance.</p>
+<p>For more on the 8.2 improvements, I would redirect you to ryan scott’s article: “<a href="https://ryanglscott.github.io/2017/04/12/improvements-to-deriving-in-ghc-82/">Improvements to deriving in 8.2</a>.”</p>
+<p>* - That being said, after a bit of reflection I’m strongly motivated to model these types of problems simply as functions working on <code>ListT</code>, if i am able to think about how to handle both finite and empty lists, as in the case with reinforcement learning.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

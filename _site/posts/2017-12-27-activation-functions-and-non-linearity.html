@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Activation functions and non-linearity</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Activation functions and non-linearity
+</h1>
+
+<div class="meta">
+    December 27, 2017
+    
+</div>
+
+<div class="post">
+<p>if linear functions are \(s = W x\), then a 2-layer neural network function would look more like look more like: <br /><span class="math display"><em>s</em> = <em>W</em><sub>2</sub><em>m</em><em>a</em><em>x</em>(0, <em>W</em><sub>1</sub><em>x</em>)</span><br /></p>
+<p>Where \(W_1\) has the dimensions of input and an intermediate dimension and \(W_2\) mapping from the intermediate dimension to our output dimension. Notice that if we remove the element-wise \(max\) function then we would be able to collapse \(W_2 W_1\) into a single matrix.</p>
+<p>Similarly, a three-layer neural network would look like: <br /><span class="math display"><em>s</em> = <em>W</em><sub>3</sub><em>m</em><em>a</em><em>x</em>(0, <em>W</em><sub>2</sub><em>m</em><em>a</em><em>x</em>(0, <em>W</em><sub>1</sub><em>x</em>))</span><br /></p>
+<p>With the biological tilt, dendrites carry signal to a neuron’s cell body where the signal accumulates. If the final signal sums above a certain threshold, the neuron ’fire, sending a spike along its axon. In the computational model, we assume that the precise timings of the spikes do not matter, and that only the frequency of the firing communicates information. Based on this rate code interpretation, we model the firing rate of the neuron with an activation function.</p>
+<p>Activations functions are incredibly versitile. With the simple notion that a neuron can “like” (have an activation weight near 1.0) or “dislike” (a weight near 0.0) an input, we can encode a binary classifier (interpret activation as one class and <code>1-activation</code> as the contrasting class), a binary SVM classifier (attaching a max-margin hinge loss as the activation), or we can interpret the activation as kind of regularization (from a biological perspective: how easy it is to “gradually forget” a parameter).</p>
+<p>Common activation function include the sigmoid function (which squashes numbers between [0,1]), tanh (which squashes numbers to the range of [-1,1]), relu (rectified linear units: which max(0,x) numbers), leaky relu, and maxout.</p>
+<hr />
+<h3 id="sigmoid-and-tanh">Sigmoid and tanh</h3>
+<p>Sigmoid activation has fallen out of favor as an intermediate layer since they tend to saturate at either the tail of 1 or 0, which cause the gradient at those regions to zero-out. Gradients of neglegent magnitude fail to learning via backpropagation, blocking any updates from flowing through the network. On top of this, sigmoid outputs are not centered around zero. I think the reasoning behind how this is bad may be best explained in the Stanford CS231 course’s page:</p>
+<blockquote>
+<p>This has implications on the dynamics during gradient descent, because if the data coming into a neuron is always positive (e.g. \(x &gt; 0\) elementwife in \(f = w^T x + b \)), then the gradient on the weights \(w\) will during backpropagation become either all be positive, or all negative (depending on the gradient of the whole expression \(f\)). This could introduce undesirable zig-zagging dynamics in the gradient updates for the weights. However, notice that once these gradients are added up across a batch of data the final update for the weights can have variable signs, somewhat mitigating this issue. Therefore, this is an inconvenience but it has less severe consequences compared to the saturated activation probjem above.</p>
+</blockquote>
+<p>The zig-zagging can be explained from the fact that a update may have to overcompensate for a negative value in a positive space when, later, a subsequent update will have to, again, overcomensate for a poor update. Tanh also suffers from problems of saturated gradients, but it is always preferred to sigmoid activation because of the latter issue.</p>
+<h3 id="relu-and-its-variants-leaky-relu-prelu-and-maxout">ReLU and it’s variants (Leaky ReLU, PReLU, and Maxout)</h3>
+<p>ReLU (Rectified Linear Units) are probably the most popular at the time of this writing. These activations accelerate convergence of stochastic gradient descent by a factor of six (according to <a href="http://www.cs.toronto.edu/~fritz/absps/imagenet.pdf">Krizhevsky, et al.</a>) in comparison to sigmoid and tanh. This is supposidly due to the inexpensive bounds-check and unsaturating nature, as opposed to sigmoid and tanh which have expensive exponentials to compute and which have values saturate at the min- and max- bounds.</p>
+<p>Unfortunately, given that ReLUs run a max(0, x) function and can possibly zero out a parameter during propagation, it is possible for a ReLU unit to irrevocibly die if a gradient is sufficiently large. In this case, the parameter will get knocked off of the data manifold. Countermeasures for this include ensuring that the learning rate is sufficiently low, and moving from ReLU to Leaky ReLU activation.</p>
+<p>Leaky ReLU takes the form of \(f(x) = 1(x &lt; 0)(a x) + 1(x &gt;= 0)(x)\) with \(a\) being a small constant. Instead of zero-ing out \(x\) when \(x &lt; 0\), the leaky ReLU function will instaed have a negative slope of \(a\) (usually something like 0.01). While this would solve the problem of dying activation parameters, the empirical results aren’t always consistent. The slope can also be made a parameter of the neuron itself, which is seen in a PReLU neuron which is introduced in <a href="http://arxiv.org/abs/1502.01852">Delving Deep into Rectifiers, Kaiming He et al. (2015)</a>, but the consistency of results are still unclear.</p>
+<p>Most promising is maxout (<a href="http://www-etud.iro.umontreal.ca/~goodfeli/maxout.html">Goodfellow, et al.</a>). A Maxout activation computes \(max(w_1^T x + b_1, w_2^T x + b_2)\) which is just the generalization of <em>both</em> ReLU (when \(w_1\) and \(b_1\) are 0) and Leaky ReLU (Question! is this when the weights are 1 and \(b_1\) is \(a\)? I probably need to clarify the Leaky ReLU function). Maxout is nice in that it never suffers from saturation and operates on a linear range without zero-ing out any parameters – so the dying parameter problem is avoided. That said, it comes at the cost of double the parameters and compute of ReLU, which is potentially even more costly than a sigmoid or tanh function.</p>
+<hr />
+<p>When it comes to actually choosing your activation layers, the guidance from the Stanford CS213 class is this: use ReLU, if dying gradients become a problem, try tuning your learning rate or give Leaky ReLU and Maxout a try. Never use sigmoid, and you can experiment with tanh, but don’t expect it to perform as well as Maxout or Leaky ReLU.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

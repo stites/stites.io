@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Sparknotes from Rob Eisenbergs Article</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Sparknotes from Rob Eisenbergs Article
+</h1>
+
+<div class="meta">
+    January  6, 2015
+    
+</div>
+
+<div class="post">
+<p class="meta">
+06 January 2015 - Redwood City
+</p>
+<p>This is a <a href="http://eisenbergeffect.bluespire.com/all-about-angular-2-0/">pretty long article</a> written by a former member of the Angular2.0 team. The counter at the bottom estimates an hour-long read, so I figure’d I’d write some (as objective as possible) sparknotes:</p>
+<h5 id="motivations-for-angular-2.0">Motivations for Angular 2.0</h5>
+<blockquote>
+<p>When AngularJS was first created, almost five years ago, it was not originally intended for developers.</p>
+</blockquote>
+<ul>
+<li>The web is no longer a jQuery cesspool</li>
+<li>5 years ago (angular’s creation) mobile was barely a thing</li>
+<li><a href="http://www.bennadel.com/resources/uploads/2013/feelings_about_angularjs_over_time.png">Learning angular looks like this</a></li>
+</ul>
+<h5 id="features-and-design-of-angular-2.0">Features and Design of Angular 2.0</h5>
+<ul>
+<li>it uses AtScript (note that you don’t have to write AtScript to use it)</li>
+<li>AtScript does some typechecking</li>
+<li>They’re trying to unify AngularJS and AngularDart — which is still a hit-or-miss</li>
+<li>Dependency Injection will be better</li>
+<li>Not everything has to be a singleton</li>
+<li>Child Injectors (new feature) will add inheritance to services</li>
+<li>Dynamic Loading will really be asynchronous this time.</li>
+<li>Directives will not use a “kitchen-sink” approach:</li>
+</ul>
+<blockquote>
+<p>In Angular 2.0 there are three types of directives.</p>
+<ul>
+<li><em>Component Directive</em> - Creates a custom component composed of a View and a Controller. You can use it as a custom HTML element. Also, the router can map routes to Components.</li>
+<li><em>Decorator Directive</em> - Decorates an existing HTML element with additional behavior. A classic example is ng-show.</li>
+<li><em>Template Directive</em> - Transforms HTML into a reusable template. The directive author can control when and how the template is instantiated and inserted into the DOM. Examples include ng-if and ng-repeat.</li>
+</ul>
+</blockquote>
+<ul>
+<li>Controllers will be less of a dumping ground:</li>
+</ul>
+<blockquote>
+<p>You may have heard that Controllers are dead in Angular 2.0. Well, that’s not exactly true. In reality, Controllers are one part of what we are calling a Component. The Component has a View and a Controller.</p>
+</blockquote>
+<ul>
+<li><p>“Components” are just classes, so with the new dependency injection, this makes controllers look a lot cleaner with the inheritance from Child Injectors.</p></li>
+<li><p>Templating will have more syntax and, thus, will be given more responsibility.</p></li>
+</ul>
+<p><strong>Pros:</strong> &gt; There’s some pretty nice things going on in there to keep a small memory &gt; footprint, reduce garbage and enable super fast template instantiation.</p>
+<p><strong>Cons:</strong> Directives are different and “the annotations are a bit verbose.” Also, they break the <a href="https://en.wikipedia.%20org/wiki/Separation_of_presentation_and_content">Separated Presentation principle</a>.</p>
+<p>Example:</p>
+<pre><code>@ComponentDirective({
+    selector:'tab-container',
+    directives:[NgRepeat]
+})
+export class TabContainer {
+    constructor(panes:Query&lt;Pane&gt;) {
+        this.panes = panes;
+    }
+
+    select(selectedPane:Pane) { ... }
+}</code></pre>
+<blockquote>
+<p>Earlier on I mentioned that this was necessary for the compiler to know what needed to be loaded before compiling the template. But, this breaks one of the primary benefits that is usually gained by using MVC, MVVM or any separated presentation pattern. Lest you think this is just theoretical, let me point out some of the consequences:</p>
+<ul>
+<li><p>It is no longer possible to implement ng-include. The compiler requires a ComponentDirective in order to compile HTML. Therefor you cannot compile HTML on its own and include it into a View.</p></li>
+<li><p>It’s painful if you want to have multiple potential views for the same component. Imagine that you have a component but you want to use a different view for phone than for desktop. You need to aggregate all the directives, filters, etc. that you use across all of your views and make sure they are all represented in the single component’s metadata. This is a maintenance nightmare. You can no longer reliably remove anything from the dependency list without checking all views. It’s also easier to forget adding something.</p></li>
+<li><p>It’s not possible to have multiple runtime views for the same component. Imagine that you are configuring your router with a set of routes. Several of the routes can use the same “controller” but you need different views. You can’t really do that. Sorry.</p></li>
+<li><p>It’s completely impossible to enable ad hoc composition of screens. This makes data-driven UI construction more complicated in the least. You can’t just render varying combinations of views and controllers (view models). This limits reusability by discouraging compositional approaches to UI. It forces you to subclass controllers in order to get different views.</p></li>
+</ul>
+<p>Fortunately, the design is still undergoing lots of changes.</p>
+</blockquote>
+<p>The author has opinions on stuff and has voiced his opinion.</p>
+<p>Templating Synax is still up in the air. This is the reason it was introduced, but there are technical problems and the community hates it. If you have recommendations, go to [the related issue][ngIssue].</p>
+<p>The author has more opinions, which he states.</p>
+<h5 id="the-most-interesting-part-two-way-data-binding-might-be-canned">The most interesting part: two-way data binding might be canned!</h5>
+<blockquote>
+<p>There is intense debate within the Angular team as to whether Angular 2.0 needs two-way databinding or not. If you’ve read the public design documents (including this one) or watched the ngEurope presentation on Angular 2.0 Core or the Q&amp;A, you may have picked this up.</p>
+</blockquote>
+<blockquote>
+<p>I’ve heard some explanations related to enforcing DAG for data flow. This idea has been recently made popular by ReactJS. But frankly, you can’t completely enforce that. I can break it by simply using an event aggregator. This is a pattern that is very common in composite applications. I think you should teach people about DAG and help them to adhere to it when possible, but you can’t force them. That makes it hard to do their job.</p>
+</blockquote>
+<blockquote>
+<p>I’ve heard another argument that centers around inadequate validation capabilities. But this isn’t a reason to remove two-way binding. You can easily layer validation systems on top of the low level two-way binding capabilities.</p>
+</blockquote>
+<blockquote>
+<p>I think one of the big problems relates to the actual implementation of binding in Angular which uses dirty checking. Since dirty checking is used, every time you make a check, you have to check twice.</p>
+</blockquote>
+<blockquote>
+<p>…the team hasn’t made up their mind on any of this. They are just trying to consider all the possibilities. So, there’s no need to worry. However, you need to help me if you love two-way binding. I think it would be great for the rest of the Angular team to hear how much you love two-way binding.</p>
+</blockquote>
+<h5 id="the-router">The Router</h5>
+<ul>
+<li>Does what a router should do: &gt; + Simple JSON-based Route Config &gt; + Optional Convention over Configuration &gt; + Static, Parameterized and Splat Route Patterns &gt; + Query String Support &gt; + Use Push State or Hashchange &gt; + Navigation Model (For Generating a Navigation UI) &gt; + Document Title Updates &gt; + 404 Route Handling &gt; + History Manipulation</li>
+</ul>
+<h5 id="child-routers">Child Routers</h5>
+<p>they exist.</p>
+<h5 id="screen-activation-part-of-the-routers">Screen Activation (part of the routers)</h5>
+<p>you now have access to the following: &gt; + <code>canActivate</code> - Allow/Prevent navigating to the new controller. &gt; + <code>activate</code> - Respond to successful navigation to the new controller. &gt; + <code>canDeactivate</code> - Allow/Prevent navigation away from the old controller. &gt; + <code>deactivate</code> - Respond to successful navigation away from the old &gt; controller.</p>
+<p>…and the router is also going to Angular 1.3</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

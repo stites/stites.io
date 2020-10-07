@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Optimization stream-of-conciousness</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Optimization stream-of-conciousness
+</h1>
+
+<div class="meta">
+    December 23, 2017
+    
+</div>
+
+<div class="post">
+<p>In Stanford’s CS231n first module titled: “Optimization: Stochastic Gradient Descent,” they describe how loss for multiclass SVM without regularization is described as:</p>
+<p><br /><span class="math display"><em>L</em><sub><em>i</em></sub> = ∑<sub><em>j</em> ≠ <em>y</em><sub><em>i</em></sub></sub>[max(0,<em>w</em><sub><em>j</em></sub><sup><em>T</em></sup><em>x</em><sub><em>i</em></sub>−<em>w</em><sub><em>y</em><sub><em>i</em></sub></sub><sup><em>T</em></sup><em>x</em><sub><em>i</em></sub>+1)]</span><br /></p>
+<p><br /></p>
+<p>For their three-dimensional example across (W). Breaking this down across each row of (W), we get:</p>
+<p><br /><span class="math display"><em>L</em><sub>0</sub> = max (0, <em>w</em><sub>1</sub><sup><em>T</em></sup><em>x</em><sub>0</sub> − <em>w</em><sub>0</sub><sup><em>T</em></sup><em>x</em><sub>0</sub> + 1) + max (0, <em>w</em><sub>2</sub><sup><em>T</em></sup><em>x</em><sub>0</sub> − <em>w</em><sub>0</sub><sup><em>T</em></sup><em>x</em><sub>0</sub> + 1)</span><br /> <br /><span class="math display"><em>L</em><sub>1</sub> = max (0, <em>w</em><sub>0</sub><sup><em>T</em></sup><em>x</em><sub>1</sub> − <em>w</em><sub>1</sub><sup><em>T</em></sup><em>x</em><sub>1</sub> + 1) + max (0, <em>w</em><sub>2</sub><sup><em>T</em></sup><em>x</em><sub>1</sub> − <em>w</em><sub>1</sub><sup><em>T</em></sup><em>x</em><sub>1</sub> + 1)</span><br /> <br /><span class="math display"><em>L</em><sub>2</sub> = max (0, <em>w</em><sub>0</sub><sup><em>T</em></sup><em>x</em><sub>2</sub> − <em>w</em><sub>2</sub><sup><em>T</em></sup><em>x</em><sub>2</sub> + 1) + max (0, <em>w</em><sub>1</sub><sup><em>T</em></sup><em>x</em><sub>2</sub> − <em>w</em><sub>2</sub><sup><em>T</em></sup><em>x</em><sub>2</sub> + 1)</span><br /> <br /><span class="math display"><em>L</em> = (<em>L</em><sub>0</sub> + <em>L</em><sub>1</sub> + <em>L</em><sub>2</sub>)/3</span><br /></p>
+<p><br /></p>
+<p>These can be visualized as the following:</p>
+<p><img src="https://cs231n.github.io/assets/svmbowl.png" /></p>
+<p>So the thing that I don’t get is… Nope. It all makes sense. I thought they wrote that you could “reorganize” the errors to get a convex shape, however this is wrong – as the giant letters <strong>“sum”</strong> clearly state. This is a sum of average loss error across all dimensions.</p>
+<p>More interesting is this: the graph shown is not differentiable! It is a step-wise function. Mathematically, this isn’t sound, but <em>subgradients</em> still exist.</p>
+<p>Other notes from “Optimization: Stochastic Gradient Descent” and “Backprop, Intuitions”:</p>
+<ul>
+<li>the derivative on each vaiable tells you the sensitivity of the whole expression on its value<a href="https://cs231n.github.io/optimization-2/">1</a>.</li>
+<li>in the “real-valued circuts” example<a href="https://cs231n.github.io/optimization-2/">1</a>, backprop can be thought of as gates communicating to eachother whether they want their outputs to increase or decrease, and how strongly, to make the final output higher.</li>
+<li>backprop in practice should be done while caching forward-pass variables</li>
+<li>gradients add up at forks according to the <em>multivaraite chain rule</em> (states that if a variable branches out to different paths of the circut, then gradients that flow back to it will accumulate via addition).</li>
+<li>“add gates” in a NN distribute gradients evenly to all inputs regargless of forward pass inputs</li>
+<li>“max gates” route the gradient to exactly the maximum input variable.</li>
+<li>“multiply gates” calculate local gradients. In <code>x = 3</code>, <code>y = -4</code>, <code>f(x,y) = x * y == -12</code>, with a gradient of <code>2</code>, the local gradient for each input is calculated: <code>dx = y*grad == -4 * 2 = -8</code>, <code>dy = x * grad == 3 * 2 = 6</code>
+<ul>
+<li>as a corollary, this means that small values will get large local gradients and vice-versa. This makes sense as the local gradients move variables them towards a common gradient. This makes preprocessing and initial weights very important. For more on initial weights, see Xavier initialization.</li>
+</ul></li>
+<li>for vectorized optimizations we do the same as with scalars, but we have to pay attention to dimensionality and transpose operations.
+<ul>
+<li>tensor-tensor multiply gradients (including matrix-matrix, matrix-vector, and vector-vector) are dot products as forward passes and transpose dot products for gradients. Paying attention to input dimensionality and ensuring that gradient dimensions match is very important.</li>
+</ul></li>
+</ul>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

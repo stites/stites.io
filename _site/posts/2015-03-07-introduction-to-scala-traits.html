@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Introduction to Scala Traits</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Introduction to Scala Traits
+</h1>
+
+<div class="meta">
+    March  7, 2015
+    
+</div>
+
+<div class="post">
+<p class="meta">
+07 March 2015 - Mountain View
+</p>
+<p>I’ve been digging into scala more and more. Inspired by Horstmann’s <em>Scala for</em> <em>the Impatient</em>, I’m writing a series of posts on parts of Scala I find interesting. Some of the examples I show will come directly from Horstmann, but only because they’re pretty great examples. I highly recommend the book.</p>
+<p>Scala traits are pretty cool. They’re basically the same as interfaces in Java. Except for the fact that they’re a lot more flexible than interfaces and they’ve been made to address the multiple inheritence problem which is missing in Java. Austin (coworker) says that it’s the closest thing he’s seen to multiple inherience done in C++.</p>
+<p>Lets start with why multiple inheritence done in Java. Mutliple inheritence is a powerful feature and is simple to think about when you have completely different classes — but things get crazy when you start to inherit from similar ones. Properties overlap and, soon, you have seven different definitions of an ‘overridden’ function.</p>
+<p>This is classically defined in The Diamond Problem (or the ‘deadly diamond of death’ - wikipedia): <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Diamond_inheritance.svg/440px-Diamond_inheritance.svg.png" alt="Diamond Inheritance" /> <em>from wikipedia</em></p>
+<p>In Java, they ignore this problem completely. You can only inherit from one abstract class — although you can bind your class to any number of interfaces as you’d like. In C++, you would have to redefine any base class defintions to clear things up. In Scala, you would use traits.</p>
+<p>As I mentioned, traits are a lot like java interfaces. In fact you can use them in the exact same way. However you can declare definitions, properties, or methods in both the concrete and the abstract. Even alongside each other!</p>
+<p>Methods declared, but not defined are implicitly defined as abstract:</p>
+<pre><code>trait Foo {
+  def bar(x: String)     // abstract definition
+  def baz(y: String) {}  // concrete definition
+}</code></pre>
+<p>With regards to mutliple inheritance, you can simply chain traits with the <code>with</code> modifier:</p>
+<pre><code>class X extends TraitA with TraitB with TraitC { /* ... */ }</code></pre>
+<p>Note that the compiler reads this as <code>class X</code> extending <code>TraitA with TraitB with TraitC</code>. Traits will inherit from eachother in FILO (first in, last out) fashion. So if - in the above example - <code>TraitA</code>, <code>TraitB</code>, and <code>TraitC</code> all override the method definition <code>def bar(x:String) {}</code> in TraitA, then class X will inherit bar from TraitC.</p>
+<p>Some other notes on scala’s traits:</p>
+<ul>
+<li>you don’t need to declare an <code>override</code> on a class when implimenting an abstract definition.</li>
+<li>traits don’t have to be abstract.</li>
+<li>think of traits as mix-ins.</li>
+</ul>
+<p>Finally keep in mind that, when refactoring traits with concrete behaviour, all classes inheriting from that trait must be recompiled.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

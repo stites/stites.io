@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2016-01-24-applicatives</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2016-01-24-applicatives
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<p>applicative laws:</p>
+<ol start="0" type="1">
+<li>Typeclass:</li>
+</ol>
+<p>class Functor a =&gt; Applicative a where pure :: x -&gt; a x pure val = app val (&lt;<em>&gt;) :: a (x -&gt; y) -&gt; a x -&gt; a y (&lt;</em>&gt;) (app fn) (app x) = app (fn x)</p>
+<p>I. Identity pure id &lt;*&gt; v = v</p>
+<p>Keep in mind that we’ve built our vocabulary to be:</p>
+<pre><code> $  ::   (a -&gt; b) -&gt;   a -&gt;   b   -- function application
+&lt;$&gt; ::   (a -&gt; b) -&gt; f a -&gt; f b   -- functor application
+&lt;*&gt; :: f (a -&gt; b) -&gt; f a -&gt; f b   -- applicative application
+
+     id     [1..5]   -- id [1,2,3,4,5]
+fmap id     [1..5]   -- [id 1, id 2, id 3, id 4, id 5]
+pure id &lt;*&gt; [1..5]   -- [id] &lt;*&gt; [1,2,3,4,5]  |-&gt; [id 1, id 2, id 3, id 4, id 5]</code></pre>
+<ol start="2" type="I">
+<li><p>Composition</p>
+<p>pure (.) &lt;<em>&gt; u &lt;</em>&gt; v &lt;<em>&gt; w = u &lt;</em>&gt; (v &lt;*&gt; w)</p></li>
+</ol>
+<p>Which really means: <code>(u.v).w = u.(v.w)</code> for applicatives. So from CA:</p>
+<pre><code>pure (.) &lt;*&gt; [(+1)] &lt;*&gt; [(*2)] &lt;*&gt; [1,2,3] = [(+1)] &lt;*&gt; ([(*2)] &lt;*&gt; [1,2,3])
+                   [(+1).(*2)] &lt;*&gt; [1,2,3] = [(+1)] &lt;*&gt; [2,4,6]
+                                   [3,5,7] = [3,5,7]</code></pre>
+<ol start="3" type="I">
+<li>Homomorphism</li>
+</ol>
+<p>“A homomorphism is a structure-preserving map between two categories”</p>
+<pre><code>pure f &lt;*&gt; pure x = pure (f x)</code></pre>
+<p>basically, it should be identical to <code>(+1) 1</code>. Note that this law is basically allowing us to say “forget the structure” but to such a degree that we will have to give some kind of hint to the compiler as to what the structure is. In essence, functions are evaluated to:</p>
+<pre><code>pure (+1) &lt;*&gt; pure 1 :: Maybe Int
+pure ((+1) 1) :: Maybe Int</code></pre>
+<p>However, notice that:</p>
+<pre><code>-- InvalidPure.hs
+module InvalidPure where
+nope = pure (+1) &lt;*&gt; pure 1</code></pre>
+<p>results in:</p>
+<pre><code>ghci&gt; :l InvalidPure.hs
+No instance for (Applicative f0) arising from a use of ‘&lt;*&gt;’
+  The type variable ‘f0’ is ambiguous
+  Relevant bindings include
+    test :: f0 Integer (bound at /Users/stitess/InvalidPure.hs:3:1)
+  Note: there are several potential instances:
+    instance Monoid m =&gt; Applicative (Control.Applicative.Const m)
+      -- Defined in ‘Control.Applicative’
+    ...plus 15 others
+  In the expression: pure (+ 1) &lt;*&gt; pure 1
+  In an equation for ‘test’: test = pure (+ 1) &lt;*&gt; pure 1</code></pre>
+<p>Notice, however that the following works:</p>
+<pre><code>ghci&gt; let y = pure (+1) &lt;*&gt; pure 1
+ghci&gt; :t y
+y :: (Num b, Applicative f) =&gt; f b</code></pre>
+<p>Because the Applicative in question is IO.</p>
+<ol start="4" type="I">
+<li><p>Interchange</p>
+<p>u &lt;<em>&gt; pure y = pure ($ y) &lt;</em>&gt; u</p></li>
+</ol>
+<p>because u is to the left of a tie-fighter, it must be a function embedded in some structure. This means we can interpret as the following:</p>
+<pre><code>-- on the left
+ghci&gt; Just (+2) &lt;*&gt; pure 2
+Just 4
+
+-- on the right
+ghci&gt; pure ($ 2) &lt;*&gt; Just (+2)
+Just 4</code></pre>
+<p>Notice that by sectioning the $ (function application) with y, we can “prime” a parameter for some future operation. Notice:</p>
+<pre><code>pure ($    y) &lt;*&gt;   u
+   f (a -&gt; b)     f a</code></pre>
+<p>Which translates to:</p>
+<pre><code>pure ($ 2) &lt;*&gt; Just (+2)
+Just ($ 2) &lt;*&gt; Just (+2)
+Just (($ 2) (+2))
+Just ((+2) $ 2)
+Just (2 + 2)
+Just 4</code></pre>
+<p>More on the interchange law (have yet to review) from Catsters:</p>
+<p>Natural Transformations 3: http://youtu.be/EG5xUYXHFeU Natural Transformations 3A: http://youtu.be/fsfzEz6qAGQ</p>
+<p>So remember that Applicatives must satisfy these four laws - identity, composition, homomorphism, and interchange - and also satisfy the definition for Functor.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

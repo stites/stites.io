@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>BIC, DIC, and CV</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+BIC, DIC, and CV
+</h1>
+
+<div class="meta">
+    October  9, 2017
+    
+</div>
+
+<div class="post">
+<p>Comparison of BIC, DIC, and CV:</p>
+<p><strong>BIC:</strong></p>
+<p>In information criterion like AIC, BIC, and DIC, the primary role is to come up with a criteria that will both reward high likelihood, but penalizes model complexity. In this way a model will both be a good fit for the data and will also generalize well beyond the data. One of BIC’s advantages is that it prefers simpler models than its predecessor, AIC. Furthermore, BIC has some nice theoretical backing since it is simply trying to maximize the posterior likelihood of the data, given the model. <strong>That said</strong> BIC assumes that one of the models it is using is true and that you are trying to find the model most likely to be true in the Bayesian sense (<a href="http://www.stat.cmu.edu/~larry/=stat705/Lecture16.pdf">Wasserman lecture notes</a>). If the true models doesn’t exist in comparison, if the real evaluation is non-bayesian, or if high model complexity is permissable, then it is not a good measure.</p>
+<p><em>How does BIC deal with overfitting?</em></p>
+<p>BIC deals with overfitting by penalizing models that have high complexity. Models which have high fitness and high complexity are overfit and will not scale beyond the data trained on. BIC counters this in the same way AIC does, but with a more stringent formulation of the penalty.</p>
+<p><strong>Cross Validation:</strong></p>
+<p>Cross validation is useful in that, while both DIC and BIC are attempts at generalizing selector scores, cross validation should be exactly the selector score on observed data. While it won’t claim to have any insights into how performant the selector will be for all future data, if our dataset contains everything in our selector’s world, it will create the most accurate representation that will predict the best (<a href="http://www.stat.cmu.edu/~larry/=stat705/Lecture16.pdf">Wasserman lecture notes</a>). <strong>That said,</strong> cross validation will be incredibly expensive to compute and the slowest selector since it will require running through the data multiple times, over each folds. This expense will result in a very slow runs and it may not be pragmatic to use with large datasets.</p>
+<p><em>How does CV deal with overfitting? Does it need more data, or can it work with less?</em></p>
+<p>CV will deal with overfitting by training on as many folds as are passed in as its hyperparameter. Any model which overfits on the data will be uncovered by continuously changing the hold-out set. A k-folds strategy can work with less data, in this way, since it will train k-times against the same dataset with different hold-out sets each time.</p>
+<p><strong>DIC:</strong></p>
+<p>As discussed in “A Model Selection Criterion for Classification: Application to HMM Topology Optimization” (<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.58.6208&amp;rep=rep1&amp;type=pdf">link</a>), DIC outperforms BIC in realizing and reducing more than 18% of the relative error rate in it’s inaugural study. Furthermore, it seems to do well in a number of empirical cases. DIC is a more complex information criterion which has a more sophisicated means of finding the effective number of parameters. It uses a discriminative principle where the goal is to select the model less likely to have generated data belonging to the competing classification categories (<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.58.6208&amp;rep=rep1&amp;type=pdf">link</a>). <strong>That said</strong> DIC has some theoretical limitations, in that its penalty term is invariant to reparameterization, lacks consistency, and isn’t based on a proper predictive criterion. In “The deviance information criterion: 12 years on,” (<a href="dx.doi.org/10.1111/rssb.12062">link</a>) Spiegelhalter acknowledged that it has some problem.</p>
+<p><em>Does the DIC do better with more states or worse?</em></p>
+<p>DIC does better with more states in comparison to BIC, in theory because it doesn’t work under an Occam’s razor principal (<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.58.6208&amp;rep=rep1&amp;type=pdf">link</a>).</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

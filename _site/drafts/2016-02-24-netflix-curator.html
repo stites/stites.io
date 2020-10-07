@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2016-02-24-netflix-curator</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2016-02-24-netflix-curator
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<p>We use a lot of netflix OSS at Bina. I’ve recently started working on some backend tickets and have to learn about curator. Here’s what I gather:</p>
+<p>Zookeeper can be difficult to use correctly, so curator is like the “best practices” API for it.</p>
+<p>From <a href="http://techblog.netflix.com/2011/11/introducing-curator-netflix-zookeeper.html">Netflix blog</a>: Connection Issues: + Initial connection: the ZooKeeper client does a handshake with the server that takes some time. Any methods executed synchronously against the server (e.g. create(), getData(), etc.) will throw an exception if this handshake hasn’t completed.</p>
+<ul>
+<li><p>Failover: if the ZooKeeper client loses its connection to the server, it will failover to another server in the cluster. However, this process puts the client back into “initial connection” mode.</p></li>
+<li><p>Session expiration: there are edge cases that can cause the ZooKeeper session to expire. Clients are expected to watch for this state and close and re-create the ZooKeeper instance.</p></li>
+</ul>
+<p>Recoverable Errors:</p>
+<ul>
+<li><p>When creating a sequential ZNode on the server, there is the possibility that the server will successfully create the ZNode but crash prior to returning the node name to the client.</p></li>
+<li><p>There are several recoverable exceptions thrown by the ZooKeeper client. Users are expected to catch these exceptions and retry the operation.</p></li>
+</ul>
+<p>Recipes:</p>
+<ul>
+<li><p>The standard ZooKeeper “recipes” (locks, leaders, etc.) are only minimally described and subtly difficult to write correctly.</p></li>
+<li><p>Some important edge cases are not mentioned in the recipes. For example, the lock recipe does not describe how to deal with a server that successfully creates the Sequential/Ephemeral node but crashes before returning the node name to the client. If not dealt with properly, dead locks can result.</p></li>
+<li><p>Certain use cases must be conscious of connection issues. For example, Leader Election must watch for connection instability. If the connected server crashes, the leader cannot assume it is safe to continue as the leader until failover to another server is successful.</p></li>
+</ul>
+<h2 id="more-from-netflix">More from netflix</h2>
+<p><code>curator-client</code> - A replacement for the bundled ZooKeeper class that takes care of some low-level housekeeping and provides some useful utilities</p>
+<p><code>curator-framework</code> - The Curator Framework is a high-level API that greatly simplifies using ZooKeeper. It adds many features that build on ZooKeeper and handles the complexity of managing connections to the ZooKeeper cluster and retrying operations.</p>
+<p><code>curator-recipes</code> - Implementations of some of the common ZooKeeper “recipes”. The implementations are built on top of the Curator Framework.</p>
+<p>Curator is focused on the recipes: locks, leaders, etc. Most people interested in ZooKeeper don’t need to be concerned with the details of connection management, etc. What they want is a simple way to use the recipes. Curator is directed at this goal.</p>
+<p>Curator deals with ZooKeeper complexity in the following ways:</p>
+<ul>
+<li>Retry Mechanism: Curator supports a pluggable retry mechanism. All ZooKeeper operations that generate a recoverable error get retried per the configured retry policy. Curator comes bundled with several standard retry policies (e.g. exponential backoff).</li>
+</ul>
+<h3 id="we-write-our-own-exponential-backoff---why-perhaps-because-we-are-using-it">We write our own exponential backoff - why? Perhaps because we <em>are</em> using it,</h3>
+<h3 id="but-we-override-a-few-things-which-makes-it-only-look-like-custom">but we override a few things which makes it only <em>look</em> like custom</h3>
+<h3 id="implementations.">implementations.</h3>
+<ul>
+<li><p>Connection State Monitoring: Curator constantly monitors the ZooKeeper connection. Curator users can listen for state changes in the connection and respond accordingly.</p></li>
+<li><p>ZooKeeper Instance Management: Curator manages the actual connection to the ZooKeeper cluster using the standard ZooKeeper class. However, the instance is managed internally (though you can access it if needed) and recreated as needed. Thus, Curator provides a reliable handle to the ZooKeeper cluster (unlike the built-in implementation).</p></li>
+<li><p>Correct, Reliable Recipes: Curator comes bundled with implementations of most of the important ZooKeeper recipes (and some additional recipes as well). The implementations are written using ZooKeeper best practices and take account of all known edge cases (as mentioned above).</p></li>
+<li><p>Curator’s focus on recipes makes your code more resilient as you can focus strictly on the ZooKeeper feature you’re interested in without worrying about correctly implementing ZooKeeper housekeeping requirements.</p></li>
+</ul>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

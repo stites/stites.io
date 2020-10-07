@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Rebuilding Angular in simpleNg - Scope Inheritance</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Rebuilding Angular in simpleNg - Scope Inheritance
+</h1>
+
+<div class="meta">
+    August  9, 2014
+    
+</div>
+
+<div class="post">
+<p class="meta">
+09 August 2014 - San Francisco, CA
+</p>
+<p>This is the second post I’ve written from rebuilding angular under the guidance of Tero Parviainen’s <a href="http://teropa.info/build-your-own-angular">Build your own Angularjs</a>. Last time, I went through a quick-and-dirty explaination of the digest loop and today it’s scope inheritance. If you don’t settle for perculated wisdom, like myself, I’d recommend <a href="http://teropa.info/build-your-own-angular">buying the book</a>. However if all you want is the high level to get that understanding in, then hopefully these posts should be good enough.</p>
+<h4 id="scope-inheritance-whats-the-big-deal">Scope Inheritance: what’s the big deal?</h4>
+<p>So lets put this out there first: Scope inheritance is the exact same as javascipt’s prototype chaining. Yes, there are some extra embelishments added in the mix, but for the most part they are the same. When you create a new child scope, imagine as if you are creating an object in an object - because you are.</p>
+<p>Attribute shadowing is a direct consequence of this prototype chaining. mainly, that inheritence goes down the chain, so a parent can’t read properties of it’s childen, but children can see properties of its parents. The ‘shadowing’ comes into play when you name a child variable the same as a parent’s variable. Then the child has a ‘shadowed’ the parent and two instances of this variable exist in the prototype chain. As a result, there is no interference between child and parent.</p>
+<p>If you don’t want to shadow a variable, however, you can always pass by reference in the prototype chain by manipulating a parent-level object. Imagine the following:</p>
+<pre><code>parent.user = {name: 'Joe'};
+child.user.name = 'Jill';
+
+expect(child.user.name).toBe('Jill');
+expect(parent.user.name).toBe('Jill');</code></pre>
+<p>this way we aren’t writing anything on the child scope, we are <em>reading</em> the parent scope’s <code>user</code> then accessing it’s <code>name</code>. This is part of the <em>Dot Rule</em> see <a href="https://www.youtube.com/watch?feature=player_detailpage&amp;v=ZhfUv0spHCY#t=1758s">this video</a>.</p>
+<h3 id="the-embelishments">The embelishments</h3>
+<p>We don’t actually want digests to work with javascript prototype chaining, though. If we depend on just prototype chains, we would inherit the rootscope’s <code>$$watchers</code> and we’d executed all of them when we run <code>$digest</code> on a child scope. Seems like overkill.</p>
+<p>What we really want to do is execute all the watches based on <em>scope heirarchy</em>. So when we call <code>$digest</code> on a node, then it <code>$digest</code>s that node and its children. Not siblings or parents. This requires shadowing the <code>$$watchers</code> array and recursively checking children’s watches.</p>
+<h3 id="but-what-if-we-want-access-to-the-rootscope">But what if we want access to the <code>$$rootscope</code>?</h3>
+<p>Well, that’s why <code>$apply</code> triggers a digest from the rootscope. That’s why it’s the recommended way of injecting external code into angular. However, knowing this, if you know which scope you want to run your code in, you can be more specific and make your code more optimized by using <code>$digest</code>, or some other method. Just not <code>$evalAsync</code> since it schedules a roop scope digest as well.</p>
+<h3 id="why-isolate-a-scope-if-digests-dont-interfere">Why isolate a scope if digests don’t interfere?</h3>
+<p>Sometimes, you actually want scopes isolated from the parent. This would make for more modular code and it’s why people prefer it in directives. These scopes still are on the inheritance chain and will be checked on root digests, but they can’t get access to their parent or sibling variables. Parviainen does mention, however, the following:</p>
+<pre><code>If you’ve used isolated scopes with Angular directives, you’ll know that an
+isolated scope is usually not completely cut off from its parent. However
+this mechanism is not built into scopes. It is part of the implementation
+of directives. We will return to this discussion when we implement isolation
+in directives.</code></pre>
+<p>To reiterate: isolation is simple - just make the scope part of the scope hierarchy, but don’t let it inherit from its parent. It’s so simple, that it can be done just by passing a boolean into creating a new scope which makes us shadow three things: <code>$$root</code>, <code>$$asyncQueue</code> and <code>$$postDigestQueue</code>.</p>
+<h3 id="doesnt-this-make-destroying-scopes-complicated">Doesn’t this make destroying scopes complicated?</h3>
+<p>As the user interacts with your page, it’s going to have new controllers and directive scopes added and removed from the page and it all happens in the <code>$$watchers</code> arrays. So in order to properly manage these scopes, we need to be able to remove them simply by splicing the <code>$$children</code> array of its parent. Then it won’t get digested recursively, and will make all of its watches dead as the Javascrip garbage collector reclaims the space.</p>
+<p>==============</p>
+<p>That’s it for now! Next up - Angular’s built-in $watchCollection mechanism. As always, feel free to check out the code I am working on at github: <a href="https://github.com/stites/simple-ng">stites/simple-ng</a>.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2016-11-09-free-part-2</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2016-11-09-free-part-2
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<p>multiparameter typeclass</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="ot">{-# LANGUAGE TypeOperators #-}</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="ot">{-# LANGUAGE DeriveFunctor #-}</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="ot">{-# LANGUAGE MultiParamTypeClasses #-}</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="ot">{-# LANGUAGE FlexibleInstances #-}</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="ot">{-# LANGUAGE FlexibleContexts #-}</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="ot">{-# LANGUAGE RankNTypes #-}</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="ot">{-# LANGUAGE LambdaCase #-}</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="ot">{-# LANGUAGE ScopedTypeVariables #-}</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">data</span> <span class="dt">Free</span> f a</span>
+<span id="cb2-2"><a href="#cb2-2"></a>  <span class="ot">=</span> <span class="dt">Leaf</span> a</span>
+<span id="cb2-3"><a href="#cb2-3"></a>  <span class="op">|</span> <span class="dt">Branch</span> (f (<span class="dt">Free</span> f a))</span>
+<span id="cb2-4"><a href="#cb2-4"></a></span>
+<span id="cb2-5"><a href="#cb2-5"></a><span class="kw">instance</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> <span class="dt">Functor</span> (<span class="dt">Free</span> f) <span class="kw">where</span></span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="fu">fmap</span> f (<span class="dt">Leaf</span> a) <span class="ot">=</span> <span class="dt">Leaf</span> (f a)</span>
+<span id="cb2-7"><a href="#cb2-7"></a>  <span class="fu">fmap</span> f (<span class="dt">Branch</span> fThingy) <span class="ot">=</span> <span class="dt">Branch</span> (<span class="fu">fmap</span> (<span class="fu">fmap</span> f) fThingy)</span>
+<span id="cb2-8"><a href="#cb2-8"></a></span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a><span class="kw">instance</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> <span class="dt">Applicative</span> (<span class="dt">Free</span> f) <span class="kw">where</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a>  <span class="fu">pure</span> <span class="ot">=</span> <span class="dt">Leaf</span></span>
+<span id="cb2-12"><a href="#cb2-12"></a>  (<span class="op">&lt;*&gt;</span>) <span class="ot">=</span> <span class="fu">undefined</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a></span>
+<span id="cb2-14"><a href="#cb2-14"></a><span class="kw">instance</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> <span class="dt">Monad</span> (<span class="dt">Free</span> f) <span class="kw">where</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>  <span class="fu">return</span> <span class="ot">=</span> <span class="dt">Leaf</span></span>
+<span id="cb2-16"><a href="#cb2-16"></a>  <span class="dt">Leaf</span> a <span class="op">&gt;&gt;=</span> f <span class="ot">=</span> f a</span>
+<span id="cb2-17"><a href="#cb2-17"></a>  <span class="dt">Branch</span> g <span class="op">&gt;&gt;=</span> f <span class="ot">=</span> <span class="dt">Branch</span> (<span class="fu">fmap</span> (f <span class="op">=&lt;&lt;</span>) g) <span class="co">-- a monad falls out</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a></span>
+<span id="cb2-19"><a href="#cb2-19"></a><span class="kw">data</span> <span class="dt">Proxy</span> a <span class="ot">=</span> <span class="dt">Proxy</span></span>
+<span id="cb2-20"><a href="#cb2-20"></a></span>
+<span id="cb2-21"><a href="#cb2-21"></a><span class="kw">type</span> <span class="dt">ProxyF</span> a <span class="ot">=</span> <span class="dt">Free</span> <span class="dt">Proxy</span> a</span>
+<span id="cb2-22"><a href="#cb2-22"></a></span>
+<span id="cb2-23"><a href="#cb2-23"></a></span>
+<span id="cb2-24"><a href="#cb2-24"></a><span class="kw">data</span> <span class="dt">Console</span> x</span>
+<span id="cb2-25"><a href="#cb2-25"></a>  <span class="ot">=</span> <span class="dt">Output</span> <span class="dt">String</span> x</span>
+<span id="cb2-26"><a href="#cb2-26"></a>  <span class="op">|</span> <span class="dt">Input</span> (<span class="dt">String</span> <span class="ot">-&gt;</span> x)</span>
+<span id="cb2-27"><a href="#cb2-27"></a>  <span class="kw">deriving</span> (<span class="dt">Functor</span>)</span>
+<span id="cb2-28"><a href="#cb2-28"></a></span>
+<span id="cb2-29"><a href="#cb2-29"></a><span class="ot">liftF ::</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> f a <span class="ot">-&gt;</span> <span class="dt">Free</span> f a</span>
+<span id="cb2-30"><a href="#cb2-30"></a>liftF <span class="ot">=</span> <span class="dt">Branch</span> <span class="op">.</span> <span class="fu">fmap</span> <span class="dt">Leaf</span></span>
+<span id="cb2-31"><a href="#cb2-31"></a></span>
+<span id="cb2-32"><a href="#cb2-32"></a><span class="ot">output ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Free</span> <span class="dt">Console</span> ()</span>
+<span id="cb2-33"><a href="#cb2-33"></a>output s <span class="ot">=</span> liftF (<span class="dt">Output</span> s ())</span>
+<span id="cb2-34"><a href="#cb2-34"></a></span>
+<span id="cb2-35"><a href="#cb2-35"></a><span class="ot">input ::</span> <span class="dt">Free</span> <span class="dt">Console</span> <span class="dt">String</span></span>
+<span id="cb2-36"><a href="#cb2-36"></a>input <span class="ot">=</span> liftF (<span class="dt">Input</span> <span class="fu">id</span>)</span>
+<span id="cb2-37"><a href="#cb2-37"></a></span>
+<span id="cb2-38"><a href="#cb2-38"></a><span class="ot">program ::</span> <span class="dt">Free</span> <span class="dt">Console</span> ()</span>
+<span id="cb2-39"><a href="#cb2-39"></a>program <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-40"><a href="#cb2-40"></a>  output <span class="st">&quot;hi&quot;</span></span>
+<span id="cb2-41"><a href="#cb2-41"></a>  output <span class="st">&quot;ho&quot;</span></span>
+<span id="cb2-42"><a href="#cb2-42"></a></span>
+<span id="cb2-43"><a href="#cb2-43"></a></span>
+<span id="cb2-44"><a href="#cb2-44"></a><span class="ot">another ::</span> <span class="dt">Free</span> <span class="dt">Console</span> ()</span>
+<span id="cb2-45"><a href="#cb2-45"></a>another <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb2-46"><a href="#cb2-46"></a>  output <span class="st">&quot;type something&quot;</span></span>
+<span id="cb2-47"><a href="#cb2-47"></a>  foo <span class="ot">&lt;-</span> input</span>
+<span id="cb2-48"><a href="#cb2-48"></a>  output (<span class="st">&quot;you said: &quot;</span> <span class="op">++</span> foo)</span>
+<span id="cb2-49"><a href="#cb2-49"></a></span>
+<span id="cb2-50"><a href="#cb2-50"></a></span>
+<span id="cb2-51"><a href="#cb2-51"></a><span class="ot">interpIO ::</span> <span class="dt">Console</span> x <span class="ot">-&gt;</span> <span class="dt">IO</span> x</span>
+<span id="cb2-52"><a href="#cb2-52"></a>interpIO (<span class="dt">Output</span> str k) <span class="ot">=</span> <span class="fu">putStrLn</span> str <span class="op">&gt;&gt;</span> <span class="fu">return</span> k</span>
+<span id="cb2-53"><a href="#cb2-53"></a>interpIO (<span class="dt">Input</span> k) <span class="ot">=</span> <span class="fu">fmap</span> k <span class="fu">getLine</span></span>
+<span id="cb2-54"><a href="#cb2-54"></a></span>
+<span id="cb2-55"><a href="#cb2-55"></a></span>
+<span id="cb2-56"><a href="#cb2-56"></a><span class="ot">interpIO' ::</span> <span class="dt">Console</span> (<span class="dt">IO</span> x) <span class="ot">-&gt;</span> <span class="dt">IO</span> x</span>
+<span id="cb2-57"><a href="#cb2-57"></a>interpIO' (<span class="dt">Output</span> str k) <span class="ot">=</span> <span class="fu">putStrLn</span> str <span class="op">&gt;&gt;</span> k</span>
+<span id="cb2-58"><a href="#cb2-58"></a>interpIO' (<span class="dt">Input</span> k) <span class="ot">=</span> <span class="fu">getLine</span> <span class="op">&gt;&gt;=</span> k</span>
+<span id="cb2-59"><a href="#cb2-59"></a></span>
+<span id="cb2-60"><a href="#cb2-60"></a></span>
+<span id="cb2-61"><a href="#cb2-61"></a><span class="ot">iterM ::</span> (<span class="dt">Functor</span> f, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> (<span class="kw">forall</span> x<span class="op">.</span> f (m x) <span class="ot">-&gt;</span> m x) <span class="ot">-&gt;</span> <span class="dt">Free</span> f a <span class="ot">-&gt;</span> m a</span>
+<span id="cb2-62"><a href="#cb2-62"></a>iterM phi f <span class="ot">=</span></span>
+<span id="cb2-63"><a href="#cb2-63"></a>  <span class="kw">case</span> f <span class="kw">of</span></span>
+<span id="cb2-64"><a href="#cb2-64"></a>    <span class="dt">Leaf</span> a <span class="ot">-&gt;</span> <span class="fu">pure</span> a</span>
+<span id="cb2-65"><a href="#cb2-65"></a>    <span class="dt">Branch</span> g <span class="ot">-&gt;</span> phi (<span class="fu">fmap</span> (iterM phi) g)</span>
+<span id="cb2-66"><a href="#cb2-66"></a></span>
+<span id="cb2-67"><a href="#cb2-67"></a></span>
+<span id="cb2-68"><a href="#cb2-68"></a><span class="ot">foldFree ::</span> (<span class="dt">Functor</span> f, <span class="dt">Monad</span> m) <span class="ot">=&gt;</span> (<span class="kw">forall</span> x<span class="op">.</span> f x <span class="ot">-&gt;</span> m x) <span class="ot">-&gt;</span> <span class="dt">Free</span> f a <span class="ot">-&gt;</span> m a</span>
+<span id="cb2-69"><a href="#cb2-69"></a>foldFree phi f <span class="ot">=</span></span>
+<span id="cb2-70"><a href="#cb2-70"></a>  <span class="kw">case</span> f <span class="kw">of</span></span>
+<span id="cb2-71"><a href="#cb2-71"></a>    <span class="dt">Leaf</span> a <span class="ot">-&gt;</span> <span class="fu">pure</span> a</span>
+<span id="cb2-72"><a href="#cb2-72"></a>    <span class="dt">Branch</span> g <span class="ot">-&gt;</span> phi g <span class="op">&gt;&gt;=</span> foldFree phi</span>
+<span id="cb2-73"><a href="#cb2-73"></a></span>
+<span id="cb2-74"><a href="#cb2-74"></a></span>
+<span id="cb2-75"><a href="#cb2-75"></a><span class="ot">foo ::</span> <span class="dt">Free</span> <span class="dt">Console</span> () <span class="ot">-&gt;</span> <span class="dt">IO</span> ()</span>
+<span id="cb2-76"><a href="#cb2-76"></a>foo <span class="ot">=</span> foldFree interpIO</span>
+<span id="cb2-77"><a href="#cb2-77"></a></span>
+<span id="cb2-78"><a href="#cb2-78"></a><span class="ot">main ::</span> <span class="dt">IO</span> ()</span>
+<span id="cb2-79"><a href="#cb2-79"></a>main <span class="ot">=</span> foldFree interpIO program <span class="co">-- interpIO program</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">data</span> <span class="dt">Dice</span> x</span>
+<span id="cb3-2"><a href="#cb3-2"></a>  <span class="ot">=</span> <span class="dt">Roll</span> (<span class="dt">Int</span> <span class="ot">-&gt;</span> x)</span>
+<span id="cb3-3"><a href="#cb3-3"></a>  <span class="kw">deriving</span> <span class="dt">Functor</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="kw">data</span> <span class="dt">Sum</span> f g x</span>
+<span id="cb3-6"><a href="#cb3-6"></a>  <span class="ot">=</span> <span class="dt">InL</span> (f x)</span>
+<span id="cb3-7"><a href="#cb3-7"></a>  <span class="op">|</span> <span class="dt">InR</span> (g x)</span>
+<span id="cb3-8"><a href="#cb3-8"></a>  <span class="kw">deriving</span> <span class="dt">Functor</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="kw">type</span> (<span class="op">:+</span>) <span class="ot">=</span> <span class="dt">Sum</span></span></code></pre></div>
+<p>both f &amp;&amp; g are * -&gt; *</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">class</span> (<span class="dt">Functor</span> f, <span class="dt">Functor</span> g) <span class="ot">=&gt;</span> f <span class="op">:&lt;</span> g <span class="kw">where</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="ot">  inj ::</span> f a <span class="ot">-&gt;</span> g a</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="kw">instance</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> f <span class="op">:&lt;</span> f <span class="kw">where</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a></span>
+<span id="cb4-6"><a href="#cb4-6"></a>  inj <span class="ot">=</span> <span class="fu">id</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="kw">instance</span> <span class="ot">{-# OVERLAPPING #-}</span> (<span class="dt">Functor</span> f, <span class="dt">Functor</span> g) <span class="ot">=&gt;</span> f <span class="op">:&lt;</span> (f <span class="op">:+</span> g) <span class="kw">where</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a>  inj f <span class="ot">=</span> <span class="dt">InL</span> f</span>
+<span id="cb4-10"><a href="#cb4-10"></a></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="kw">instance</span> (f <span class="op">:&lt;</span> g, <span class="dt">Functor</span> h) <span class="ot">=&gt;</span> f <span class="op">:&lt;</span> (h <span class="op">:+</span> g) <span class="kw">where</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a>  inj f <span class="ot">=</span> <span class="dt">InR</span> (inj f)</span></code></pre></div>
+<p>when you try to call <span class="citation" data-cites="A">@A</span> -&gt; A :+ B@, GHC will yell. This is because GHC is looking for two dicts to resolve, <span class="citation" data-cites="f">@f</span> :&lt; (h :+ g)@ and <span class="citation" data-cites="f">@f</span> :&lt; (f :+ g)@. They overlap. Fix this with the -XOverlappingInstances pragma. This will allow GHC to resolve the overlapping case, and also choose not to use it when it thinks everything is good.</p>
+<p>Now we can write our smart constructors like:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="ot">output' ::</span> (<span class="dt">Console</span> <span class="op">:&lt;</span> f) <span class="ot">=&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Free</span> f ()</span>
+<span id="cb5-2"><a href="#cb5-2"></a>output' s <span class="ot">=</span> liftF <span class="op">$</span> inj (<span class="dt">Output</span> s ())</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">roll ::</span> <span class="dt">Free</span> <span class="dt">Dice</span> <span class="dt">Int</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a>roll <span class="ot">=</span> liftF (<span class="dt">Roll</span> <span class="fu">id</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="ot">roll' ::</span> (<span class="dt">Dice</span> <span class="op">:&lt;</span> f) <span class="ot">=&gt;</span> <span class="dt">Free</span> f <span class="dt">Int</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>roll' <span class="ot">=</span> liftF <span class="op">$</span> inj (<span class="dt">Roll</span> <span class="fu">id</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1"></a><span class="ot">input' ::</span> (<span class="dt">Console</span> <span class="op">:&lt;</span> f) <span class="ot">=&gt;</span> <span class="dt">Free</span> f <span class="dt">String</span></span>
+<span id="cb8-2"><a href="#cb8-2"></a>input' <span class="ot">=</span> liftF <span class="op">$</span> inj (<span class="dt">Input</span> <span class="fu">id</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb9-1"><a href="#cb9-1"></a><span class="ot">sample ::</span> (<span class="dt">Console</span> <span class="op">:&lt;</span> f, <span class="dt">Dice</span> <span class="op">:&lt;</span> f) <span class="ot">=&gt;</span> <span class="dt">Free</span> f ()</span>
+<span id="cb9-2"><a href="#cb9-2"></a>sample <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb9-3"><a href="#cb9-3"></a>   n <span class="ot">&lt;-</span> roll'</span>
+<span id="cb9-4"><a href="#cb9-4"></a>   output' <span class="st">&quot;Guess&quot;</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>   m <span class="ot">&lt;-</span> input'</span>
+<span id="cb9-6"><a href="#cb9-6"></a>   <span class="kw">if</span> n <span class="op">==</span> <span class="fu">read</span> m</span>
+<span id="cb9-7"><a href="#cb9-7"></a>     <span class="kw">then</span> output'   <span class="st">&quot;Yup&quot;</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>     <span class="kw">else</span> output' <span class="op">$</span> <span class="st">&quot;It was &quot;</span> <span class="op">++</span> <span class="fu">show</span> n</span></code></pre></div>
+<p>consoleIO :: Console ~&gt; IO</p>
+<p>diceIO :: Dice ~&gt; IO</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb10-1"><a href="#cb10-1"></a><span class="ot">diceIO ::</span> <span class="dt">Dice</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</span>
+<span id="cb10-2"><a href="#cb10-2"></a>diceIO <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb10-3"><a href="#cb10-3"></a>  <span class="dt">Roll</span> k <span class="ot">-&gt;</span> <span class="fu">pure</span> (k <span class="dv">6</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb11-1"><a href="#cb11-1"></a><span class="ot">(+:) ::</span> (f a <span class="ot">-&gt;</span> r) <span class="ot">-&gt;</span> (g a <span class="ot">-&gt;</span> r ) <span class="ot">-&gt;</span> (<span class="dt">Sum</span> f g a <span class="ot">-&gt;</span> r)</span>
+<span id="cb11-2"><a href="#cb11-2"></a>far <span class="op">+:</span> gar <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a>  <span class="dt">InL</span> f <span class="ot">-&gt;</span> far f</span>
+<span id="cb11-4"><a href="#cb11-4"></a>  <span class="dt">InR</span> g <span class="ot">-&gt;</span> gar g</span></code></pre></div>
+<p>foldFree :: (f ~&gt; m) -&gt; Free f ~&gt; m pattern match sum,</p>
+<p>consoleIO and diceIO to get foldFree pick apart relevant f for you</p>
+<p>foldFree :: (Functor f, Monad m) =&gt; (forall x. f x -&gt; m x) -&gt; Free f a -&gt; m a foldFree phi f = case f of Leaf a -&gt; pure a Branch g -&gt; phi g &gt;&gt;= foldFree phi</p>
+<p class="heading" id="section"></p>
+<p>New Program:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">data</span> <span class="dt">Die</span> x</span>
+<span id="cb12-2"><a href="#cb12-2"></a>  <span class="ot">=</span> <span class="dt">Die</span> <span class="dt">String</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a>  <span class="kw">deriving</span> <span class="dt">Functor</span></span></code></pre></div>
+<p>is a functor</p>
+<p>fmap :: (a -&gt; b) -&gt; Die a -&gt; Die b</p>
+<p>but leavse the string alone</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb13-1"><a href="#cb13-1"></a><span class="ot">die ::</span> <span class="dt">Die</span> <span class="op">:&lt;</span> f <span class="ot">=&gt;</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">Free</span> f a</span>
+<span id="cb13-2"><a href="#cb13-2"></a>die <span class="ot">=</span> liftF <span class="op">.</span> inj <span class="op">.</span> <span class="dt">Die</span></span></code></pre></div>
+<p>in order to add this to our Die + Console + Dice, we need to create some interpreter.</p>
+<p>dieIO :: Die ~&gt; IO</p>
+<p>but we can’t write this</p>
+<p>(~&gt;) f g :: forall x . f x -&gt; g x</p>
+<p>dieIO :: Die ~&gt; IO dieIO (Die s) = do putStrLn s pure undefined – cause we don’t know what the type of Die is – or we could exit program. not desired</p>
+<p>semantically we want a Free f a -&gt; IO (Either String a), but this doesn’t maintain the natural transformation ~&gt;</p>
+<p>the idea is to have a non-pure-ish? transformation</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb14-1"><a href="#cb14-1"></a><span class="ot">runDie ::</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> <span class="dt">Free</span> (<span class="dt">Die</span> <span class="op">:+</span> f) a <span class="ot">-&gt;</span> <span class="dt">Free</span> f (<span class="dt">Either</span> <span class="dt">String</span> a)</span></code></pre></div>
+<p>take a program with a die effect and translate it into a “die-less” free monad</p>
+<p>we can’t run the Console + Die, but that’s okay because we don’t pick the ordering, the intrepreter does</p>
+<p>The mapping to Either does not constrain the Console or Dice</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb15-1"><a href="#cb15-1"></a>runDie <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>  <span class="dt">Leaf</span> a <span class="ot">-&gt;</span> <span class="dt">Leaf</span> (<span class="dt">Right</span> a)</span>
+<span id="cb15-3"><a href="#cb15-3"></a>  <span class="dt">Branch</span> (<span class="dt">InL</span> (<span class="dt">Die</span> s)) <span class="ot">-&gt;</span> <span class="dt">Leaf</span> (<span class="dt">Left</span> s)</span>
+<span id="cb15-4"><a href="#cb15-4"></a>  <span class="dt">Branch</span> (<span class="dt">InR</span> g) <span class="ot">-&gt;</span> <span class="dt">Branch</span> (<span class="fu">fmap</span> runDie g)</span></code></pre></div>
+<p>here we are punting the computation of runDie into g, since we have no understanding of what happens next</p>
+<p>let’s write some eliminate to abstract away the boilerplate of our runDie effect. This will be, in essence, our effect handler</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb16-1"><a href="#cb16-1"></a><span class="ot">eliminate ::</span> (<span class="dt">Functor</span> f, <span class="dt">Functor</span> g)</span>
+<span id="cb16-2"><a href="#cb16-2"></a>          <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> b)</span>
+<span id="cb16-3"><a href="#cb16-3"></a>          <span class="ot">-&gt;</span> (<span class="kw">forall</span> x <span class="op">.</span> f x <span class="ot">-&gt;</span> (x <span class="ot">-&gt;</span> <span class="dt">Free</span> g b) <span class="ot">-&gt;</span> <span class="dt">Free</span> g b)</span>
+<span id="cb16-4"><a href="#cb16-4"></a>          <span class="ot">-&gt;</span> <span class="dt">Free</span> (f <span class="op">:+</span> g) a <span class="ot">-&gt;</span> <span class="dt">Free</span> g b</span>
+<span id="cb16-5"><a href="#cb16-5"></a>eliminate pur imp <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a>  <span class="dt">Leaf</span> a <span class="ot">-&gt;</span> <span class="dt">Leaf</span> (pur a) <span class="co">-- :: Free g b</span></span>
+<span id="cb16-7"><a href="#cb16-7"></a>  <span class="dt">Branch</span> (<span class="dt">InL</span> f) <span class="ot">-&gt;</span> imp f (eliminate pur imp)</span>
+<span id="cb16-8"><a href="#cb16-8"></a>  <span class="dt">Branch</span> (<span class="dt">InR</span> g) <span class="ot">-&gt;</span> <span class="dt">Branch</span> (<span class="fu">fmap</span> (eliminate pur imp) g)</span></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb17-1"><a href="#cb17-1"></a><span class="ot">runDie' ::</span> <span class="kw">forall</span> g a <span class="op">.</span> (<span class="dt">Functor</span> g) <span class="ot">=&gt;</span> <span class="dt">Free</span> (<span class="dt">Die</span> <span class="op">:+</span> g) a <span class="ot">-&gt;</span> <span class="dt">Free</span> g (<span class="dt">Either</span> <span class="dt">String</span> a)</span>
+<span id="cb17-2"><a href="#cb17-2"></a>runDie' <span class="ot">=</span> eliminate pur imp</span>
+<span id="cb17-3"><a href="#cb17-3"></a>  <span class="kw">where</span></span>
+<span id="cb17-4"><a href="#cb17-4"></a><span class="ot">    pur ::</span> a <span class="ot">-&gt;</span> <span class="dt">Either</span> <span class="dt">String</span> a</span>
+<span id="cb17-5"><a href="#cb17-5"></a>    pur <span class="ot">=</span> <span class="dt">Right</span></span>
+<span id="cb17-6"><a href="#cb17-6"></a></span>
+<span id="cb17-7"><a href="#cb17-7"></a><span class="ot">    imp ::</span> <span class="kw">forall</span> x <span class="op">.</span> <span class="dt">Die</span> x <span class="ot">-&gt;</span> (x <span class="ot">-&gt;</span> <span class="dt">Free</span> g (<span class="dt">Either</span> <span class="dt">String</span> a)) <span class="ot">-&gt;</span> <span class="dt">Free</span> g (<span class="dt">Either</span> <span class="dt">String</span> a)</span>
+<span id="cb17-8"><a href="#cb17-8"></a>    imp (<span class="dt">Die</span> s) k <span class="ot">=</span> <span class="dt">Leaf</span> (<span class="dt">Left</span> s)</span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb18-1"><a href="#cb18-1"></a><span class="ot">sample2 ::</span> (<span class="dt">Console</span> <span class="op">:&lt;</span> f, <span class="dt">Dice</span> <span class="op">:&lt;</span> f, <span class="dt">Die</span> <span class="op">:&lt;</span> f) <span class="ot">=&gt;</span> <span class="dt">Free</span> f ()</span>
+<span id="cb18-2"><a href="#cb18-2"></a>sample2 <span class="ot">=</span> <span class="kw">do</span></span>
+<span id="cb18-3"><a href="#cb18-3"></a>  output' <span class="st">&quot;Guess&quot;</span></span>
+<span id="cb18-4"><a href="#cb18-4"></a>  n <span class="ot">&lt;-</span> input'</span>
+<span id="cb18-5"><a href="#cb18-5"></a>  m <span class="ot">&lt;-</span> roll'</span>
+<span id="cb18-6"><a href="#cb18-6"></a>  <span class="kw">if</span> (<span class="fu">read</span><span class="ot"> n ::</span> <span class="dt">Int</span>) <span class="op">==</span> m</span>
+<span id="cb18-7"><a href="#cb18-7"></a>    <span class="kw">then</span> die <span class="st">&quot;Bang&quot;</span></span>
+<span id="cb18-8"><a href="#cb18-8"></a>    <span class="kw">else</span> <span class="kw">do</span></span>
+<span id="cb18-9"><a href="#cb18-9"></a>      output' <span class="st">&quot;click&quot;</span></span>
+<span id="cb18-10"><a href="#cb18-10"></a>      sample2</span></code></pre></div>
+<p>foldFree (interpIO +: rollIO) (runDie’ sample)</p>
+<hr />
+<div class="sourceCode" id="cb19"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb19-1"><a href="#cb19-1"></a><span class="kw">data</span> <span class="dt">State</span> s x</span>
+<span id="cb19-2"><a href="#cb19-2"></a>  <span class="ot">=</span> <span class="dt">Get</span> (s <span class="ot">-&gt;</span> x)</span>
+<span id="cb19-3"><a href="#cb19-3"></a>  <span class="op">|</span> <span class="dt">Put</span> s x</span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb20-1"><a href="#cb20-1"></a><span class="ot">get ::</span> (<span class="dt">State</span> s <span class="op">:&lt;</span> f) <span class="ot">=&gt;</span> <span class="dt">Free</span> f s</span></code></pre></div>
+<p>get = Branch (foo :: f Free f s), we don’t know what f is, so we can inject inj :: State s x -&gt; f x</p>
+<p>would want to pick (Free f s)</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb21-1"><a href="#cb21-1"></a>get <span class="ot">=</span> <span class="dt">Branch</span> ( inj ( <span class="dt">Get</span> (\s <span class="ot">-&gt;</span> <span class="dt">Leaf</span> s)))</span></code></pre></div>
+<p>with liftF:</p>
+<pre><code>  = liftF (inj (Get id))</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb23-1"><a href="#cb23-1"></a><span class="ot">put ::</span> (<span class="dt">State</span> s <span class="op">:&lt;</span> f) <span class="ot">=&gt;</span> s <span class="ot">-&gt;</span> <span class="dt">Free</span> f ()</span>
+<span id="cb23-2"><a href="#cb23-2"></a>put s <span class="ot">=</span> liftF (inj (<span class="dt">Put</span> s ()))</span></code></pre></div>
+<p>State s ~&gt; IO</p>
+<p>stateIO s =  Get k -&gt; pure (k s) Put s’ k -&gt; pure k – s’ is ignored!!!</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb24-1"><a href="#cb24-1"></a><span class="ot">runState ::</span> <span class="dt">Functor</span> f <span class="ot">=&gt;</span> s <span class="ot">-&gt;</span> <span class="dt">Free</span> (<span class="dt">State</span> s <span class="op">:+</span> f) a <span class="ot">-&gt;</span> <span class="dt">Free</span> f (s, a)</span>
+<span id="cb24-2"><a href="#cb24-2"></a>runState s <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb24-3"><a href="#cb24-3"></a>  <span class="dt">Leaf</span> a <span class="ot">-&gt;</span> <span class="dt">Leaf</span> (s, a)</span>
+<span id="cb24-4"><a href="#cb24-4"></a>  <span class="dt">Branch</span> (<span class="dt">InL</span> (<span class="dt">Get</span> k)) <span class="ot">-&gt;</span> runState s (k s)</span>
+<span id="cb24-5"><a href="#cb24-5"></a>  <span class="dt">Branch</span> (<span class="dt">InL</span> (<span class="dt">Put</span> s' k)) <span class="ot">-&gt;</span> runState s' k</span>
+<span id="cb24-6"><a href="#cb24-6"></a>  <span class="dt">Branch</span> (<span class="dt">InR</span> g) <span class="ot">-&gt;</span> <span class="dt">Branch</span> (<span class="fu">fmap</span> (runState s) g)</span></code></pre></div>
+<p>if you do a runState and then a runDie Free (Die :+ State Int :+ f) a -&gt; Free (State Int :+ f) (Either String a) -&gt; Free f (Either String a, s)</p>
+<p>if you do a runDie and then a runState Free (Die :+ State Int :+ f) a -&gt; Free (State Int :+ f) (Either String a) -&gt; Free f Either String (a, s)</p>
+<p>packages for this: extensible effects, freer</p>
+<p>data Console x = Output String x | Input (String -&gt; x) | SetEcho Bool x</p>
+<p>setEcho False</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

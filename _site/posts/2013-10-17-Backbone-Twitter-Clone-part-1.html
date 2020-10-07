@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Building a Backbone Twitter Clone Part 1 Introduction</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Building a Backbone Twitter Clone Part 1 Introduction
+</h1>
+
+<div class="meta">
+    October 17, 2013
+    
+</div>
+
+<div class="post">
+<p>I’ve just finished working through JavascriptIsSexy’s <a href="http://javascriptissexy.com/learn-backbone-js-completely/">Learn Backbone.js Completely</a> which, in my opinion, is one of the best places to learn javascript on the interwebs. I’ve also been reading John Resig’s <a href="http://jsninja.com/">Secrets of the Javascript Ninja</a>, and have completed half of <a href="javascriptissexy.com/how-to-learn-javascript-properly/">Learn Javascript Properly</a>. So I may not be a javascript pro, still I’m gunning to build my first Backbone App. This is going to be a twitter clone, because it seems fairly comprehensive. Feel free to follow me on twitter (<span class="citation" data-cites="samstites">[@samstites]</span><a href="https://twitter.com/samstites">twitter</a>), by the way. you can also find the source of these files over at my github page: <a href="https://github.com/stites/BBTwitterAMD">stites/BBTwitterAMD</a>.</p>
+<p>To start with, while I understand that this might seem like a bit of a shortcut, I’ve decided to use <a href="http://yeoman.io/">Yeoman</a> as my workflow tool. I just rewrote the beginnings of a backbone application four times in the past three days, so I think I’m good on that front. Also Yeoman will be a good introduction to some new tools which will force some good habits (hopefully).</p>
+<p>I want to go with as many best practices as possible, so I’ve decided to make this Twitter Clone with Asyncronous Module Dependency (AMD) which you learn about in the tail end of JavascriptIsSexy’s guide. Looking for the appropriate generator, mrichard’s <a href="https://github.com/mrichard/generator-marionette">marionette generator</a> seems perfect. There are also a lot of new technologies, which I’m going to research and breifly introduce in this blogpost.</p>
+<h3 id="the-marionette-generator-stack">The Marionette Generator Stack</h3>
+<h4 id="server-side">Server-Side</h4>
+<h6 id="node"><a href="http://nodejs.org/">Node</a></h6>
+<blockquote>
+<p>Node.js is a platform built on Chrome’s JavaScript runtime for easily building fast, scalable network applications. Node.js uses an event-driven, non-blocking I/O model that makes it lightweight and efficient, perfect for data-intensive real-time applications that run across distributed devices.</p>
+</blockquote>
+<h6 id="express"><a href="http://expressjs.com/">Express</a></h6>
+<p>Express is a lightweight server-side framework inspired by Ruby’s Sinatra.</p>
+<h6 id="socket-io"><a href="http://socket.io/">Socket IO</a></h6>
+<p>Socket.IO is a lightweight Websocket API which simplifies bi-directional communication over HTTP protocols. Thus using websockets we get realtime communication. This one will have to be put on the backburner for a while as the app starts off. Also, right now, I know a bit more about AJAX than websockets, so I think I might navigate away from this for a while. Also, I need some practice with AJAX calls and it seems that <a href="http://stackoverflow.com/questions/4848642/what-is-the-disadvantage-of-using-websocket-socket-io-where-ajax-will-do">there could be cause to not to use Socket.IO - StackOverflow.com</a></p>
+<h4 id="database-object-data-manager">Database &amp; Object Data Manager</h4>
+<h6 id="mongo"><a href="http://www.mongodb.org/">Mongo</a></h6>
+<p>MongoDB is a NoSQL database management system written in C++, it’s great for prototyping as it’s document type is BSON. Also, on the note of databases, keep in mind that Mongo is strongly consistent, and has partition tolerance according to <a href="https://en.wikipedia.org/wiki/CAP_theorem">Brewer’s CAP Theorem</a>. This means that all nodes see data at the same time, and that the system will continue to operate event if errors occur. I really want to get into some more database experimentation later on - I come from an SQL background so NoSQL facinates me.</p>
+<h6 id="mongoose"><a href="http://mongoosejs.com">Mongoose</a></h6>
+<blockquote>
+<p>Mongoose is a MongoDB object modeling tool, written in JavaScript, designed to work in an asynchronous environment. - StackOverflow</p>
+</blockquote>
+<h4 id="client-side">Client-Side</h4>
+<h6 id="backbone"><a href="http://backbonejs.org/">Backbone</a></h6>
+<p>Our client-side framework, running a very structured and well defined MV* model.</p>
+<h6 id="marionette"><a href="http://marionettejs.com/">Marionette</a></h6>
+<p>A library/plugin for Backbone which allows you to scale out modular, event-driven applications.</p>
+<h6 id="jquery"><a href="http://jquery.com/">jQuery</a></h6>
+<p>The sweetest sugar for DOM Manipuation.</p>
+<h6 id="require"><a href="http://requirejs.org/">Require</a></h6>
+<p>Making our application modular and optimized for speed! I read some counter arguments talking about how AMD is usless for javascript, however I respectfully disagree and want to give this a shot!</p>
+<h6 id="handlebars"><a href="http://handlebarsjs.com/">Handlebars</a></h6>
+<p>A templating library using mustache templates.</p>
+<h6 id="the-require-handlebars-plugin"><a href="https://github.com/SlexAxton/require-handlebars-plugin">The Require-Handlebars Plugin</a></h6>
+<p>so that we can make our handlebar templates useful.</p>
+<h6 id="bootstrap"><a href="http://twitter.github.io/bootstrap">Bootstrap</a></h6>
+<p>Cause I’m definitely not a designer! Maybe I’ll dabble, one day…</p>
+<h6 id="sass-bootstrap"><a href="https://github.com/thomas-mcdonald/bootstrap-sass">SASS-Bootstrap</a></h6>
+<p>Useful cause I know a little sass from codeschool!</p>
+<h4 id="workflow-tooling">Workflow Tooling</h4>
+<h6 id="yeoman"><a href="http://yeoman.io/">Yeoman</a></h6>
+<p>A workflow which includes <a href="https://github.com/yeoman/yo">Yo</a> (to scaffold out applications), <a href="http://gruntjs.com/">Grunt</a> (to build, preview and test projects), and <a href="http://bower.io/">Bower</a> (for dependency management).</p>
+<h4 id="testing">Testing</h4>
+<p>Okay I’m gunna be honest since this is my first backbone app, testing is a little over my head. Listing these out, however I am not sure I will use them all, but I’d like to give Jasmine a shot.</p>
+<h6 id="jasmine"><a href="http://pivotal.github.io/jasmine//">Jasmine</a></h6>
+<p>Swapped out Mocha for this in the generator. Automated testing framework for JavaScript. Want to try and use this.</p>
+<h6 id="phantomjs"><a href="http://phantomjs.org/">phantomJS</a></h6>
+<p>Is for headless Webkit testing, works with other testing frameworks like Jasmine.</p>
+<h6 id="chai"><a href="http://chaijs.com/">Chai</a></h6>
+<p>A BDD / TDD assertion library.</p>
+<h6 id="sinon"><a href="http://sinonjs.org/">Sinon</a></h6>
+<p>Standalone test spies, stubs and mocks.</p>
+<p>Project is currently pending as I am now at HackReactor coding up a storm!</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

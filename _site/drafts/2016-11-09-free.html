@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2016-11-09-free</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2016-11-09-free
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<p>data Free f a = Leaf a | Branch (f (Free f a))</p>
+<p>data One a = One</p>
+<p>Free One Int: - Leaf 1 – same as Just 1 - Branch (One :: One :: Free One Int) – same as Nothing</p>
+<p>data I a = I a</p>
+<p>Free I Int: - Leaf 1 - Branch (I (Branch I (Leaf 1))) - Branch (I (Branch I (Branch I (Leaf 1))))</p>
+<p>[1] [_] -&gt; [1] [_] -&gt; [_] -&gt; [1]</p>
+<p>“left-padded singlton list”</p>
+<p>data Pair x = Pair x x</p>
+<p>Free Pair Int: - Leaf 5 - Branch (Pair (Leaf 1) (Leaf 1) ) - Branch (Pair ( Branch (Pair (Leaf 1) (Leaf 1) ) Branch (Pair (Leaf 1) (Leaf 1) )))</p>
+<p>… a binary tree</p>
+<p>data Pair x = Pair x x Char</p>
+<p>Free Pair Int: - Leaf 5 - Branch (Pair (Leaf 1) (Leaf 1) ‘a’ ) - Branch (Pair ( Branch (Pair (Leaf 1) (Leaf 1) ‘b’ ) Branch (Pair (Leaf 1) (Leaf 1) ‘c’ )) ‘a’ )</p>
+<p>… a binary tree with chars in the branches bind only cares about the leaf-nodes</p>
+<p>what about sum types?</p>
+<p>data T x = Pair x x Char | Q x x x | R Int</p>
+<p>Free Pair Int: - Leaf 5 - Branch (Pair (Leaf 1) (Leaf 1) ‘a’ ) - Branch (Pair ( Branch (Pair (Leaf 1) (Leaf 1) ‘b’ ) Branch (Pair (Leaf 1) (Leaf 1) ‘c’ )) ‘a’ )</p>
+<p>… a heterogeneous tree with changing shape.</p>
+<p>what about arrow?</p>
+<p>data T x = P (Int -&gt; x)</p>
+<p>(Int -&gt; x) is a functor: fmap :: (x-&gt; y) -&gt; (Int-&gt; x) -&gt; (Int -&gt; y)</p>
+<p>Free T Int: - Leaf 5 - Branch (T (-&gt; (Leaf 1))) + or Branch (T Leaf)</p>
+<p>you get a tree shape which depends on the runtime value</p>
+<table style="width:15%;">
+<colgroup>
+<col style="width: 15%" />
+</colgroup>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">revisited:</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">do notation: main = (-&gt; do y &lt;- x – x is a “node” in our tree _ &lt;- f y – the continuation of f y will build out one branch of the tree _ &lt;- g y – the continuation of g y will build out one branch of the tree</td>
+</tr>
+</tbody>
+</table>
+<p>data T x = P x x Char | Q x Int</p>
+<p>g::a -&gt; Free f a liftF :: f a -&gt; Free f a liftF g = Branch (fmap Leaf g) liftF g = Branch (fmap pure g)</p>
+<p>liftF is the same as lifting some <code>P 5 6 'a'</code> into a <code>Branch (Leaf 5) (Leaf 6) 'a'</code></p>
+<p>p :: Char -&gt; Free T () p c = liftF (P () () c)</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1"></a><span class="dt">Branch</span> (<span class="dt">Leaf</span> ()) (<span class="dt">Leaf</span> ()) <span class="ch">'a'</span></span></code></pre></div>
+<p>what does bind do? bind creates a Branch which then</p>
+<hr />
+<p>data ConsoleF x = Print String x | Read (String -&gt; x)</p>
+<p>output :: String -&gt; Free ConsoleF () output s = Branch $ Output s (Leaf ()) – or output s = liftF (Output s ())</p>
+<p>for some [_] Output “foo” | [()]</p>
+<p>lets use do-notation to write a function:</p>
+<p>main = do liftF (Output “foo”) liftF (Output “bar”) liftF (Output “baz”) pure ()</p>
+<p>yields: [_] Output “foo” | [_] Output “bar” | [_] Output “baz” | [()]</p>
+<p>free is boilerplate-y enough that it turns out all we need to do is handle each ConsoleF case</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1"></a><span class="ot">interpIO ::</span> <span class="dt">ConsoleF</span> x <span class="ot">-&gt;</span> <span class="dt">IO</span> x</span>
+<span id="cb2-2"><a href="#cb2-2"></a>interpIO <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb2-3"><a href="#cb2-3"></a>  <span class="dt">Output</span> s k <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="fu">putStr</span> s</span>
+<span id="cb2-5"><a href="#cb2-5"></a>    <span class="fu">pure</span> k</span></code></pre></div>
+<p>normally, a polymorphic function, polymorphic in f m a function that’s passed in must be polymorphic. so you can’t pass in some <span class="citation" data-cites="f">@f</span> Int -&gt; m Int@ a higher-ranked type is just a polymorphic type AS AN ARGUMENT.</p>
+<p>– natural transformation &gt; foldFree :: Monad m =&gt; (forall x . f x -&gt; m x) -&gt; Free f a -&gt; m a – a rank-2 type &gt; foldFree phi =  &gt; Leaf a -&gt; pure a &gt; Branch g -&gt; do &gt; phi g :: m (Free f a) &gt;&gt;= (&gt; foldFree phi k) &gt; –phi g :: m (Free f a) &gt;&gt;= foldFree phi</p>
+<p>foldFree interpIO (Output “2”)</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1"></a><span class="ot">badInterpIO ::</span> <span class="dt">ConsoleF</span> (<span class="dt">Free</span> (<span class="dt">ConsoleF</span> a)) <span class="ot">-&gt;</span> <span class="dt">IO</span> (<span class="dt">Free</span> (<span class="dt">ConsoleF</span> a))</span>
+<span id="cb3-2"><a href="#cb3-2"></a>badInterpIO _ <span class="ot">=</span> <span class="fu">pure</span> <span class="fu">undefined</span> <span class="co">{-ignore everything and insert my own code-}</span></span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1"></a><span class="ot">iterM ::</span> (<span class="kw">forall</span> x<span class="op">.</span> f (m x) <span class="ot">-&gt;</span> m x) <span class="ot">-&gt;</span> <span class="dt">Free</span> f a <span class="ot">-&gt;</span> m a</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1"></a><span class="ot">interpIO ::</span> <span class="dt">ConsoleF</span> (<span class="dt">IO</span> x) <span class="ot">-&gt;</span> <span class="dt">IO</span> x</span>
+<span id="cb5-2"><a href="#cb5-2"></a>interpIO <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a>  <span class="dt">Output</span> s k' <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb5-4"><a href="#cb5-4"></a>    <span class="fu">putStr</span> s</span>
+<span id="cb5-5"><a href="#cb5-5"></a>    k <span class="ot">&lt;-</span> k'</span>
+<span id="cb5-6"><a href="#cb5-6"></a>    <span class="fu">pure</span> k</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1"></a><span class="ot">iterM ::</span> (<span class="kw">forall</span> x<span class="op">.</span> f (m x) <span class="ot">-&gt;</span> m x) <span class="ot">-&gt;</span> <span class="dt">Free</span> f a <span class="ot">-&gt;</span> m a</span>
+<span id="cb6-2"><a href="#cb6-2"></a>iterM phi <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb6-3"><a href="#cb6-3"></a>  <span class="dt">Leaf</span> a   <span class="ot">-&gt;</span> <span class="fu">pure</span> a</span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="dt">Branch</span> g <span class="ot">-&gt;</span> <span class="kw">do</span> <span class="co">--     g :: f (Free f a)</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>    <span class="co">--       iterM phi    :: Free f a -&gt; m a</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>    <span class="co">-- fmap (iterM phi) g :: f (m a)</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>    <span class="co">-- phi $ fmap (iterM phi) g :: m a</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="fu">putStr</span> s</span>
+<span id="cb6-9"><a href="#cb6-9"></a>    k <span class="ot">&lt;-</span> k'</span>
+<span id="cb6-10"><a href="#cb6-10"></a>    <span class="fu">pure</span> k</span></code></pre></div>
+<p>data ConsoleF x = Output String | Input (String -&gt; x)</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell literate"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1"></a><span class="ot">interpIO ::</span> <span class="dt">ConsoleF</span> (<span class="dt">IO</span> x) <span class="ot">-&gt;</span> <span class="dt">IO</span> x</span>
+<span id="cb7-2"><a href="#cb7-2"></a>interpIO <span class="ot">=</span> \<span class="kw">case</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="dt">Output</span> s k' <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>    <span class="fu">putStr</span> s</span>
+<span id="cb7-5"><a href="#cb7-5"></a>    k <span class="ot">&lt;-</span> k'</span>
+<span id="cb7-6"><a href="#cb7-6"></a>    <span class="fu">pure</span> k</span>
+<span id="cb7-7"><a href="#cb7-7"></a>  <span class="dt">Input</span> k <span class="ot">-&gt;</span> <span class="kw">do</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a>    s <span class="ot">&lt;-</span> <span class="fu">getLine</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a>    <span class="fu">pure</span> (k s)</span></code></pre></div>
+<hr />
+<p>Pros: flexible allows you to specify subsets of side effects (ie: i don’t want to use all of IO, I just want to be able to use a subset of the side effects of “putline”)</p>
+<p>Cons: everytime you do another bind, we re-traverse the tree to do it efficiency problems (&gt;&gt;= is quadratic, left biased, traversing everything unless you use a codensity trick) reflection without remorse</p>
+<hr />
+<p>Data.Functor.Sum</p>
+<p>type :+ = Sum data Sum f g x = InL (f x) | InR (g x)</p>
+<p>data Dice x = Roll (Int -&gt; x) deriving Functor</p>
+<p>type (:+) = Sum infixr 5 (:+)</p>
+<p>– TypeOperators</p>
+<p>output :: String -&gt; Free (Console :+ Dice) ()</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

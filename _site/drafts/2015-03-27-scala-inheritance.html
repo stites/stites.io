@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2015-03-27-scala-inheritance</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2015-03-27-scala-inheritance
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<h1 id="page.title">{{ page.title }}</h1>
+<!-- <p class="meta">27 May, 2015</p> -->
+<p><code>final</code> keywords are the same as in Java you can override fields.</p>
+<h4 id="classes-inheriting-from-classes">Classes inheriting from classes</h4>
+<p><code>extend</code> is the same as in Java. To have <code>Foo</code> inherit from <code>Bar</code>, the syntax would be:</p>
+<pre><code>  class Foo extends Bar { ... }</code></pre>
+<p>You have to use the override modifier on anything that isn’t abstract. This is good for solving the <em>fragile base class problem</em> when a change to the superclass cannot be verified without looking at all subclasses.</p>
+<p>Java initially solves this by making everything final — but it also means that making little changes to methods, like logging, requires a high impact on changed code. This is when <code>@Overrides</code> annotation was introduced.</p>
+<p>Invoking superclasses is the same as in Java — use <code>super.methodName</code>.</p>
+<h4 id="type-checking-and-type-casting">Type checking and type casting</h4>
+This can be summed up in the following table:
+<table>
+<thead>
+<tr>
+<th>
+Scala
+</th>
+<th>
+Java
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+obj.isInstanceOf[C1]
+</td>
+<td>
+obj isInstanceOf C1
+</td>
+</tr>
+<tr>
+<td>
+obj.asInstanceOf[C1]
+</td>
+<td>
+(C1) obj
+</td>
+</tr>
+<tr>
+<td>
+classOf[C1]
+</td>
+<td>
+obj.class
+</td>
+</tr>
+</tbody>
+</table>
+<p>However pattern matching is the recommended alternative. Pattern matching looks more like:</p>
+<blockquote>
+<p>obj match { case obj: Foo =&gt; … // obj is an instance of Foo in this block case _ =&gt; … // obj wasn’t an instance of Foo }</p>
+</blockquote>
+<h4 id="protected-fields-and-methods">Protected Fields and Methods</h4>
+<p>In a class, you can declare fields or methods to be <code>protected</code>. Protected members are only accessible from subclasses, in the same way one would expect from Java. However, unique to Scala, a <code>protected</code> member cannot be seen in the package it belongs to without a <a href="chapter%207">package modifier</a>.</p>
+<p>There is also a <code>protected[this]</code>, which restricts access to only the current object, just like <code>private[this]</code> <a href="chapter%205">discussed in Chapter 5</a>.</p>
+<h4 id="superclass-construction">Superclass construction</h4>
+<p>There is only one primary constructor per class, and this is the only place you can invoke a superclass constructor directly. This is because of the daisy-chaining of auxilary constructors.</p>
+<p>However, primary constructors are embedded in class definitions, so it would follow that the superclass call can, similarly, be embedded. This winds up looking like:</p>
+<blockquote>
+<p>class Foo(x:Int, y:String) extends Bar(y) {…}</p>
+</blockquote>
+<p>Alternatively, you can make a call to <code>super</code> in the primary constructor — but you can’t use the usual <code>super(params)</code> call you would expect in scala.</p>
+<h4 id="java-interop">Java interop</h4>
+<p>Scala classes can extend Java classes!</p>
+<h4 id="overriding-fields">Overriding Fields</h4>
+<p>scala fields are more than just a simple java field. It includes a private field, as well as accessor and mutator methods (getters and setters). With this in mind, it limits and informs us of what kinds of overrides we can perform:</p>
+<table>
+<thead>
+<tr>
+<th>
+</th>
+<th>
+…with <code>val</code>
+</th>
+<th>
+…with <code>var</code>
+</th>
+<th>
+…with <code>def</code>
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Override <code>val</code>…
+</td>
+<td>
+Expected scala override with private field, setters and getters
+</td>
+<td>
+Error
+</td>
+<td>
+Error
+</td>
+</tr>
+<tr>
+<td>
+Override <code>var</code>…
+</td>
+<td>
+Error
+</td>
+<td>
+Only if the superclass is abstract
+</td>
+<td>
+Error
+</td>
+</tr>
+<tr>
+<td>
+Override <code>def</code>…
+</td>
+<td>
+Expected scala override with private field, setters and getters
+</td>
+<td>
+Basic Java override
+</td>
+<td>
+Like in Java
+</td>
+</tr>
+</tbody>
+</table>
+<p>Note that if you use <code>var</code> variables in your classes, your fellow programmers will be stuck with it when subclassing!</p>
+<h4 id="anonymous-subclassing">Anonymous Subclassing</h4>
+<p>This is the same as in Java. If you make an instance of an anonymous subclass if you include a block with definitions or overrides. Look at:</p>
+<blockquote>
+<p>val anon = new Foo(42, “bar”){ def newMethod = “check it out!” }</p>
+</blockquote>
+<p>This creates an object of <em>sturctural type</em> - <code>Foo{def newMethod: String}</code>.</p>
+<h4 id="abstract-classes">Abstract classes</h4>
+<p>Are just like abstact classes in Java, with the one exception that if you want to declare an abstact method or field, you simply need to omit its body or value. When subclassing, you also do not need to declare any <em>override</em> keywords.</p>
+<p>[You can always customize abstract fields by using an anonymous type.][]</p>
+<h4 id="construction-order">Construction order</h4>
+<p>8.10 Construction Order and Early Definitions image</p>
+<p>When you override a val in a subclass and use the value in a superclass constructor, the resulting behavior is unintuitive.</p>
+<p>Here is an example. A creature can sense a part of its environment. For simplicity, we assume the creature lives in a one-dimensional world, and the sensory data are represented as integers. A default creature can see ten units ahead.</p>
+<p>class Creature { val range: Int = 10 val env: Array[Int] = new Array<a href="range">Int</a> }</p>
+<p>Ants, however, are near-sighted:</p>
+<p>class Ant extends Creature { override val range = 2 }</p>
+<p>Unfortunately, we now have a problem. The range value is used in the superclass constructor, and the superclass constructor runs before the subclass constructor. Specifically, here is what happens:</p>
+<ol type="1">
+<li><p>The Ant constructor calls the Creature constructor before doing its own construction.</p></li>
+<li><p>The Creature constructor sets its range field to 10.</p></li>
+<li><p>The Creature constructor, in order to initialize the env array, calls the range() getter.</p></li>
+<li><p>That method is overridden to yield the (as yet uninitialized) range field of the Ant class.</p></li>
+<li><p>The range method returns 0. (That is the initial value of all integer fields when an object is allocated.)</p></li>
+<li><p>env is set to an array of length 0.</p></li>
+<li><p>The Ant constructor continues, setting its range field to 2.</p></li>
+</ol>
+<p>Even though it appears as if range is either 10 or 2, env has been set to an array of length 0. The moral is that you should not rely on the value of a val in the body of a constructor.</p>
+<p>In Java, you have a similar issue when you call a method in a superclass constructor. The method might be overridden in a subclass, and it might not do what you want it to do. (In fact, that is the root cause of our problem—the expression range calls the getter method.)</p>
+<p>There are several remedies.</p>
+<p>• Declare the val as final. This is safe but not very flexible.</p>
+<p>• Declare the val as lazy in the superclass (see Chapter 2). This is safe but a bit inefficient.</p>
+<p>• Use the early definition syntax in the subclass—see below.</p>
+<p>The “early definition” syntax lets you initialize val fields of a subclass before the superclass is executed. The syntax is so ugly that only a mother could love it. You place the val fields in a block after the extends keyword, like this:</p>
+<p>class Bug extends { override val range = 3 } with Creature</p>
+<p>Note the with keyword before the superclass name. This keyword is normally used with traits—see Chapter 10.</p>
+<p>The right-hand side of an early definition can only refer to previous early definitions, not to other fields or methods of the class.</p>
+<p>Notes:</p>
+<ul>
+<li><p>You can debug construction order problems with the -Xcheckinit compiler flag. This flag generates code that throws an exception (instead of yielding the default value) when an uninitialized field is accessed.</p></li>
+<li><p>At the root of the construction order problem lies a design decision of the Java language—namely, to allow the invocation of subclass methods in a superclass constructor. In C++, an object’s virtual function table pointer is set to the table of the superclass when the superclass constructor executes. Afterwards, the pointer is set to the subclass table. Therefore, in C++, it is not possible to modify constructor behavior through overriding. The Java designers felt that this subtlety was unnecessary, and the Java virtual machine does not adjust the virtual function table during construction.</p></li>
+</ul>
+<h4 id="scala-inheritance-heirarchy">Scala Inheritance Heirarchy</h4>
+<p><a href="https://www.safaribooksonline.com/library/view/scala-for-the/9780132761772/graphics/horstmann_inheritance.jpg">img</a></p>
+<p>Classes that are primative types in Java, as well as <code>Unit</code>, extend <code>AnyVal</code>. All other classes are subclasses of the <code>AnyRef</code> class (synonymous to <code>Object</code> in Java). Both <code>AnyVal</code> and <code>AnyRef</code> extend <code>Any</code> class - the root of the heirarchy.</p>
+<p><code>AnyVal</code> is a marker for value types, while <code>AnyRef</code> adds the monitor methods <code>wait</code> and <code>notify</code>/<code>notifyAll</code> fro the <code>Object</code> class. Also there is a synchronized method with a function parameter which is the same as a <code>synchronized</code> block in Java. All scala classes implement the marker interface <code>ScalaObject</code> which has no methods.</p>
+<p>In contrast to <code>AnyVal</code> and <code>AnyRef</code>, are <code>Nothing</code> and <code>Null</code>. <code>Null</code> is the type whose sole instance is the value <code>null</code>. You can assign <code>null</code> to any reference type (not value types). The <code>Nothing</code> type has no instances. It’s used for generic constructs like the empty list - <code>Nil</code>, or <code>List[Nothing]</code> - whic is a subtype of a generic list - <code>List[T]</code>.</p>
+<p>The <code>Nothing</code> type is not the same as a <code>void</code> in Java - the Java <code>void</code> is synonymous to <code>Unit</code> in Scala. <code>Unit</code>’s value is <code>()</code> and is not a supertype of any other type, but the compiler allows any value to be <em>replaced</em> by a <code>()</code>.</p>
+<h4 id="object-equality">Object Equality</h4>
+<p>use <code>eq</code> to see if two references refer to the same object. Note that the <code>equals</code> method in <code>AnyRef</code> calls <code>eq</code>.</p>
+<p>Consider overriding the <code>equals</code> method for a natural notion of equality for your situation. for insance comparing items by metadata instead of the class type. Keep in mind that, when you do this, you want group symmetry - where <code>a.equals(b)</code> and <code>b.equals(a)</code>. Also be sure that <code>equals</code> takes type of <code>Any</code>.</p>
+<h4 id="classes-inheriting-from-traits">Classes inheriting from traits</h4>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

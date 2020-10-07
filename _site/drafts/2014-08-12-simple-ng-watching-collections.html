@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>2014-08-12-simple-ng-watching-collections</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+2014-08-12-simple-ng-watching-collections
+</h1>
+
+<div class="meta">
+    
+    
+</div>
+
+<div class="post">
+<p>we can watch things by ref and value (by passing the third bool parameter in in <span class="math inline">$watch) now check out `$</span>watchCollection` + it’s for array/obj - add, remove, rerodered events + talk about (Object.watch segway)</p>
+<p>passing in the last param in watch is overkill for this. deep watch entire object - we only want high level.</p>
+<p>$watchCollection is just a shallow check, but learning it will teach us how to make specialized watches for custom datastructures</p>
+<h4 id="setting-up-the-infrastructure">Setting up the infrastructure</h4>
+<p>$watchCollection is a higher-order function which <code>delegates</code> to $watch takes the $watchers that you write and wraps them so that they can be added to dhe $watchers array(via $watch)</p>
+<h4 id="detecting-non-collection-changes">detecting non-collection changes</h4>
+<p>it also works for non-collectinos - it just falls back to $watch</p>
+<hr />
+<pre><code>Scope.prototype.$watchCollection = function(watchFn, listenerFn) {
+  var self = this;
+  var newValue;
+  var oldValue;
+
+  var internalWatchFn = function(scope) {
+    newValue = watchFn(scope);
+    oldValue = newValue;
+  };
+  var internalListenerFn = function() {
+    listenerFn(newValue, oldValue, self);
+  };
+  return this.$watch(internalWatchFn, internalListenerFn);
+};</code></pre>
+<blockquote>
+<p>by keepint newValue and oldValue declarations outride of the internal watch functino body, we can share them between the internal watch and listener functions. They will also persist between digest cytles in the closure formed by the $watch Collection function. this is particularly important for the old Value, since we need to compare to it acsorr digest cycles.</p>
+</blockquote>
+<blockquote>
+<p>the listener function just delegates to the original listener function, passing it the new and old values, as well as the scope</p>
+</blockquote>
+<hr />
+<p>digest determines whether the listener should be called or not by the return value of the listener. watchCollection only needs to know that the old and new values are different. That’s it. so angular team chose to just increment a counter when a change happens.</p>
+<p>common snags: NaN (page 105)</p>
+<h3 id="detecting-new-arrays">Detecting New Arrays</h3>
+<p>internal watch checks two things: objects arrays objects everythign else.</p>
+<p>we use simple conditionals to make decision trees to find out what to do and we really just detect new or removed items by saving the length on the oldValue.</p>
+<h3 id="detecting-replaced-or-reordered-items-in-arrays">Detecting Replaced or Reordered Items in Arrays</h3>
+<p>aside from changes in obj size, we need to see if things are swapped out. so now we actually need to iterate.</p>
+<h3 id="array-like-objects">Array-like objects</h3>
+<p><code>arguments</code> array! also <code>NodeList</code> which is how you get <code>quesySelectorAll</code> and <code>getElementsByTagName</code></p>
+<h3 id="detecting-new-objects">Detecting new objects</h3>
+<p>objects other than arrays: mainly dicts</p>
+<h3 id="detecting-new-or-replaced-attributes-in-objects.">Detecting New Or Replaced Attributes in Objects.</h3>
+<p>We want new attrs added to an obj to trigger a change We want changed attrs added to an obj to trigger a change</p>
+<p>While we iterate, we also sync the old object with the attributes of the new object, so that we have them for the next digest.</p>
+<blockquote>
+<p>The hasOwnProperty clause in the for loop is a common JavaScript idiom for checking that a property is attached to the object itself instead of being inherited through the prototype chain. $watchCollection does not watch inherited properties in objects.</p>
+</blockquote>
+<h3 id="detecting-removed-attributes-in-objects">Detecting Removed Attributes in Objects</h3>
+<p>it(‘notices when an attribute is removed from an object’,</p>
+<p>arrays are easy, we can check length - another loop</p>
+<h3 id="preventing-unneseccary-object-iteration">Preventing Unneseccary Object Iteration</h3>
+<p>we really don’t want to add another loop. probjematic at larpe objs optimization: for the oldObj, keep a car that increments whenever an attr added, decerment whenever attr removed for the new obj, calculate size during first loop in internal watch</p>
+<h3 id="dealing-with-objects-that-have-a-length">Dealing with Objects that Have A length</h3>
+<pre><code>`_.isNumber(length) &amp;&amp; length &gt; 0 &amp;&amp; (length - 1) in obj`</code></pre>
+<h3 id="handing-the-old-collection-value-to-listeners">Handing The Old Collection Value To Listeners</h3>
+<blockquote>
+<p>The contract of the watch listener function is that it gets three arguments: The new value of the watch function, the previous value of the watch function, and the scope. In this chapter we have respected that contract by providing those values, but the way we have done it is problematic, especially when it comes to the previous value. The problem is that since we are maintaining the old value in internalWatchFn, it will already have been updated to the new value by the time we call the listener function. The values given to the listener function are always identical. This is the case for non-collections: The implementation for the value comparison and copying works well and effciently for the change detection itself, so we don’t really want to change it. Instead, we’ll introduce another variable that we’ll keep around between digest iterations. We’ll call it veryOldValue, and it will hold a copy of the old collection value that we will not change in internalWatchFn. Maintaining veryOldValue requires copying arrays or objects, which is expensive. We’ve gone through great lengths in order to not copy full collections each time in collection watches. So we really only want to maintain veryOldValue if we actually have to. We can check that by seeing if the listener function given by the user actually takes at least two arguments:</p>
+</blockquote>
+<blockquote>
+<p>The length property of Function contains the number of declared arguments in the function. If there’s more than one, i.e. (newValue, oldValue), or (newValue, oldValue, scope), only then do we enable the tracking of the very old value. this means you won’t incur the cost of copying the very old value in $watchCollection unless you declare oldvalue in your listener function arguments.</p>
+</blockquote>
+<h3 id="summary">Summary</h3>
+<p>In this chapter we’ve added the third and final dirty-checking mechanism to our implemen- tation of Scope: Shallow collection-watching. The $watchCollection function is not simple, but that’s mostly because it provides an important, non-trivial facility: We can watch for changes in large arrays and objects much more efficiently than we could with just deep-watching. You have learned about: • How $watchCollection can be used with arrays, objects, and other values. • What $watchCollection does with arrays. • What $watchCollection does with objects. • Array-like objects and their role in $watchCollection. The next chapter concludes our implementation of scopes. We will add the other main functional area that scopes provide in addition to dirty-checking: Events.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

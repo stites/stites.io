@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Kolmogorov–Smirnov</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Kolmogorov–Smirnov
+</h1>
+
+<div class="meta">
+    December  2, 2015
+    
+</div>
+
+<div class="post">
+<p class="meta">
+02 December 2015 - San Francisco
+</p>
+<p>A cumulative distribution function (CDF) is the theoretical function which will tell you that some random variable can be found with a probability less than or equal to some value, p - which is normally found on the y-axis. The empirical cumulative distribution function (or EDF), on the other hand, is just your observed CDF. Where CDFs increment in steps of 1/n for an n-sized sample, an EDFs is usually much more sporadic, taking on the look of a step function with the horizontal sections representing where your data is most sparse.</p>
+<figure>
+<img src="https://upload.wikimedia.org/wikipedia/commons/1/17/Empirical_CDF.png" alt /><figcaption>a cdf (grey) charted next to the edf (black)</figcaption>
+</figure>
+<p>One measure that we are using in CSSR is a two-sided Kolmogorov-Smirnov test, or a KS test for short. The underlying principle is that a KS test will compare the EDF of your sample to a reference; which could be the CDF of a reference distribution or the EDF of your second sample, depending on if your test is one- or two- sided.</p>
+<p>The KS statistic quantifies the maximum possible difference between probabilities of the sample and reference. From what I can tell, the two-sample KS test is one of the most useful, and general, nonparametric methods since we can draw comparisons of any two samples purely on what we observe. Because we are looking at largest differences, what we measures is sensitive to location within the distribution, as well as the shape – the more sparse the dataset in regions that are more pertinent (not the extremes), the worse off your statistic.</p>
+<figure>
+<img src="https://upload.wikimedia.org/wikipedia/commons/c/cf/KS_Example.png" alt /><figcaption>a KS-statistic (black) with a cdf (red) and edf (blue)</figcaption>
+</figure>
+<p>Since a two-sample KS test only checks if the samples come from the same distribution, we don’t necessarily know what that distribution is. For this purpose, there are tables of critical values which you can use to find out if the data you have is normally distributed, or not. One of these tables <a href="http://www.mathematik.uni-kl.de/~schwaar/Exercises/Tabellen/table_kolmogorov.pdf">you can find here</a>.</p>
+<hr />
+<p>Journal section, for anyone interested in the status of my research:</p>
+<p>Switching tracks to the status of CSSR, I think I did pretty good job getting a prototype out the door. Of course the thing is pretty buggy, but for never having touched scala in such a long time, I’m pretty proud happy with how easy it was to come up with a clean solution while taking advantage of a number of scala features (as well as a matrix library). Perhaps if things go well I might have time to introducing scalaz… however testing, as well as a Viterbi implementation (as a part of some knowledge dives), stand in the way of that. Primarily, I’ve been investigating the KS test was imperative since we have our own KS test implemented, ported from <a href="www2.units.it/ipl/students_area/imm2/files/Numerical_Recipes.pdf">Numerical Recipes in C: The Art of Scientific Computing</a>, and I’d like to have it tested.</p>
+<!--  LocalWords:  abailly's hs vec hsw scalaz Viterbi Kolmogorov Smirnov cdf
+ -->
+<!--  LocalWords:  https CDF ECDF edf png
+ -->
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

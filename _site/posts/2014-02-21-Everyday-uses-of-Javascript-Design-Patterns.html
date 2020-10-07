@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Everyday Uses of Javascript Design Patterns</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Everyday Uses of Javascript Design Patterns
+</h1>
+
+<div class="meta">
+    February 21, 2014
+    
+        - San Francisco, CA
+    
+</div>
+
+<div class="post">
+<p>I’ve been reading <em><a href="http://addyosmani.com/resources/essentialjsdesignpatterns/book/">Essential Javascript Design Patterns</a></em> by Addy Osmani, when I realized that most design patterns are already common in everyday use of code. Inspired by this thought, I reread through my notes and decided to write out where we would see or hear about them on a daily basis.</p>
+<h4 id="module-pattern">Module Pattern</h4>
+<p>+IIFies, as well as RequireJS are also examples of the <a href="#module-pattern">module pattern</a>.</p>
+<p>A variation of the module patterns, the [Module mixin][Module mixin] is used as the interface to such libraries as <code>jQuery</code>, <code>Backbone</code>, and… well basically every library out there - so long as they introduce nothing into the global scope.</p>
+<p>If you like to introduce global variables in your Node.js files because you know they will be kept private, you are taking advantago of the [Revealing Module Pattern][Revealing Module Pattern].</p>
+<h4 id="singleton-pattern">Singleton Pattern</h4>
+<p>Angular is based off of the <a href="#singleton-pattern">Singleton Pattern</a> - where only one instance is instantiated during it’s lifetime. All other attempts at instantiating another instance of that singleton will create a reference to that singleton. Also, of note, it is interesting to learn that a poor implimentation of a singleton creates a public object. Just like how a variable or a function are not “closures”, a properly created singleton does not create a <em>class</em> or an <em>object</em>. It, instead, creates a <em>structure</em>: a shared resource namespace which isolates the code from the global scope. This namespace is also, accoring to the [gang of four] and [addy osmani], “extensible by subclassing. Clients should also be able to use an extended instance without modifying their code.”</p>
+<h4 id="observer-pattern">Observer Pattern</h4>
+<p>If you were to create an event listener from scratch, you might start off with two objects one that listens to the other by referencing a properties or function. This is called the <a href="#observer-pattern">observer pattern</a> and the two objects in question are referred to by the <code>subject</code>: Maintains a list of observers, facilitates adding or removing objecters <code>observer</code>: probides an update interface for objects that need to be notified of a Subject’s changes of state <code>ConcreteSubject</code>: Broadcasts notifications to Observers on changes of state and stores the state of the <code>ConcreteObservers</code>. <code>ConcreteObservers</code>: Stores a reference to the <code>ConcreteSubject</code>, implements an update interface fro the Observer to ensure taht state is consistent with the Subject’s.</p>
+<p>But if you are looking for something a little more loosely coupled, you might want to use a [Publisher/Subscriber Pattern][Publisher/Subscriber Pattern]. This is, in essence, is the pattern that would be created if we added an event listener object to mediate between two objects.</p>
+<h4 id="mediator-pattern">Mediator Pattern</h4>
+<p>If we wanted to mediate between <em>many</em> objects, for example handling changes to DOM elements and corresponding functions, we would want to change this to a <a href="#mediator-pattern">Mediator Pattern</a>. This is the event listener you are probably most familiar with. An advanced implimentation could be found at [Mediator.js] and includes “topic namespaces, subscriber removal, and a much more robust system of mediation.” –&gt; downside: performance hit since there is not direct communication between two objects.</p>
+<h4 id="prototype-pattern">Prototype Pattern</h4>
+<p>The <a href="#prototype-pattern">prototype pattern</a> is basically what javascript is built off of. The idea is that you create objects by cloning some object you already have. In non-javascript languages this can start to refer back to the concept of classes and inheritance, but in javascript it’s plain-and-simple prototype inheritance. It’s important to know that there isn’t a “definition”/“core” object, just clones. This is awesome because any prototypally-inherited functions are passed by reference, so it’s wicked fast. ballersauce. Addy also mentions that <em>real</em> prototypal inheritance requires the use of <code>Object.create</code>. eg: <code>Object.create( prototype, optionalDescriptionObjects )</code>. this can get hairy when looking into what properties an object ACTUALLY has. refer to <code>hasOwnProperty()</code>.</p>
+<h4 id="facade-pattern">Facade Pattern</h4>
+<p>jQuery uses the facade pattern all the time. When you invoke a <code>$(el).text()</code> there are actually several things you can actually do, you can return the text of some element, or you can overwrite the current text of the element. Essentially, you are masking the inner compexity of the method with a much simpler interface. This is the facade pattern. Disadvantages: performance - accessing an inner function is much more efficient than accessing the abstraction.</p>
+<h4 id="factory-pattern">Factory Pattern</h4>
+<p>Factories are a pattern whose premise is to create objects - not classes. This distinction is what differentiates a Factory from a constructor, although this line is blurred by the fact that Javascript’s pseudo-classical constructors also create objects. The factory pattern is explicitly present in Angular. In short this is because angular takes advantage of the singleton pattern which requires the creation of an object.</p>
+<p>This pattern is useful for the construction of very complex objects - however you should be wary of using them as this can be a double-edged sword and you may find yourself dealing with <em>too</em> much complexity.</p>
+<h6 id="the-abstract-factory">The Abstract Factory</h6>
+<p>An abstract factory is a pattern which allows you to group together many factories which all have a common goal. When you create a custom factory in angular, you are taking advantage of the abstract factory pattern.</p>
+<h4 id="the-mixin-pattern">The Mixin Pattern</h4>
+<p>Mixins are a common pattern in Javascript which allow you to avoid subclassing. Instead of creating a superclass - <code>Cow</code> - and several subclasses - <code>SpottedCow</code>, <code>PurpleCow</code>, and <code>SuperCow</code> - you can create a mixin. This will allow you to create only one class, <code>Cow</code>, with many mixins - <code>addSpots</code>, <code>addPurple</code>, <code>addCape</code> - which can be used when appropriate.</p>
+<p>I’m assuming that this pattern is pretty generic and am a little too lazy to find any one “big” example.</p>
+<h4 id="the-decaorator-pattern">The Decaorator Pattern</h4>
+<p>Essentially the same as a mixin pattern, however this is used for subclassing to promote code reuse. In Javascript, of course, it is easier for us to use Pseudoclassical Decorators.</p>
+<h4 id="flyweight-patter">Flyweight Patter</h4>
+<p>I need to learn a lot more about the Flyweight pattern. I believe that it is present in D3, but this has yet to be confirmed. A lot of my shakeyness on the subject stems from the fact that Flyweights require Factories to create the data-object Here’s my interpretation:</p>
+<h6 id="data-flyweights">Data Flyweights</h6>
+<ul>
+<li><strong>Intrinsic</strong>: Essentially D3. Every DOM listens to a corresponding data element. This only works if D3, indeed, uses a factory to create it’s data-objects, which I believe it does.</li>
+<li><strong>Extrinsic</strong>: Whenever you have data-objects in D3 which have more than one DOM element attached to it. However, I’m not sure if this is possible! Another option is Backbone where you have models (data objects) which inform multiple views - again I’m uncertain on this.</li>
+</ul>
+<h6 id="dom-flyweights">DOM Flyweights</h6>
+<p>this describes types of event listening</p>
+<ul>
+<li><strong>top-down event detection</strong>: Event capture.</li>
+<li><strong>bottom-up event detection</strong>: Essentially event bubbling.</li>
+</ul>
+<h4 id="patterns-to-be-looked-into">Patterns to be looked into</h4>
+<ul>
+<li>My favorite SQL ORM, <a href="http://bookshelfjs.org/">Bookshelf.js</a>, is based off of the <a href="http://en.wikipedia.org/wiki/Data_mapper_pattern">data mapper pattern</a>.</li>
+<li>The command pattern doesn’t seem to be very common in javascript. Usually you can see where command patterns would be used by a <code>.run()</code> or a <code>.exec()</code>.</li>
+</ul>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

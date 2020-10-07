@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Reviewing LSTMs with ascii art</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Reviewing LSTMs with ascii art
+</h1>
+
+<div class="meta">
+    August 22, 2018
+    
+</div>
+
+<div class="post">
+<p>Scenario: Say we have a network that watches TV and classifies if an object is a wolf, dog, bear, goldfish, or an unknown thing. With a simple feed forward, convolutional network we would look at snapshots of frames and make a prediction for each animal. This is pretty simplisitic.</p>
+<p>Because we are working with an ordered sequence over time, though, we can feed in hints of what the network has seen before. For instance we know that there is a higher correlation between wolves and bears, as well as dogs and goldfish and we could use an RNN to take advantage of this so that, let’s say it watches the Nature Channel, if it sees a bear then the next canine it sees will more likely be a wolf (and not a dog). In contrast, if it’s watching The Dog Office, a cubical goldfish will suggest that this caninie is a dog.</p>
+<p>In the wild, you won’t see this happen because the world is full of objects that a network will see between the goldfish and the dog. Many objects will be classified under the “unknowns” that it will break the desired correlation – this is where we would really like to have some notion of short-term memory. State, however, already exists in an RNN and it is a kind of “short-term memory” – so we come up with Long Short-Term Memory units.</p>
+<p>LSTMs are comprised of two states: short-term memory, and long-short term memory (aka “long term memory” to simplify). You can think of this as an RNN + an extra memory buffer. Each time a new state is observed, it goes through the following transformation:</p>
+<pre><code>                                   ,--------.
+                                   | Output |
+                                   `--------'
+                                        ,
+                                       / \
+                                        |
+,-------------------.     ,------------------------------.     ,-------------------.
+| Long term memory  |----&gt;| forget gate -&gt; remember gate |----&gt;| Long term memory  |
+`-------------------'     |          \  __,              |     `-------------------'
+                          |           \  /|              |
+                          |            \/                |
+                          |            /\                |
+                          |           /  \|              |
+,-------------------.     |          /  --'              |     ,-------------------.
+| Short term memory |----&gt;| learn gate  -&gt; use gate      |----&gt;| Short term memory |
+`-------------------'     `------------------------------'     `-------------------'
+                                        ,
+                                       / \
+                                        |
+                                   ,--------.
+                                   | Event  |
+                                   `--------'</code></pre>
+<p>When an event is observed an LSTM unit will run the long term memory buffer through the forget gate, trying to discard irrelivant information, and will run the short-term memory buffer through the learn gate which is much like the original RNN structure where we concat the observation to the current window. Everything which is saved from the forget and learn gates are then concatenated together and passed in to the remember and use gate, which dictates what will be saved as the next state of the LSTM unit.</p>
+<p>Chained together, it composes:</p>
+<pre><code>            pred_1               pred_2               pred_3
+              |                    |                    |
+,-------.  ,------.  ,-------.  ,------.  ,-------.  ,------.  ,-------.
+| LTM_1 |-&gt;|      |-&gt;| LTM_2 |-&gt;|      |-&gt;| LTM_3 |-&gt;|      |-&gt;| LTM_4 |
+`-------'  | LSTM |  `-------'  | LSTM |  `-------'  | LSTM |  `-------'
+| STM_1 |-&gt;|      |-&gt;| STM_2 |-&gt;|      |-&gt;| STM_3 |-&gt;|      |-&gt;| STM_4 |
+`-------'  `------'  `-------'  `------'  `-------'  `------'  `-------'
+              |                    |                    |
+            obs_1                obs_2                obs_3</code></pre>
+<p><br /></p>
+<h2 id="the-learn-gate">The Learn Gate</h2>
+<p>Steps:</p>
+<ul>
+<li>given: <span class="math inline"><em>S</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub></span> as the memory buffer at time <span class="math inline"><em>t</em> − 1</span> and <span class="math inline"><em>E</em><sub><em>t</em></sub></span> as the event at time <span class="math inline"><em>t</em></span></li>
+<li>combine: <span class="math inline"><em>N</em><sub><em>t</em></sub>′ = <em>t</em><em>a</em><em>n</em><em>h</em>(<em>W</em><sub><em>n</em></sub>[<em>S</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub>, <em>E</em><sub><em>t</em></sub>] + <em>b</em><sub><em>n</em></sub>)</span></li>
+<li>forget: <span class="math inline"><em>N</em><sub><em>t</em></sub> = <em>N</em><sub><em>t</em></sub>′<em>x</em><em>s</em><em>i</em><em>g</em><em>m</em><em>o</em><em>i</em><em>d</em>(<em>W</em><sub><em>i</em></sub>[<em>S</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub>, <em>E</em><sub><em>t</em></sub>] + <em>b</em><sub><em>i</em></sub>)</span> – notice that sigmoid turns this into a linear combination (ie: how much to keep and how much to forget of each weight).</li>
+</ul>
+<p><br /></p>
+<h2 id="the-forget-gate">The Forget Gate</h2>
+<p>Steps:</p>
+<ul>
+<li>given: <span class="math inline"><em>L</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub></span> as the memory buffer at time <span class="math inline"><em>t</em> − 1</span></li>
+<li>use the learn gate from below with sigmoid to find out how much to keep: <span class="math inline"><em>f</em><sub><em>t</em></sub> = <em>s</em><em>i</em><em>g</em><em>m</em><em>o</em><em>i</em><em>d</em>(<em>W</em><sub><em>f</em></sub>[<em>S</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub>, <em>E</em><sub><em>t</em></sub>] + <em>b</em><sub><em>f</em></sub>)</span></li>
+<li>and apply that to the <span class="math inline"><em>L</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub></span>: <span class="math inline"><em>F</em><sub><em>t</em></sub> = <em>L</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub><em>ḟ</em><sub><em>t</em></sub></span></li>
+</ul>
+<p><br /></p>
+<h2 id="the-remember-gate">The Remember Gate</h2>
+<p>Steps:</p>
+<ul>
+<li>given: <span class="math inline"><em>L</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub><em>f</em><sub><em>t</em></sub></span>, the output of the forget gate, and <span class="math inline"><em>N</em><sub><em>t</em></sub><em>i</em><sub><em>t</em></sub></span>, the output of the learn gate</li>
+<li>add them together: <span class="math inline"><em>L</em><em>T</em><em>M</em><sub><em>t</em></sub> = <em>L</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub><em>f</em><sub><em>t</em></sub> + <em>N</em><sub><em>t</em></sub><em>i</em><sub><em>t</em></sub></span></li>
+</ul>
+<p><br /></p>
+<h2 id="the-use-gate-or-output-gate">The Use Gate (or output gate)</h2>
+<p>Steps:</p>
+<ul>
+<li>given: <span class="math inline"><em>L</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub></span>, <span class="math inline"><em>S</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub></span>, <span class="math inline"><em>E</em><sub><em>t</em></sub></span></li>
+<li>find out how much to keep from the forget gate: <span class="math inline"><em>U</em><sub><em>t</em></sub> = <em>t</em><em>a</em><em>n</em><em>h</em>(<em>W</em><sub><em>u</em></sub><em>L</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub><em>ḟ</em><sub><em>t</em></sub> + <em>b</em><sub><em>u</em></sub></span></li>
+<li>find out how much to keep from short term memory and the event: <span class="math inline"><em>V</em><sub><em>t</em></sub> = <em>s</em><em>i</em><em>g</em><em>m</em><em>o</em><em>i</em><em>d</em>(<em>W</em><sub><em>v</em></sub>[<em>S</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub>, <em>E</em><sub><em>t</em></sub>] + <em>b</em><sub><em>v</em></sub></span></li>
+<li>add them together <span class="math inline"><em>S</em><em>T</em><em>M</em><sub><em>t</em></sub> = <em>U</em><sub><em>t</em></sub><em>V̇</em><sub><em>t</em></sub></span></li>
+</ul>
+<p><br /></p>
+<h2 id="other-architectures">Other architectures</h2>
+<ul>
+<li><p>Gated Recurrent Units: merge the <span class="math inline"><em>L</em><em>T</em><em>M</em></span> and <span class="math inline"><em>S</em><em>T</em><em>M</em></span> buffers. In this situation “Learn” and “Forget” are combined into an “Update” gate, and “Remember” and “Use” are merged into a “Combine” gate. <a href="http://www.cs.toronto.edu/~guerzhoy/321/lec/W09/rnn_gated.pdf">Also</a>, <a href="http://despicableme.wikia.com/wiki/Felonius_Gru">also</a>.</p></li>
+<li><p>Peephole connections: We never use the long-term memory in many of the gates above. If we do by concatenating all of <span class="math inline">[<em>L</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub>, <em>S</em><em>T</em><em>M</em><sub><em>t</em> − 1</sub>, <em>E</em><sub><em>t</em></sub>]</span>, we arrive at LSTM with peephole connections.</p></li>
+</ul>
+<p>That’s it!</p>
+<hr />
+<p><a href="https://skymind.ai/wiki/lstm">Also</a>, <a href="https://www.youtube.com/watch?v=iX5V1WpxxkY">also</a>, <a href="https://blog.echen.me/2017/05/30/exploring-lstms/">also</a>, <a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/">also</a>.</p>
+<p>And later, check out: <a href="https://skymind.ai/wiki/attention-mechanism-memory-network">Attention mechanisms and Memory Networks</a></p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

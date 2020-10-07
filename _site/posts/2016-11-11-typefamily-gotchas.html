@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Typefamily gotchas</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Typefamily gotchas
+</h1>
+
+<div class="meta">
+    November 11, 2016
+    
+</div>
+
+<div class="post">
+<p>Typeclasses are an amazing abstraction in haskell. They are one of the fundamental building blocks in sharing and managing code. Among other points of mention, some of the benefits typeclasses have over OO-styled interfaces include the ability to create objects out of nothing (like <code>mempty</code> for the <code>Monoid</code> typeclass) and the ability to lazily add polymorphism at compile time (ie: <code>fromInteger :: Integer -&gt; a</code> in which we define some <code>fromInteger 1 :: Double</code> later on in the program.</p>
+<p>Typefamilies allow us to introduce associated types to typeclasses, bringing our code to another level by having locally defined type-dependence.</p>
+<pre><code>class MakesSeries s where
+  type Emitted s
+
+data State = A | B
+
+instance MakesSeries State where
+  type Emitted State = String</code></pre>
+<p>Notice that the typefamily defines a type-level function: when you apply a <code>State</code> to an <code>Emitted</code>, you get out <code>Text</code>. Here, we’re building out a typeclass that can take in some defined <code>State</code> (generically, just <code>s</code>), and each time you step through the series, it emits something. It could be text (like right now), or json, ints… anything you’d like.</p>
+<p>If we’re not dealing with text, however, it might be worth having some way to define how to serialize things that are <code>Emitted</code>:</p>
+<pre><code>class MakesSeries s where
+  type Emitted s
+  serialize :: s -&gt; Emitted s -&gt; String
+
+data State = A | B
+
+instance MakesSeries State where
+  type Emitted State = Int
+
+  serialize _ int = show int</code></pre>
+<p>But we don’t actually care about what the state is, we just care about how we <code>show</code> the emitted values. Can’t we just drop it?</p>
+<pre><code>class MakesSeries s where
+  type Emitted s
+  serialize :: Emitted s -&gt; String</code></pre>
+<p>Error, nope! Why is this? Well, <code>serialize</code> doesn’t <em>uniquely</em> define an <code>s</code> anymore! What if we had some <code>instance MakesSeries State2</code>? The compiler wouldn’t understand which <code>Emitted s</code> it should be using because (I’m guessing) there is eta reduction happening behind the scenes! We can fix this two different ways.</p>
+<p>In the first way, we move our type family to a data family. Basically, this is the same as a type family, except we are creating an ADT instead of a type alias with our function:</p>
+<pre><code>class MakesSeries s where
+  data Emitted s                        -- notice the change here
+  serialize :: Emitted s -&gt; String
+
+data State = A | B
+
+instance MakesSeries State where
+  newtype Emitted State = Value Int
+
+  serialize (Value int) = show int</code></pre>
+<p>But if we have to write lots of emitted values, that’s going to be a handful of repeated data constructions.</p>
+<p>Alternatively, we can use a <code>Proxy</code> from <code>Data.Proxy</code>:</p>
+<pre><code>class MakesSeries s where
+  type Emitted s
+  serialize :: Proxy s -&gt; Emitted s -&gt; String
+
+data State = A | B
+
+instance MakesSeries State where
+  newtype Emitted State = Value Int
+
+  serialize _ int = show int
+
+-- ...later, in action:
+foobar = serialize (Proxy :: Proxy State) 2</code></pre>
+<p>For my use-case, I opted for the latter. You can see the code at <a href="https://www.github.com/stites/test-machines">stites/test-machines</a>. Another thing you might see is the use of a proxy for a <code>ScopedTypeVariables</code> declaration. This was used so that I can cast some kind of <code>mempty</code>-defined value without having to pass in an actual parameter.</p>
+<p>On a tangential noted, there’s a lot of type-level hackery you can get away with in Haskell, and I should write something on <code>TypeRef</code> later for dynamic, dispatch-styled typing.</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

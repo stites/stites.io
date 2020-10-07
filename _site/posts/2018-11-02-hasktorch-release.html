@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Hasktorch v0.0.1</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Hasktorch v0.0.1
+</h1>
+
+<div class="meta">
+    November  2, 2018
+    
+</div>
+
+<div class="post">
+<p><em>Long story short:</em> After a few prototypes and feedback, I’m happy to announce that <code>hasktorch-0.0.1.0</code> is now officially on Haskage! The API documentation <a href="https://hackage.haskell.org/package/hasktorch-indef">can be found here</a>. The rest of this post introduces the library and shows you how to build a fully-connected XOR predictor. In a followup post, I’ll talk a bit about internals, go over some caveats, talk about what future development entails, and hopefully get you all excited about contributing : )</p>
+<hr />
+<p>The Hasktorch suite of libraries includes the haskell bindings to PyTorch’s backend (in <code>hasktorch-ffi-*</code>) as well as the beginnings of backpack modules (<a href="https://hackage.haskell.org/package/hasktorch-indef"><code>hasktorch-indef</code></a>) which make up a simple Haskell interface to a modern deep learning library.</p>
+<p>This interface comes in two flavors: a dynamic interface, much like what you would expect out of PyTorch, as well as a statically-typed interface, which makes use of Haskell’s dependent types to enforce the safe construction of dynamic computation graphs.</p>
+<p>Hasktorch differs from the Tensorflow bindings from the fundamental level of how DAG construction is formed for computation. This means that tensors are untethered from a computational context and do not require a <code>Session</code>-like monad in order to run. <a href="https://github.com/austinvhuang">Austin</a> and I have also prioritized the static tensor interface so we have fully-typed dimensions, making use of Artem’s <a href="https://hackage.haskell.org/package/dimensions"><code>dimensions</code></a> library.</p>
+<p>Within the Haskell community, there is a growing collection of pure-Haskell alternatives such as <a href="https://github.com/ekmett/linear">linear</a>, <a href="https://github.com/HuwCampbell/grenade">grenade</a>, <a href="https://github.com/mstksg/backprop-learn/">backprop-learn</a>, and <a href="https://hackage.haskell.org/package/easytensor">easytensor</a>. Hasktorch takes inspiration from these and, hopefully, will offer a comparable API so that it will be able to keep up with the fast pace of the deep learning community.</p>
+<h2 id="getting-started">Getting started</h2>
+<p>To begin you need a copy of the “A Tensor” library (ATen), PyTorch’s backend. Hasktorch is currently pinned to the last commit of ATen which has externed broadcasting functions, which you can find <a href="https://github.com/hasktorch/ATen">at our fork</a>. We also have build scripts which you can find in <a href="https://github.com/hasktorch/ffi/blob/be11dc3f737dd1b4690234449e6071dfb05ce9d9/deps/build-aten.sh"><code>ffi/deps/build-aten.sh</code></a>. You’ll need cabal’s <code>v2-build</code> for <a href="https://github.com/ezyang/ghc-proposals/blob/backpack/proposals/0000-backpack.rst">backpack</a> support (<code>stack</code> will not work here, as far as I am aware), ghc &gt;= 8.4, and a flare for hacking.</p>
+<p>Because of the dependency on a dynamic-linked shared object file and because we have veered away from the stack lts system, you can find the <code>cabal.project.freeze</code> files and <code>cabal.project.local</code> files that the developers use in <a href="https://github.com/hasktorch/hasktorch/tree/master/cabal">our cabal folder</a>.</p>
+<p>A short script to get you started contributing to our <code>examples/</code> folder could look like this:</p>
+<pre><code># git clone https://github.com/hasktorch/hasktorch.git --recursive
+# cd hasktorch
+# (cd ffi/deps &amp;&amp; ./build-aten.sh)
+# ln -fs cabal/project.freeze-8.6.1 cabal.project.freeze
+# ln -s cabal/project.local-cpu     cabal.project.local
+# echo &quot;and read the annotated local file&quot;
+# most cabal.project.local
+# cabal v2-update
+# cabal v2-build all
+# echo &quot;...and long wait as you run your first build&quot;</code></pre>
+<h2 id="lets-predict-xor">Let’s predict XOR!</h2>
+<p><em>For the remainder of this post, we will go over an part of the <a href="https://github.com/hasktorch/hasktorch/blob/master/examples/xor/Main.hs">comparative xor example found in Hasktorch’s examples folder</a>. The example there walks through three solutions: an exact answer to solve XOR, manual calls to THNN combinators (useful to experiment with new AD frameworks), and a solution using backprop combinators.</em></p>
+<p>Taking an example out of <a href="http://www.deeplearningbook.org/">Deep Learning</a> (Goodfellow, Bengio, Courville), learning XOR is a task which cannot be solved linearly, but is made tractable with a simple two-layer neural network. Furthermore, it is an excellent example for those who are new to neural architectures and concepts like backpropagation because it includes very few hyperparameters (nine in total), so it is possible to follow along with pen and paper.</p>
+<p>To refresh your memory XOR, or “exclusive or,” can be illustrated with the following truth table:</p>
+<p><img src="../images/hasktorch-xor-truth.png" style="display: block; margin-left: auto; margin-right: auto; width:50%;" /></p>
+<p>In a graph, <code>xor(x1,x2)</code> we would see:</p>
+<p><img src="../images/hasktorch-xor.png" style="display: block; margin-left: auto; margin-right: auto; width:50%;" /></p>
+<p>Notice that it would be impossible for a linear model to solve this: when <span class="math inline"><em>x</em><sub>1</sub> = 0</span>, a linear model’s output must increase as <span class="math inline"><em>x</em><sub>2</sub></span> increases, but at <span class="math inline"><em>x</em><sub>1</sub> = 1</span> the model’s output must decrease as <span class="math inline"><em>x</em><sub>2</sub></span> decreases. This is due to the fact that a linear model can only modify the coefficients (<span class="math inline"><em>w</em><sub>1</sub></span>, <span class="math inline"><em>w</em><sub>2</sub></span>, and <span class="math inline"><em>b</em><em>i</em><em>a</em><em>s</em></span>) of a linear fit: <span class="math inline"><em>y</em> = <em>w</em><sub>1</sub><em>ẋ</em><sub>1</sub> + <em>w</em><sub>2</sub><em>ẋ</em><sub>2</sub> + <em>b</em><em>i</em><em>a</em><em>s</em></span>.</p>
+<p>There is an exact solution to this model with a two-layer neural network with relu activation. This network would look something like:</p>
+<p><br /><span class="math display">$$
+f ( {\bf x}_{input} ) = {\bf w_2}^{T} max[0, {\bf W_1}^T {\bf x}_{input} + {\bf c_1}] + b_2
+$$</span><br /></p>
+<p>Our first linear layer: <br /><span class="math display">$${\bf W_1}^T {\bf x}_{input} + {\bf c_1}$$</span><br /> is comprised of a <span class="math inline">2 × 2</span> weight matrix, <span class="math inline"><strong>W</strong><sub><strong>1</strong></sub></span>, of hyperparameters with a vector of size <span class="math inline">2</span> as weights. Once we make it to our non-linear activation function: <br /><span class="math display">$$relu( {\bf x} ) = max[{\bf 0}, {\bf x}]$$</span><br /> we remap our problem into finding a new latent representation:</p>
+<p><img src="../images/hasktorch-xor-hidden.png" style="display: block; margin-left: auto; margin-right: auto; width:50%;" /></p>
+<p>In this transformed space, we are able to collapse <span class="math inline"><strong>x</strong> = [1, 0]</span> and <span class="math inline"><strong>x</strong> = [0, 1]</span> into a single point in the feature space of <span class="math inline"><strong>h</strong> = [1, 0]</span>. We can now use our last layer <br /><span class="math display">$${\bf w_2}^{T} {\bf x} + b_2$$</span><br /> to find a tractable solution to this problem. We can set a loss function, such as mean-squared error, to zero to find a set of exact weights which would solve this problem.</p>
+<p>One set of weights would be: <br /><span class="math display">$$
+  W_1 = \left[
+    \begin{array}
+    1 &amp; 1 \\
+    1 &amp; 1 \\
+    \end{array}
+  \right]
+$$</span><br /> <br /><span class="math display">$$
+  c_1 = \left[
+    \begin{array}
+     0 \\
+    -1 \\
+    \end{array}
+  \right]
+  \\
+  w_2 = \left[
+    \begin{array}
+     1 \\
+    -2 \\
+    \end{array}
+  \right]
+  \\
+  b_2 = 0
+$$</span><br /></p>
+<p>Plugging this into our original function, we would find this satisfies our XOR truth table.</p>
+<h3 id="up-next">Up next</h3>
+<p>Using this as a guiding example we will see how to:</p>
+<ul>
+<li>construct tensors in hasktorch</li>
+<li>randomly initialize weights</li>
+<li>how to use the <a href="https://hackage.haskell.org/package/backprop"><code>backprop</code> library</a> to get gradients, composing functions with loss.</li>
+<li>and finally, how to loop through a dataset, updating our weights with fractions of the gradient to converge on an optimal solution.</li>
+</ul>
+<!--
+@book{Goodfellow-et-al-2016,
+    title={Deep Learning},
+    author={Ian Goodfellow and Yoshua Bengio and Aaron Courville},
+    publisher={MIT Press},
+    note={\url{http://www.deeplearningbook.org}},
+    year={2016}
+}
+-->
+<h3 id="hasktorch-building-tensors">Hasktorch: Building Tensors</h3>
+<p>In Hasktorch there are various mechanisms to build tensors. To construct a training set tensor with the four representational inputs of XOR and the four corresponding outcomes, we can use the <code>unsafeMatrix</code> function which takes an arbitrary list-of-lists and gives us a torch tensor.</p>
+<pre><code>-- Using the TupleSections language pragma
+mkExactData :: IO (Tensor '[4, 2], Tensor '[4, 1])
+mkExactData = (,)
+  &lt;$&gt; unsafeMatrix
+    [ [0, 0]
+    , [0, 1]
+    , [1, 0]
+    , [1, 1]
+    ]
+  &lt;*&gt;  unsafeMatrix
+    [ [0]
+    , [1]
+    , [1]
+    , [0]
+    ]</code></pre>
+<!--
+While most construction functions are pure (`new`, `constant`, and
+`newWithStorage`), convenience functions such as `vector` (rank-1 tensors),
+`matrix` (rank-2), `cubiod` (rank-4), `hyper` (rank-4), and `fromList` (rank-n
+tensors) live in IO because there is an outstanding question of how much
+parallelism we want to introduce and how to handle errors.
+At the core of these functions, however, is a
+desire to simply create tensors out of lists or encode a construction simply
+by type.
+
+### Random functions and notation
+-->
+<p>Another way we can construct tensors is by using the distributions in Hasktorch. For instance, we can use a function like <code>uniform</code> to initialize our network architecture:</p>
+<pre><code>import Torch.Double
+
+mkNetwork :: IO (Linear 2 2, Linear 2 1)
+mkNetwork = do
+  g &lt;- newRNG                     -- (1)
+  let Just rg = ord2Tuple (0, 1)  -- (2)
+  l1 &lt;- fmap Linear $ (,) &lt;$&gt; uniform g rg &lt;*&gt; uniform g rg -- (3)
+  l2 &lt;- fmap Linear $ (,) &lt;$&gt; uniform g rg &lt;*&gt; uniform g rg -- (4)
+  pure (l1, l2)                   -- (5)</code></pre>
+<p>Already, there are a lot of new functions coming into play:</p>
+<ol type="1">
+<li><p><code>newRNG</code> constructs a random number generator as defined by the ATen framework. This is purely a CPU-construct and is not present for GPU-based tensors.</p></li>
+<li><p><code>ord2Tuple</code> constructs an ordered tuple – the first argument being strictly less than the second. Several of these smart constructors exist to avoid segfaults with random number creation and can be found in <code>hasktorch-types-th:Torch.Types.Numerics</code>.</p></li>
+<li><p>Here we are creating a <code>Linear</code> layer with two tensors, instantiated with the uniform random distribution. A <code>Linear</code> type is a tuple of weights and biases, which can be seen by looking at its definition in <code>hasktorch-indef:Torch.Indef.Static.NN.Linear</code>:</p></li>
+</ol>
+<pre><code>-- | datatype representing a linear layer with bias. Represents @y = Ax + b@.
+newtype Linear i o
+  = Linear { getTensors :: (Tensor '[i, o], Tensor '[o]) }
+  deriving (Eq, Generic)</code></pre>
+<ol start="4" type="1">
+<li><p>Construction of another linear layer</p></li>
+<li><p>Where we return our fully-initialized architecture. Here we find that <code>l1</code> lines up with the first argument in our tuple’s type, <code>Linear 2 2</code>, and <code>l2</code> is mapped to <code>Linear 2 1</code>.</p></li>
+</ol>
+<p>In Hasktorch, there are three ways in which we notate functions. Pure functions are generally named as you would expect, while inplace tensor functions use PyTorch’s notation of post-fixing a function’s name with an underscore. Finally, a function may be prefixed with an underscore. These functions indicate that they adhere to the underlying C-code’s convention of mutating the first argument inplace. Because of the quantity of functions that Hasktorch offers, there are sometimes overlaps in the last two of these groups.</p>
+<h3 id="backprop">Backprop</h3>
+<p>We now have to write a forward function. This is simply a function that takes in arguments of our architecture and training data, and returns the inferred output. For our xor problem, we should write something that takes an input and applies our first linear layer, whose operation looks like:</p>
+<p><br /><span class="math display"><em>y</em><sub><em>l</em><em>a</em><em>y</em><em>e</em><em>r</em>1</sub> = <em>x</em><sub><em>i</em><em>n</em><em>p</em><em>u</em><em>t</em></sub> × <em>w</em><em>e</em><em>i</em><em>g</em><em>h</em><em>t</em><em>s</em><sub><em>l</em><em>a</em><em>y</em><em>e</em><em>r</em>1</sub> + <em>b</em><em>i</em><em>a</em><em>s</em><sub><em>l</em><em>a</em><em>y</em><em>e</em><em>r</em>1</sub></span><br /></p>
+<p>In Hasktorch, we have the combinators <code>Torch.Double.NN.Linear.linear</code> and <code>Torch.Double.NN.Linear.linearBatch</code> which operates over a batch dimension. Following this, we apply our Rectified Linear Unit (<code>Torch.Double.NN.Activation.relu</code>):</p>
+<p><br /><span class="math display"><em>y</em><sub><em>r</em><em>e</em><em>l</em><em>u</em></sub> = <em>m</em><em>a</em><em>x</em>[0, <em>y</em><sub><em>l</em><em>a</em><em>y</em><em>e</em><em>r</em>1</sub>]</span><br /></p>
+<p>And our second linear layer:</p>
+<p><br /><span class="math display"><em>y</em><sub><em>l</em><em>a</em><em>y</em><em>e</em><em>r</em>2</sub> = <em>y</em><sub><em>r</em><em>e</em><em>l</em><em>u</em></sub> × <em>w</em><em>e</em><em>i</em><em>g</em><em>h</em><em>t</em><em>s</em><sub><em>l</em><em>a</em><em>y</em><em>e</em><em>r</em>2</sub> + <em>b</em><em>i</em><em>a</em><em>s</em><sub><em>l</em><em>a</em><em>y</em><em>e</em><em>r</em>2</sub></span><br /></p>
+<p>Using the referenced functions, this would look something like:</p>
+<pre><code>import Data.Function ((&amp;))
+import qualified Torch.Double.NN.Activation as Bp (relu)
+import qualified Torch.Double.NN.Linear     as Bp (linearBatch)
+
+xorForward
+  :: (Linear 2 2, Linear 2 1)  -- Our network
+  -&gt; Tensor '[4, 2]            -- A batch of training data
+  -&gt; Tensor '[4, 1]            -- The output
+xorForward (layer1, layer2) inp
+  = Bp.linearBatch layer1 inp
+  &amp; Bp.relu
+  &amp; Bp.linearBatch layer2</code></pre>
+<p>However, we would still have to accumulate the gradient. For this, we rely on Justin Le’s <a href="https://hackage.haskell.org/package/backprop">backprop library</a>. To go over the backprop library is a series in itself. In fact it is one that has been done <a href="https://blog.jle.im/entry/introducing-the-backprop-library.html">several</a> <a href="https://backprop.jle.im">times</a> <a href="https://blog.jle.im/entry/purely-functional-typed-models-1.html">over</a> in a clear and eloquent style by Justin Le, himself. For this post, however, we will cut to the chase and say that arguments bundled up into a “backpropable” <code>BVar</code> hold a reference to their gradient. This reference can be extracted with the <code>Reifies s W</code> constraint. When we compose functions that use <code>BVar</code>s, we automatically get an efficient calculation of the gradient through reverse-mode autodifferentiation. With some lenses and a <code>backprop</code> lens-based accessor, our code looks roughly unchanged.</p>
+<pre><code>import Data.Function ((&amp;))
+import Lens.Micro (_1, _2)
+import Numeric.Backprop (Reifies, BVar, W, (^^.))
+import qualified Torch.Double.NN.Activation as Bp (relu)
+import qualified Torch.Double.NN.Linear     as Bp (linearBatch)
+
+xorForward
+  :: Reifies s W                        -- How we hold on the a reference of the gradient, W
+  =&gt; BVar s (Linear 2 2, Linear 2 1)    -- Our network, wrapped in &quot;BVar&quot;
+  -&gt; BVar s (Tensor '[4, 2])            -- A batch of training data, wrapped in &quot;BVar&quot;
+  -&gt; BVar s (Tensor '[4, 1])            -- The output, wrapped in &quot;BVar&quot;
+xorForward arch inp
+  = Bp.linearBatch (arch ^^. _1) inp
+  &amp; Bp.relu
+  &amp; Bp.linearBatch (arch ^^. _2)</code></pre>
+<p>From here, we can apply any two-argument backprop’d operation with <a href="https://hackage.haskell.org/package/backprop-0.2.6.1/docs/Numeric-Backprop.html#v:evalBP2"><code>evalBP2</code></a>:</p>
+<pre><code>evalBP2 :: (BVar s a -&gt; BVar s b -&gt; BVar s c) -&gt; a -&gt; b -&gt; c</code></pre>
+<p>we can extract the gradient of our <code>a</code> and <code>b</code> parameters with <a href="https://hackage.haskell.org/package/backprop-0.2.6.1/docs/Numeric-Backprop.html#v:gradBP2"><code>gradBP2</code></a>:</p>
+<pre><code>gradBP2 :: (BVar s a -&gt; BVar s b -&gt; BVar s c) -&gt; a -&gt; b -&gt; (a, b)</code></pre>
+<p>And we can do both at the same time with <a href="https://hackage.haskell.org/package/backprop-0.2.6.1/docs/Numeric-Backprop.html#v:backprop2"><code>backprop2</code></a>:</p>
+<pre><code>backprop2 :: (BVar s a -&gt; BVar s b -&gt; BVar s c) -&gt; a -&gt; b -&gt; (c, (a, b))</code></pre>
+<h3 id="loss-and-updating">Loss and updating</h3>
+<p>We just need a couple more things before we are done: a loss function (also called a criterion), and a way to update our model with the gradient.</p>
+<p>A loss function is used to let you know how your model is doing as it iterates over the data. One choice of loss function is mean squared error, which can be found in <code>Torch.Double.NN.Criterion</code> under the name <code>mSECriterion</code>. The output of this function is a singleton <code>Tensor '[1]</code> which holds the resulting mean-squared difference from the given true values. A simplified type signature would look like the following:</p>
+<pre><code>mSECriterion
+  :: Reifies s W
+  =&gt; Tensor dim           -- true values
+  -&gt; BVar s (Tensor dim)  -- predicted values
+  -&gt; BVar s (Tensor '[1]) -- mean-squared error</code></pre>
+<p>We also need to be able to move a model towards the optimal hyperparameters using a small fraction of the gradient – a process commonly known as gradient descent.</p>
+<pre><code>-- Simple way to update a network with a multiple of the gradient
+update
+  :: network ~ (Linear 2 2, Linear 2 1)      -- make this less verbose with an equivalence
+  =&gt; network                                 -- our initial network
+  -&gt; (Double, network)                       -- the learning rate and a gradient
+  -&gt; network                                 -- our updated network
+update (l1, l2) (lr, (g1, g2)) =
+  ( l1 - (g1 ^* lr)
+  , l2 - (g2 ^* lr)
+  )</code></pre>
+<p>Here, we simply take each layer of our gradient, multiply it by some fraction (called the learning rate), and decrement our current networks weights by that amount in an element-wise subtraction.</p>
+<h3 id="training">Training</h3>
+<p>Now we can train our network! While it is often times more elegant to simply <code>fold</code> over our data, I will write a small recursive training loop to make things slightly more “hands-on:”</p>
+<pre><code>trainer
+  :: Double                    -- learning rate
+  -&gt; Int                       -- number of batches to generate
+  -&gt; (Linear 2 2, Linear 2 1)  -- our initial network
+  -&gt; (Linear 2 2, Linear 2 1)  -- our final, trained network
+trainer lr n net0 = go 0 net0
+  where
+    go c net
+      | c &gt;= n = pure net
+      | otherwise = do
+        (xs, ys) &lt;- mkExactData
+
+        let (loss, (netGrad, xsGrad))
+        = backprop2 (\net' xs' -&gt; Bp.mSECriterion ys $ xorForward net' xs') net xs
+
+        print loss
+
+        go (c+1) (update net (lr, netGrad))</code></pre>
+<p>In the function <code>go</code> we are constructing data, feeding that data into our forward function <code>xorForward</code>, and applying <code>mSECriterion</code> to get the gradient of our network with respect to the mean squared error from <code>ys</code>. We then recurse with new weights by applying our <code>update</code> function to our model with the gradient and a learning rate.</p>
+<hr />
+<p>Putting everything together, we can build our initial model with <code>mkNetwork</code>, iterate over our data with <code>trainer</code>, and run one final inference over the original four examples from <code>mkExactData</code>, reporting the final result and mean squared error.</p>
+<pre><code>main = do
+  net0 &lt;- mkNetwork
+
+  net &lt;- trainer 0.01 2500 net0
+
+  (xs, ys) &lt;- mkExactData
+
+  let ys' = evalBP2 xorForward net xs
+  putStrLn &quot;\nInferred values:&quot;
+  print ys'
+
+  let l = evalBP (Bp.mSECriterion ys) ys'
+  putStrLn &quot;Mean-squared error&quot;
+  print l</code></pre>
+<h3 id="wrapping-up">Wrapping up</h3>
+<p>In working through this example, we’ve actually implemented something fairly low-level. We never delegate to an optimizing function or do anything fancy with data loader abstractions. This about sums up the stage of the Hasktorch project: functions like <code>optimizer</code> in PyTorch, abstract the composition of a forward function with loss, but are also written in Python. Building these types of convenience functions is a work in progress which might need some generic programming or, simply, Haskell best-practices.</p>
+<p>Hasktorch is entering a phase of “example-driven” development where we would like to collect PyTorch modules paired with Hasktorch conversions in our <code>examples/</code> subdirectory. We’re hoping that this will make contributing code exciting and accessible to all kinds of developers.</p>
+<p>If you know PyTorch but not Haskell, Austin and I can walk you through some of the Haskell-y bits and you will learn more about PyTorch internals. If you know Haskell but not PyTorch, we would love to give you an excuse to submit some simple examples to our codebase and flex some of your machine learning chops!</p>
+<p>In a later post, I’ll go over some of the internals of Hasktorch including a deeper dive into Backpack (GHC’s mixin features), how we use the singletons library (dependent types in Haskell), and I’ll talk a bit more about automatic differentiation. I’ll also go over some opportunities to contribute. Until next time!</p>
+<!--
+
+## Internals: Backpack
+ 
+Probably important to give a brief introduction to backpack and explain what an "indefinite" is. **Important to discuss how backpack allows us to iterate on a better user interface and how it also gives us a target for pure-haskell backends**.
+
+## Internals: Singletons and Dimensions
+ 
+Simple discussion of the sorts of things we can and cant do. Maybe touch on Naperian functors for broadcasting.
+
+## Current Status and Caveats
+
+As you can probably tell from the caveats, while Hasktorch is feature complete there is still a lot of work to be done. Currently you can build simple neural networks, and some Computer Vision combinators exist (conv1d, conv2d, max-pooling), but most are unfinished since it is a manual effort of encoding typechecks into the user interface. We are moving into a python-driven phase of development where we can build python models in pytorch, and have their comparable Hasktorch model built alongside them. Working on this will make you intimately familiary with the ATen codebase, potentially with cuda internals.
+
+Caveats:
+
+- memory usage _can be_ comparable to PyTorch from what I can tell. It's hard to know for sure since we don't have good dataloaders: the final  "production" model of LeNet loads all of CIFAR10 into the codebase. This, as well as datavisualization via tensorboard, needs a bit of work.
+
+- We currently lack a safe in-place abstraction. Because mutation is vital for large tensor opreations, Hasktorch devs are of the opinion that it is better to move fast and let users get access to these sorts of operations, but we need to iterate on these sooner rather than later. It should be straight forward, using ST, with some future use-cases for linear types (when type-level dimensions change, but the foreign pointer remains the same).
+
+
+## Call for Collaboration
+
+These things will all be discussed in more detail above. Immediate, simple help:
+
+- Make more of the statically typed interface
+- Codifying the mutable aspects of tensors (look to MVector for API)
+- Bring back support for GPUs (it's all there, but we need to marshall custom lists in `tensordata` and `newWithStorage` functions).
+- Make more user-friendly NN functions via python development.
+- custom expanding with Naperian functors (: Cudos to Jeremy Gibbon for this
+
+Long-term, call-for-collaboration:
+- Prototype C++ bindings with `inline-c-cpp`
+- Work on top of Crayon-hs https://github.com/austinvhuang/crayon-hs
+- Looking to linear types to fix some of the 
+
+
+
+## Hasktorch ecosystem
+
+https://hackage.haskell.org/packages/search?terms=hasktorch
+https://hackage.haskell.org/package/hasktorch-indef
+https://hackage.haskell.org/package/hasktorch
+https://hackage.haskell.org/package/hasktorch-zoo
+
+-->
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

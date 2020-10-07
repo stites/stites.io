@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Bloom Filters for Data Detectives</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Bloom Filters for Data Detectives
+</h1>
+
+<div class="meta">
+    November 26, 2013
+    
+</div>
+
+<div class="post">
+<p>Track I’m coding to: <code>Soul Satisfaction</code> by <code>Bit Funk</code> on <a href="www.hypem.com">hypem</a></p>
+<p>I just finished writing a Bloom filter over Thanksgiving break. What an incredible experience! Aside from learning how to whip up a bloom filter, this was also my first experience in using bitwise operators. I mean I’ve used bitwise operators before, but not for anything <strong>useful</strong> just little things like using <code>~~(n)</code> instead of <code>Math.floor(n)</code> for positive numbers, and <code>x &lt;&lt; y</code> as a replacement for <code>x * Math.pow( 2, y )</code>. Using bitwise operators as a means of generating logic gates has been very enlightening - I look forward to using these in the future.</p>
+<h3 id="bloom-filters">Bloom Filters</h3>
+<p>I guess I should start with what a bloom filter actually is. I’ll start off with an example. Imagine you’re Sherlock Holmes and you are chasing Professor Moriarty through London. Clearly I’m talking about <em>Sherlock Holmes: A Game of Shadows</em> starring you (as Sherlock) and Jude Law as your trusty companion Watson. First of all, you have no idea where Moriarty is - you just know that he’s somewhere in London. However, you have done your due-diligence and you’ve retreived a list of all crimes which may have been linked to Moriarty. Keep in mind that the police have been on top of their work and every crime moriarty has ever commited is <strong>definitely</strong> on the list, no exceptions, however there might be a few extra cases in there.</p>
+<p>What a relief! Instead of having to search through every house in the city, you already have a pre-vetted list of all the crimes Moriarty has ever commited! It’s almost as if it came from the hands of Burton Howard Bloom, himself! What we now hold is, essentially, a bloomfilter. Like a bloom filter, this list may include some red herrings - however overall, we’ve already killed a ton of work by not having to chase through every crime in london.</p>
+<h3 id="getting-a-little-more-technical">Getting a little more technical</h3>
+<p>Now imagine you have a database. Only some of the information you collect is so vast, that a collection doesn’t fit on one physical disk - User Tracking was a biggie back in my TurboSquid days. Instead of having to parse through every single disk, we could run queries much faster if we checked our criteria against a list which told us if what we wanted was on that disk, if it wasn’t, we could simply skip over it.</p>
+<p>The requirements for such a list would mean that everytime we added an item to the disk: (a) add some new data structure to our already-complex business logic (b) write some kind of identifier from each item into that data structure, and (c) parse through every item in this data structure in order to see if it is in our list.</p>
+<p>While there are many ways to impliment this pre-vetting service in your apps, clearly, the best way is to use a bloom filter. Bloom filters - using bitwise operators - are <code>O(1)</code>, can take up as much space as a single 32-bit character for storage, and can reduce the number of operations down to as little <code>O(1)</code> if your bloom filter indicates what you are looking for does not exist in your data structure.</p>
+<p>There is a single gotcha, however. Bloom filters are a probabilistic hash meaning that, while they can tell you with 100% certainty if something is <em>not</em> in the filter, they also have a false-positive rate associated with them. This false-positive rate is dependent on how many hash functions you are using, how many items have been put in your filter, and how much size you have alloted your filter to take. Enough details, lets start coding.</p>
+<h3 id="building-one">Building one:</h3>
+<p>First off, I’d like to start off by making a plug for the codebase I’ve put together. You can find it <a href="www.github.com/stites">here</a> in <a href="www.github.com/stites">my github</a> and follow along. if you’d like. There are also 32 test done in BDD methodology. The bloomfilter itself is written in pseudoclassical.</p>
+<p>To start, we need five variables on our Pseudoclassical Bloomfilter. The size of our bloom filter, <code>m</code>, the number of hash functions in our filter, <code>k</code>, some kind of storage for those hash functions, <code>hashStorage</code>, the number of items we put in our filter, <code>n</code>, and the storage unit itself, <code>storage</code>. <code>m</code> and <code>k</code> are predetermined and the hash functions have to be included in our <code>hashStorage</code> before we being. Our <code>storage</code> unit and number of items, <code>n</code>, also start at <code>0</code>. Code:</p>
+<pre><code>var BloomFilter = function (m, k) {
+  this._m = m;
+  this._k = k;
+  this._n = 0;
+  this._storage = 0;
+  this._hashStorage = Array(k);
+}</code></pre>
+<p>We need a way to take an input string and retreive the hash of each hash function. This is going to be used everywhere and will be used as a bitmask to add to our storage. Lets create a function which will generate an array of our desired masks:</p>
+<pre><code>BloomFilter.prototype.getMask = function(strVal) {
+  var mask = 0;
+  for (var i = 0; i &lt; this._hashStorage.length; i++) {
+    if (this._hashStorage[i] === undefined) {
+      throw new Error('expected '+this._hashStorage.length+' hash functions');
+    }
+    mask |= 1 &lt;&lt; this._hashStorage[i](strVal, this._m);
+  };
+  return mask;
+};</code></pre>
+<p>Notice how we generate a hash at <code>this._hashStorage[i](strVal, this._m)</code> and then create a bitmask with <code>1 &lt;&lt; this._hashStorage[i](strVal, this._m)</code> and compound each mask using the or-assignment <code>mask |=</code>… for each iteration of the <code>for</code>-loop. This works just like any <code>+=</code> or operator if we were using ints, only we’re using bitwise cause we’re ballers like that. Let’s add a value to our storage:</p>
+<pre><code>BloomFilter.prototype.add = function(strVal) {
+  var mask = this.getMask(strVal);
+  var check = this._storage;
+  this._storage |= mask;
+  if (check !== this._storage){
+    this._n += 1;
+  }
+};</code></pre>
+<p>Again, using the <code>|=</code> operator just like we would use for a <code>reduce</code> operation. To query our storage, we expand our horizons with bit-operators with an <code>&amp;</code> operator.</p>
+<pre><code>BloomFilter.prototype.query = function(strVal) {
+  var mask = this.getMask(strVal);
+  var test = mask&amp;this._storage;
+  return (test !== mask) ? false : true;
+};</code></pre>
+<p>This is not to be confused with an <code>&amp;&amp;</code> used for boolean evaluation. This happens on the bit level so, given a <code>mask</code> of <code>00001010</code> and a <code>this._storage</code> of <code>01101101</code> we could visualize this operation as follows:</p>
+<pre><code>  00001010
+&amp; 01101101
+----------
+  00001000</code></pre>
+<p>These kinds of logic gates are <em>VERY</em> userful for complex, or time-sensitive operations. Keep them in mind in the future!</p>
+<hr />
+<p>There you have it! that’s all there is to a basic bloom filter. The repo has a few more goodies, though, including the calculation of a falsepositive rates which is dependent on that fifth variable we included in our filter, <code>n</code>. The false positive rate turns out to be <code>(1-e</code><sup><code>-kn/m</code></sup><code>)</code><sup><code>k</code></sup>. Here’s the implimentation:</p>
+<pre><code>BloomFilter.prototype.fp = function() {
+  m = this._m;
+  k = this._k;
+  n = this._n;
+  return Math.pow(1 - Math.pow(1-(1/m), k*n), k);
+};</code></pre>
+<h3 id="invertible-bloom-filters">Invertible Bloom filters</h3>
+<p>Next up is invertible bloom filters. All that means is that you are adding removal capability to a bloom filter. The small gotcha, aside from the checks, is that now your bloom filter has two levels of uncertainty: one for falsepositives and one for falsenegatives. More on this later. Most likely after I finish my time at (Hack Reactor)[www.hackreactor.com].</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>

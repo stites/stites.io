@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+<head>
+   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+   <title>Node Streams</title>
+   <meta name="author" content="Sam Stites" />
+   <!-- <link href="http://feeds.feedburner.com/stites-io" rel="alternate" title="stites.io" type="application/atom+xml" /> -->
+   <!-- <meta name="readability-verification" content="QCzSs992GxmRYRKVpPeZ6LE2tS8aYKxsSSQKV8YM"/> -->
+
+   <!-- syntax highlighting CSS -->
+   <link rel="stylesheet" href="../css/syntax.css" type="text/css" />
+
+   <!-- Homepage CSS -->
+   <link rel="stylesheet" href="../css/screen.css" type="text/css" media="screen, projection" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" type="text/css" />
+   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inconsolata|Source+Code+Pro" />
+</head>
+<body>
+  <div class="site">
+    <div class="title">
+      <a href="../">Sam Stites</a>
+    </div>
+
+  <div id="content">
+      <h1>
+Node Streams
+</h1>
+
+<div class="meta">
+    April 16, 2014
+    
+</div>
+
+<div class="post">
+<p class="meta">
+16 April 2014 - San Francisco, CA
+</p>
+<p>Node has brought to us the ability to run javascript anywhere with the pretense that asyncronisity is getting our servers comparably as fast as a C++ or Go server. One of the key, unsung features which allows for such amazing speed is concepts of streams.</p>
+<p>Buffering will loads files/documents/objecs into memory, however streams can bypass this loading process and allow content to be directly funnelled into a server response, which happens to be a stream object!</p>
+<p>Normally, in node, you’d use:</p>
+<pre><code>app.get('/route', function(req, res){
+    fs.readFile(__dirname + '/data.txt', function (err, data) {
+        res.end(data);
+    });
+})</code></pre>
+<p>however the asyncroncous <code>readFile</code> is a buffer and thus a much speedier options would be:</p>
+<pre><code>app.get('/route', function(req, res){
+    var stream = fs.createReadStream(__dirname + '/data.txt');
+    stream.pipe(res);
+})</code></pre>
+<p>Lets see what node has to offer.</p>
+<hr />
+<p>Node comes with four classes for streams: <code>stream.Readable</code>, <code>stream.Writable</code>, <code>stream.Duplex</code>, and <code>stream.Transform</code>. From my perspective, the core functionality of streams breaks down into Readable and Writable streams. They’re also very similar, so I’ll mostly explain how they work through the example of a Readable one.</p>
+<h3 id="stream.readable"><code>stream.Readable</code></h3>
+<p>Very simply, Readable streams are read-only and serve you data. But there are two ways this can be done in a ‘flowing’ state and a ‘non-flowing’ one. When you’re in ‘flow’ mode, the data is being read as fast as possible and you’ll have to use event handlers to process your data and these will be sent to you in chunks. In non-flowing mode, you have to call stream.read() to get those chunks.</p>
+<h3 id="stream.writable"><code>stream.Writable</code></h3>
+<p>Put most simply, this is the writable version of a stream and data will be written to the destination you indicate.</p>
+<h3 id="stream.duplex"><code>stream.Duplex</code></h3>
+<p>Duplex streams are also, simply, streams that both have read and write functionality.</p>
+<h3 id="stream.transform"><code>stream.Transform</code></h3>
+<p>Transform streams allow you to both read and write in a stream, however also allow you to operate on the stream before serving the data. An example which will clear up any ambigulity would be node’s zlib, where a stream takes some data and zips it to a packaged format - thus serving the user an altered stream.</p>
+<h3 id="also-.pipe-and-events">Also, <code>.pipe()</code> and events!</h3>
+<p><code>.pipe()</code> is the primary utility for streaming. In a terminal, a pipe looks like <code>|</code>. <code>pipe</code> is a data flow control function which pulls data out of a stream and allows it to be used by some process on the other end of the pipe. The nifty thing about this is that <code>pipe</code> will ensure that the destination is not overwhelemed by an overly-fast stream. The architecture for this is wonderfully simple: when backpressure starts to build up in the stream, a flag is simply thrown up to indicate that all pending chunks of data need to be queued for processing. Once the queue has been flushed, the flag is dropped and the stream resumes as normal.</p>
+<p>Finally, you can also chain pipes together to generate compound, complex streams - something taken advantage of in gulp.js!</p>
+<p>On top of this, each stream class comes with a handful of events which makes it possible to control the flow of a stream while streaming. What does this mean? Well, in essence what I’m saying is that it wouldn’t be too hard to roll out your own implimentation of sockets.io! Since all four stream classes, at their core, are just implimentaitons of readable and writable streams, some of the events you’ll come across include Readable events:</p>
+<ul>
+<li><code>readable</code></li>
+<li><code>data</code></li>
+<li><code>end</code></li>
+<li><code>close</code></li>
+<li><code>error</code></li>
+</ul>
+<p>and Writable events:</p>
+<ul>
+<li><code>drain</code></li>
+<li><code>end</code></li>
+<li><code>finish</code></li>
+<li><code>pipe</code></li>
+<li><code>unpipe</code></li>
+<li><code>error</code></li>
+</ul>
+<hr />
+<h3 id="in-conclusion">In conclusion:</h3>
+<p>Start using more streams - it will speed up your applications and they aren’t difficult to use or think about! On top of this, streaming is also a powerful tool in terminal commands, so you’ll get an added benefit of less overhead mental frameworks when you adopt it!</p>
+</div>
+
+<!--
+<div id="related">
+  <h2>Related Posts</h2>
+  <ul class="posts">
+    {% for post in site.related_posts limit:3 %}
+      <li><span>{{ post.date | date_to_string }}</span> &#187; <a href="{{ post.url }}">{{ post.title }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+-->
+
+  </div>
+
+  <div class="footer">
+    <div class="contact">
+      <p>
+        Sam Stites<br />
+        <fnz@fgvgrf.vb cipher:rot13>
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        <a href="https://github.com/stites/">github.com/stites</a><br />
+        <a href="https://twitter.com/samstites/">twitter.com/samstites</a><br />
+      </p>
+    </div>
+    <div class="contact">
+      <p>
+        Site proudly generated by
+        <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+      </p>
+
+    </div>
+    <!-- <div class="rss">
+      <a href="http://feeds.feedburner.com/stites-io">
+        <img src="/images/rss.png" alt="Subscribe to RSS Feed" />
+      </a>
+    </div> -->
+  </div>
+</div>
+
+
+<!-- segment.io  -->
+<script type="text/javascript">
+!(function() {
+  var analytics = window.analytics = window.analytics || [];
+  if (!analytics.initialize) {
+    if (analytics.invoked) {
+      window.console && console.error && console.error("Segment snippet included twice.");
+    } else {
+      analytics.invoked = !0;
+      analytics.methods = ["trackSubmit", "trackClick", "trackLink", "trackForm", "pageview", "identify", "reset", "group", "track", "ready", "alias", "debug", "page", "once", "off", "on"];
+      analytics.factory = function(t) {
+        return function() {
+          var e = Array.prototype.slice.call(arguments);
+          e.unshift(t);
+          analytics.push(e);
+          return analytics
+        }
+      };
+      for (var t = 0; t < analytics.methods.length; t++) {
+        var e = analytics.methods[t];
+        analytics[e] = analytics.factory(e)
+      }
+      analytics.load = function(t) {
+        var e = document.createElement("script");
+        e.type = "text/javascript";
+        e.async = !0;
+        e.src = ("https:" === document.location.protocol ? "https://" : "http://") + "cdn.segment.com/analytics.js/v1/" + t + "/analytics.min.js";
+        var n = document.getElementsByTagName("script")[0];
+        n.parentNode.insertBefore(e, n)
+      };
+      analytics.SNIPPET_VERSION = "4.0.0";
+      analytics.load("HVtnN0ssVfZ3s1y21RbTCebaX6IgC1qK");
+      analytics.page();
+    }
+  }
+})();
+</script>
+<!-- segment.io end -->
+
+<!-- mathjax! -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.js"></script>
+
+<!-- Disqus begin -->
+<script type="text/javascript">
+// /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+// var disqus_shortname = 'stites'; // required: replace example with your forum shortname
+
+// /* * * DON'T EDIT BELOW THIS LINE * * */
+// (function () {
+//     var s = document.createElement('script'); s.async = true;
+//     s.type = 'text/javascript';
+//     s.src = '//' + disqus_shortname + '.disqus.com/count.js';
+//     (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+// }());
+</script>
+<!-- Disqus end -->
+</body>
+</html>
