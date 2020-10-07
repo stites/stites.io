@@ -11,6 +11,7 @@ pages:
     - stack install --only-dependencies
     - stack build
   script:
+    - sleep 1h
     - stack exec site build
       # - mv _site public
   artifacts:
