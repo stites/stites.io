@@ -9,6 +9,7 @@ pages:
 
   script:
     - nix-build ./release.nix
+    - rm -rf public
     - mv _site public
 
   after_script:
@@ -31,7 +32,10 @@ pages:
 cache:
   paths:
     - _cache
+    - .cache
     - .stack
+    # apparently this _must_ be cached.
+    - public
 
 # image: haskell:8.6                  # 300Mb
 # image: fpco/stack-build:lts-14.11 # 3GB
