@@ -27,10 +27,10 @@ pages:
       - _site/drafts
       - _site/css
 
-  cache:
-    paths:
-      - _cache
-      - .stack
+cache:
+  paths:
+    - _cache
+    - .stack
 
 # image: haskell:8.6                  # 300Mb
 # image: fpco/stack-build:lts-14.11 # 3GB
