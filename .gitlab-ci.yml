@@ -9,6 +9,7 @@ pages:
 
   script:
     - nix-build ./release.nix
+    - mv _site public
 
   after_script:
     # push all store paths that were added during the build
@@ -19,13 +20,13 @@ pages:
 
   artifacts:
     paths:
-      - _site/*.html
-      - _site/*.pdf
-      - _site/*.ico
-      - _site/posts
-      - _site/images
-      - _site/drafts
-      - _site/css
+      - public/*.html
+      - public/*.pdf
+      - public/*.ico
+      - public/posts
+      - public/images
+      - public/drafts
+      - public/css
 
 cache:
   paths:
